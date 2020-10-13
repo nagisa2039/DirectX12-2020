@@ -76,9 +76,9 @@ void Drawer::CreatePiplineState()
 	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	// 深度ステンシル
-	gpsd.DepthStencilState.DepthEnable = false;
+	gpsd.DepthStencilState.DepthEnable = true;
 	gpsd.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	gpsd.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	gpsd.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 	gpsd.DepthStencilState.StencilEnable = false;
 	gpsd.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
