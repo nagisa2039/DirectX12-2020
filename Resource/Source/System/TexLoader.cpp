@@ -10,6 +10,12 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace std;
 
+namespace
+{
+	constexpr uint32_t shadow_resolution = 2048;
+}
+
+
 TexLoader::TexLoader(ID3D12Device& dev, Command& cmd): _dev(dev), _cmd(cmd)
 {
 	Init();
@@ -51,7 +57,8 @@ bool TexLoader::Init()
 	// テクスチャ用デスクリプタヒープの作成
 	CreateTextureHeap();
 
-	_renderTergetHandle = -1;
+	// 深度バッファの作成
+	CreateDepthBuffer();
 
 	return true;
 }
@@ -409,8 +416,15 @@ void TexLoader::ClsDrawScreen()
 {
 	assert(_renderTergetHandle >= 0 && _renderTergetHandle < _texResources.size());
 
+	auto& commandList = _cmd.CommandList();
+
 	float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	_cmd.CommandList().ClearRenderTargetView(_texResources[_renderTergetHandle].cpuHandleForRtv, clearColor, 0, nullptr);
+	commandList.ClearRenderTargetView(_texResources[_renderTergetHandle].cpuHandleForRtv, clearColor, 0, nullptr);
+
+	// 深度バッファを初期化
+	commandList.ClearDepthStencilView(
+		_depthDSVHeap->GetCPUDescriptorHandleForHeapStart(),
+		D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
 
 void TexLoader::SetDrawScreen(const int screenH)
@@ -423,9 +437,11 @@ void TexLoader::SetDrawScreen(const int screenH)
 			_texResources[_renderTergetHandle].resource.Barrier(_cmd, _renderTergetHandle >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
 		}
 
+		D3D12_CPU_DESCRIPTOR_HANDLE* depthH = &_depthDSVHeap->GetCPUDescriptorHandleForHeapStart();
+
 		// セットするレンダーターゲットのステートをRENDER_TARGEにする
 		_texResources[screenH].resource.Barrier(_cmd, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		_cmd.CommandList().OMSetRenderTargets(1, &_texResources[screenH].cpuHandleForRtv, false, nullptr);
+		_cmd.CommandList().OMSetRenderTargets(1, &_texResources[screenH].cpuHandleForRtv, false, depthH);
 		_renderTergetHandle = screenH;
 	}
 }
@@ -512,5 +528,135 @@ bool Resource::Barrier(Command& cmd, const D3D12_RESOURCE_STATES changeState)
 
 	cmd.CommandList().ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(buffer.Get(), state, changeState));
 	state = changeState;
+	return true;
+}
+
+
+bool TexLoader::CreateDepthBuffer()
+{
+	// 深度バッファの作成
+	auto wsize = Application::Instance().GetWindowSize();
+
+	D3D12_RESOURCE_DESC depthResDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, wsize.w, wsize.h);
+	depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	D3D12_HEAP_PROPERTIES depthHeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+
+	// 重要らしい
+	D3D12_CLEAR_VALUE depthClearValue = {};
+	// 深さの最大値1にする
+	depthClearValue.DepthStencil.Depth = 1.0f;
+	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+
+	_depthBuffer.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	
+
+	if (FAILED(_dev.CreateCommittedResource(
+		&depthHeapProp,
+		D3D12_HEAP_FLAG_NONE,
+		&depthResDesc,
+		_depthBuffer.state,
+		&depthClearValue,
+		IID_PPV_ARGS(_depthBuffer.buffer.ReleaseAndGetAddressOf()))))
+	{
+		assert(false);
+		return false;
+	}
+
+	// シャドウマップ用
+	depthResDesc.Width = shadow_resolution;
+	depthResDesc.Height = shadow_resolution;
+	_lightDepthBuffer.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	if (FAILED(_dev.CreateCommittedResource(
+		&depthHeapProp,
+		D3D12_HEAP_FLAG_NONE,
+		&depthResDesc,
+		_lightDepthBuffer.state,
+		&depthClearValue,
+		IID_PPV_ARGS(_lightDepthBuffer.buffer.ReleaseAndGetAddressOf()))))
+	{
+		assert(false);
+		return false;
+	}
+
+	// 深度ステンシルビューの作成
+	if (!CreateDSVAndSRV())
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool TexLoader::CreateDSVAndSRV()
+{
+	// 深度バッファビューの作成
+	// デスクリプタヒープの作成
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+	dsvHeapDesc.NumDescriptors = 1;		// 0 は描画深度 1 はライト深度
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	if (FAILED(_dev.CreateDescriptorHeap(
+		&dsvHeapDesc,
+		IID_PPV_ARGS(_depthDSVHeap.ReleaseAndGetAddressOf()))))
+	{
+		assert(false);
+		return false;
+	}
+
+	// ビューの作成
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+	auto DSVhandle = _depthDSVHeap->GetCPUDescriptorHandleForHeapStart();
+
+	// 描画用
+	_dev.CreateDepthStencilView(
+		_depthBuffer.buffer.Get(),
+		&dsvDesc,
+		DSVhandle);
+	DSVhandle.ptr += _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+	//// シャドウマップ用
+	//_dev.CreateDepthStencilView(
+	//	_lightDepthBuffer.buffer.Get(),
+	//	&dsvDesc,
+	//	DSVhandle);
+
+	//  SR用デスクリプタヒープの作成
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	srvHeapDesc.NumDescriptors = 2;		// 0 は描画深度 1 はライト深度
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+	if (FAILED(_dev.CreateDescriptorHeap(
+		&srvHeapDesc,
+		IID_PPV_ARGS(_depthSRVHeap.ReleaseAndGetAddressOf()))))
+	{
+		assert(false);
+		return false;
+	}
+
+	// SR用のビュー作成
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	auto SRVhandle = _depthSRVHeap->GetCPUDescriptorHandleForHeapStart();
+
+	// 描画用
+	_dev.CreateShaderResourceView(
+		_depthBuffer.buffer.Get(),
+		&srvDesc,
+		SRVhandle);
+	SRVhandle.ptr += _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	//// シャドウマップ用
+	//_dev.CreateShaderResourceView(
+	//	_lightDepthBuffer.buffer.Get(),
+	//	&srvDesc,
+	//	SRVhandle);
+
 	return true;
 }

@@ -151,6 +151,8 @@
     <FxCompile Include="Resource\Source\Shader\2DStanderd.hlsl">
       <Filter>ソース ファイル\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Source\Shader\model.hlsl" />
+    <FxCompile Include="Resource\Source\Shader\model.hlsl">
+      <Filter>ソース ファイル\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

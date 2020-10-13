@@ -18,6 +18,8 @@ public:
 
 	void End();
 
+	void SetDefaultViewAndScissor();
+
 	bool DrawGraph(const INT x, const INT y, const int graphHandle);
 	bool DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle);
 	bool DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const UINT centerY, const float exRate, const float angle, const int graphHandle);
@@ -77,7 +79,6 @@ private:
 	void SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const UINT centerX, const UINT centerY, const float exRate = 1.0f, const float angle = 0.0f);
 	void SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img);
 
-	void SetDefaultViewAndScissor(ID3D12GraphicsCommandList& cmdList);
 
 	void CreateSpriteHeap();
 

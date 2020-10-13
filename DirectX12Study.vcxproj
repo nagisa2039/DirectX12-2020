@@ -144,7 +144,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Users\1816030\Project\DirectX2020\Resource\Source;$(DXTEX_DIR);$(DXTK_DIR)\Inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Users\1816030\Project\DirectX12-2020\Resource\Source;$(DXTEX_DIR);$(DXTK_DIR)\Inc</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -175,7 +175,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(DXTEX_DIR);$(DXTK_DIR)\Inc;D:\DirectXTK12-master\Inc;D:\Users\1816030\Project\DirectX2020\Resource\Source;D:\Users\1816030\Project\DirectX2020\Resource</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXTEX_DIR);$(DXTK_DIR)\Inc;D:\DirectXTK12-master\Inc;D:\Users\1816030\Project\DirectX12-2020\Resource\Source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

@@ -72,8 +72,8 @@ cbuffer Setting : register(b4)
 struct PixelOutPut
 {
 	float4 col:SV_TARGET0;//カラー値を出力
-	float4 normal:SV_TARGET1;//法線を出力
-	float4 bright:SV_TARGET2;	// 輝度出力
+	float4 normal : SV_TARGET1; //法線を出力
+	float4 bright : SV_TARGET2; // 輝度出力
 };
 
 // テクスチャ
@@ -137,8 +137,8 @@ PixelOutPut PS(Out input) : SV_TARGET
 	//// 光源ベクトルの反射ベクトル
 	float3 rEye = reflect(eyeRay, input.normal.xyz);
 
-	float2 sphUV = (input.normal.xy*float2(1.0f, -1.0f) + float2(1.0f, 1.0f)) / 2.0f;
-	float2 normalUV = (input.normal.xy + float2(1, -1))*float2(0.5, -0.5);
+	float2 sphUV = (input.normal.xy * float2(1.0f, -1.0f) + float2(1.0f, 1.0f)) / 2.0f;
+	float2 normalUV = (input.normal.xy + float2(1, -1)) * float2(0.5, -0.5);
 
 	//// スペキュラ
 	float specB = saturate(dot(rLight, -eyeRay));
@@ -155,7 +155,7 @@ PixelOutPut PS(Out input) : SV_TARGET
 	float4 sphColor = sph.Sample(smp, sphUV);
 	float4 spaColor = spa.Sample(smp, sphUV);
 
-	float4 diffuseColor = diffuse * float4(sphColor.rgb, 1) + float4(spaColor.rgb,0);
+	float4 diffuseColor = diffuse * float4(sphColor.rgb, 1) + float4(spaColor.rgb, 0);
 	float4 specColor = float4((specular * specB).rgb, 0);
 	float4 ambientColor = float4((ambient * 0.005f).rgb, 0);
 	float4 ret = diffuseColor * texColor * toonColor + specColor + ambientColor;
@@ -183,9 +183,9 @@ PixelOutPut PS(Out input) : SV_TARGET
 	po.normal.a = input.normal.a = 1;
 
 	po.bright = float4(0, 0, 0, 1);
-	float b = dot(po.col.rgb, float3(0.3f, 0.6, 0.1f)) > 0.9f ? 1.0f: 0.0f;
+	float b = dot(po.col.rgb, float3(0.3f, 0.6, 0.1f)) > 0.9f ? 1.0f : 0.0f;
 	{
-		po.bright = float4(b,b,b, 1);
+		po.bright = float4(b, b, b, 1);
 	}
 
 	return po;

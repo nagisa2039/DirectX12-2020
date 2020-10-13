@@ -55,6 +55,14 @@ private:
 
 	int _renderTergetHandle;
 
+	// 描画用深度バッファ
+	Resource _depthBuffer;
+	// シャドウマップ用深度バッファ
+	Resource _lightDepthBuffer;
+
+	ComPtr<ID3D12DescriptorHeap> _depthDSVHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> _depthSRVHeap = nullptr;
+
 	// スクリーン用バッファの生成　作成先バッファ	ｽｸﾘｰﾝの幅と高さ		初期化色
 	bool CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const int color = 0);
 	// グラデーションテクスチャの生成	(tonn が無いときに使う階調)
@@ -70,4 +78,9 @@ private:
 	bool LoadPictureFromFile(const std::wstring& texPath, TextureResorce& texRes);
 
 	void CreateTextureHeap();
+
+	// 深度バッファの作成
+	bool CreateDepthBuffer();
+	// 深度ステンシルビューの作成
+	bool CreateDSVAndSRV();
 };

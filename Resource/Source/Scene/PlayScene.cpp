@@ -23,16 +23,15 @@ void PlayScene::Update()
 
 void PlayScene::Draw()
 {
+	modelRenderer_->DrawToMyScreen();
+
 	auto& dx12 = Application::Instance().GetDx12();
-	
 	dx12.SetDrawScreen(dx12.GetBackScreenHandle());
 	dx12.ClsDrawScreen();
-
-	int handle = dx12.LoagGraph("Resource/Image/tnkt.png");
-	dx12.DrawGraph(0, 0, handle);
-	dx12.DrawEnd();
-
+	
 	modelRenderer_->Draw();
+	dx12.DrawGraph(0,0, dx12.LoadGraph("Resource/Image/tnkt.png"));
+	dx12.DrawEnd();
 
 	dx12.ScreenFlip();
 }

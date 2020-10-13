@@ -7,6 +7,7 @@
 #include "System/Dx12Wrapper.h"
 #include "System/Command.h"
 #include "VMDMotion.h"
+#include "System/Application.h"
 
 using namespace std;
 using namespace DirectX;
@@ -241,10 +242,8 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
 	// レンダーターゲット
-	gpsd.NumRenderTargets = 3;
+	gpsd.NumRenderTargets = 1;
 	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	gpsd.RTVFormats[1] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	gpsd.RTVFormats[2] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	gpsd.DepthStencilState.DepthEnable = true;
 	gpsd.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
@@ -271,8 +270,8 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
 	gpsd.BlendState.RenderTarget[0].LogicOpEnable = false;
 	gpsd.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	gpsd.BlendState.RenderTarget[1] = gpsd.BlendState.RenderTarget[0];
-	gpsd.BlendState.RenderTarget[2] = gpsd.BlendState.RenderTarget[0];
+	//gpsd.BlendState.RenderTarget[1] = gpsd.BlendState.RenderTarget[0];
+	//gpsd.BlendState.RenderTarget[2] = gpsd.BlendState.RenderTarget[0];
 
 	//その他
 	gpsd.NodeMask = 0;
@@ -345,8 +344,8 @@ bool ModelRenderer::Init()
 	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
 	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式夕立改二/ぽんぷ長式夕立改二.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/斑鳩/斑鳩.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/葛城/葛城.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
+	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/斑鳩/斑鳩.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
+	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/葛城/葛城.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	
 	for (int j = 0; j < _modelActors.size(); j++)
 	{
@@ -358,6 +357,9 @@ bool ModelRenderer::Init()
 		_modelActors[j]->SetTransform(trans);
 		_modelActors[j]->StartAnimation();
 	}
+
+	auto wsize = Application::Instance().GetWindowSize();
+	_screenH = _dx12.MakeScreen(wsize.w, wsize.h);
 
 	return true;
 }
@@ -384,14 +386,30 @@ void ModelRenderer::Update()
 
 void ModelRenderer::Draw()
 {
-	auto& commandList = _dx12.GetCommand().CommandList();
+	_dx12.DrawGraph(0,0,_screenH);
+}
+
+void ModelRenderer::DrawToMyScreen()
+{
+	_dx12.SetDrawScreen(_screenH);
+	_dx12.ClsDrawScreen();
+
+	_dx12.SetDefaultViewAndScissor();
+
+	auto& command = _dx12.GetCommand();
+	auto& commandList = command.CommandList();
 	commandList.SetPipelineState(_modelPL.Get());
 	commandList.SetGraphicsRootSignature(_modelRS.Get());
+	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	_dx12.SetCameraDescriptorHeap(1);
 
 	for (auto& actor : _modelActors)
 	{
 		actor->Draw();
 	}
+
+	command.Execute();
 }
 
 void ModelRenderer::SetModelRS()

@@ -26,6 +26,8 @@ public:
 	// 描画
 	void Draw();
 
+	void DrawToMyScreen();
+
 	// RootSignatureの設定
 	void SetModelRS();
 	// PipelineStateの設定
@@ -44,11 +46,10 @@ private:
 	// 影用パイプラインステート
 	ComPtr<ID3D12PipelineState> _shadowPL = nullptr;
 
-
 	std::vector<std::shared_ptr<ModelActor>> _modelActors;
-
-
 	std::map<std::string, std::shared_ptr<VMDMotion>> _vmdMotions;
+
+	int _screenH;
 
 	bool CreateModelRS();
 	void CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges);

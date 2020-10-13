@@ -5,6 +5,7 @@
 #include "TexLoader.h"
 #include <d3dcompiler.h>
 #include "Utility/dx12Tool.h"
+#include "Command.h"
 
 using namespace DirectX;
 using namespace std;
@@ -76,8 +77,9 @@ void Drawer::CreatePiplineState()
 
 	// 深度ステンシル
 	gpsd.DepthStencilState.DepthEnable = false;
+	gpsd.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	gpsd.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	gpsd.DepthStencilState.StencilEnable = false;
-	// DSV必須
 	gpsd.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	// ラスタライザ
@@ -250,7 +252,7 @@ void Drawer::SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT 
 		XMVectorSet(rectCenter.x - uvCenter.x, rectCenter.y - uvCenter.y, 0.0f, 1.0f));		// 移動
 }
 
-void Drawer::SetDefaultViewAndScissor(ID3D12GraphicsCommandList& cmdList)
+void Drawer::SetDefaultViewAndScissor()
 {
 	unsigned int screenW, screenH;
 	_texLoader.GetScreenSize(screenW, screenH);
@@ -267,8 +269,9 @@ void Drawer::SetDefaultViewAndScissor(ID3D12GraphicsCommandList& cmdList)
 	_scissorRect.right = screenW;
 	_scissorRect.bottom = screenH;
 
-	cmdList.RSSetViewports(1, &_viewport);
-	cmdList.RSSetScissorRects(1, &_scissorRect);
+	auto& commandList = _cmd.CommandList();
+	commandList.RSSetViewports(1, &_viewport);
+	commandList.RSSetScissorRects(1, &_scissorRect);
 }
 
 void Drawer::CreateSpriteHeap()
@@ -286,7 +289,7 @@ void Drawer::End()
 {
 	auto& cmdList = _cmd.CommandList();
 
-	SetDefaultViewAndScissor(cmdList);
+	SetDefaultViewAndScissor();
 
 	cmdList.SetPipelineState(_pipelineState.Get());
 	cmdList.SetGraphicsRootSignature(_rootSignature.Get());
