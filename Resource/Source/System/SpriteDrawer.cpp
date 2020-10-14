@@ -1,16 +1,17 @@
 #include <DirectXTex.h>
-#include "Drawer.h"
+#include "SpriteDrawer.h"
 #include "Application.h"
 #include "Command.h"
 #include "TexLoader.h"
 #include <d3dcompiler.h>
 #include "Utility/dx12Tool.h"
 #include "Command.h"
+#include "System/Dx12Wrapper.h"
 
 using namespace DirectX;
 using namespace std;
 
-Drawer::Drawer(ID3D12Device& dev, Command& cmd, TexLoader& texLoader): _dev(dev), _cmd(cmd), _texLoader(texLoader)
+SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):_dx12(dx12)
 {
 	// 頂点の作成
 	CreateVertextBuffer();
@@ -28,11 +29,11 @@ Drawer::Drawer(ID3D12Device& dev, Command& cmd, TexLoader& texLoader): _dev(dev)
 	_drawImages.clear();
 }
 
-Drawer::~Drawer()
+SpriteDrawer::~SpriteDrawer()
 {
 }
 
-void Drawer::CreatePiplineState()
+void SpriteDrawer::CreatePiplineState()
 {
 	//頂点レイアウト(仕様)
 	D3D12_INPUT_ELEMENT_DESC inputLayoutDescs[] =
@@ -101,10 +102,10 @@ void Drawer::CreatePiplineState()
 	gpsd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	gpsd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-	H_ASSERT(_dev.CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(_pipelineState.ReleaseAndGetAddressOf())));
+	H_ASSERT(_dx12.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(_pipelineState.ReleaseAndGetAddressOf())));
 }
 
-void Drawer::CreateRootSignature()
+void SpriteDrawer::CreateRootSignature()
 {
 	D3D12_DESCRIPTOR_RANGE range[2] = {};
 	range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -152,12 +153,12 @@ void Drawer::CreateRootSignature()
 	H_ASSERT(D3D12SerializeRootSignature(&rsd, D3D_ROOT_SIGNATURE_VERSION_1,
 		signature.ReleaseAndGetAddressOf(), error.ReleaseAndGetAddressOf()));
 
-	H_ASSERT(_dev.CreateRootSignature(0,
+	H_ASSERT(_dx12.GetDevice().CreateRootSignature(0,
 		signature->GetBufferPointer(), signature->GetBufferSize(),
 		IID_PPV_ARGS(_rootSignature.ReleaseAndGetAddressOf())));
 }
 
-void Drawer::CreateVertextBuffer()
+void SpriteDrawer::CreateVertextBuffer()
 {
 	struct Vertex_t
 	{
@@ -177,7 +178,7 @@ void Drawer::CreateVertextBuffer()
 	auto heapPro = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 	auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(vertices));
 
-	H_ASSERT(_dev.CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &resDesc,
+	H_ASSERT(_dx12.GetDevice().CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &resDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(_vertBuff.ReleaseAndGetAddressOf())));
 
 	Vertex_t* vertMap = nullptr;
@@ -189,27 +190,28 @@ void Drawer::CreateVertextBuffer()
 	_vbView.SizeInBytes = sizeof(vertices);
 }
 
-void Drawer::CreateVertexConstantBuffer()
+void SpriteDrawer::CreateVertexConstantBuffer()
 {
-	CreateDescriptorHeap(&_dev, _squareCBV, Application::Instance().GetImageMax());
+	auto& dev = _dx12.GetDevice();
+	CreateDescriptorHeap(&dev, _squareCBV, Application::Instance().GetImageMax());
 	_squareCBs.resize(Application::Instance().GetImageMax());
 	auto bufSize = sizeof(VertexInf);
 	auto handle = _squareCBV->GetCPUDescriptorHandleForHeapStart();
-	auto incrementSize = _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	auto incrementSize = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	for (auto& vertCB : _squareCBs)
 	{
-		CreateConstantBuffer(&_dev, vertCB.resorce, bufSize);
+		CreateConstantBuffer(&dev, vertCB.resorce, bufSize);
 		H_ASSERT(vertCB.resorce->Map(0, nullptr, (void**)&vertCB.mappedVertexInf));
-		CreateConstantBufferView(&_dev, vertCB.resorce, handle);
+		CreateConstantBufferView(&dev, vertCB.resorce, handle);
 		handle.ptr += incrementSize;
 	}
 }
 
-void Drawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const float exRate, const float angle)
+void SpriteDrawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const float exRate, const float angle)
 {
 	unsigned int screenW, screenH;
-	_texLoader.GetScreenSize(screenW, screenH);
+	_dx12.GetTexLoader().GetScreenSize(screenW, screenH);
 	XMFLOAT2 wsizeCenter = XMFLOAT2(screenW / 2.0f, screenH / 2.0f);
 	XMFLOAT2 center(left + width / 2, top + height / 2);
 
@@ -222,10 +224,10 @@ void Drawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT 
 		XMVectorSet(moveX, moveY, 0.0f, 1.0f));		// 移動
 }
 
-void Drawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const UINT centerX, const UINT centerY, const float exRate, const float angle)
+void SpriteDrawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const UINT centerX, const UINT centerY, const float exRate, const float angle)
 {
 	unsigned int screenW, screenH;
-	_texLoader.GetScreenSize(screenW, screenH);
+	_dx12.GetTexLoader().GetScreenSize(screenW, screenH);
 	
 	XMFLOAT2 wsizeCenter = XMFLOAT2(screenW / 2.0f, screenH / 2.0f);
 	XMFLOAT2 center(left + centerX, top + centerY);
@@ -239,7 +241,7 @@ void Drawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT 
 		XMVectorSet(moveX, moveY, 0.0f, 1.0f));		// 移動
 }
 
-void Drawer::SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img)
+void SpriteDrawer::SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img)
 {
 	XMFLOAT2 imgSizeF = XMFLOAT2(static_cast<float>(img.width), static_cast<float>(img.height));
 	XMFLOAT2 uvCenter = XMFLOAT2(0.5f, 0.5f);
@@ -252,44 +254,23 @@ void Drawer::SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT 
 		XMVectorSet(rectCenter.x - uvCenter.x, rectCenter.y - uvCenter.y, 0.0f, 1.0f));		// 移動
 }
 
-void Drawer::SetDefaultViewAndScissor()
-{
-	unsigned int screenW, screenH;
-	_texLoader.GetScreenSize(screenW, screenH);
-
-	_viewport.TopLeftX = 0;
-	_viewport.TopLeftY = 0;
-	_viewport.Width = screenW;
-	_viewport.Height = screenH;
-	_viewport.MaxDepth = 1.0f;
-	_viewport.MinDepth = 0.0f;
-
-	_scissorRect.left = 0;
-	_scissorRect.top = 0;
-	_scissorRect.right = screenW;
-	_scissorRect.bottom = screenH;
-
-	auto& commandList = _cmd.CommandList();
-	commandList.RSSetViewports(1, &_viewport);
-	commandList.RSSetScissorRects(1, &_scissorRect);
-}
-
-void Drawer::CreateSpriteHeap()
+void SpriteDrawer::CreateSpriteHeap()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = 1;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	heapDesc.NodeMask = 0;
-	H_ASSERT(_dev.CreateDescriptorHeap(&heapDesc,
+	H_ASSERT(_dx12.GetDevice().CreateDescriptorHeap(&heapDesc,
 		IID_PPV_ARGS(_spriteFontHeap.ReleaseAndGetAddressOf())))
 }
 
-void Drawer::End()
+void SpriteDrawer::End()
 {
-	auto& cmdList = _cmd.CommandList();
+	auto& command = _dx12.GetCommand();
+	auto& cmdList = command.CommandList();
 
-	SetDefaultViewAndScissor();
+	_dx12.SetDefaultViewAndScissor();
 
 	cmdList.SetPipelineState(_pipelineState.Get());
 	cmdList.SetGraphicsRootSignature(_rootSignature.Get());
@@ -297,9 +278,9 @@ void Drawer::End()
 	cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	cmdList.IASetVertexBuffers(0, 1, &_vbView);
 
-	auto& texHeap = _texLoader.GetTextureHeap();
+	auto& texHeap = _dx12.GetTexLoader().GetTextureHeap();
 	auto sqHandle = _squareCBV->GetGPUDescriptorHandleForHeapStart();
-	auto incSize = _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	auto incSize = _dx12.GetDevice().GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	for (int i = 0; i < _drawImages.size(); i++)
 	{
@@ -317,14 +298,14 @@ void Drawer::End()
 
 	_drawImages.clear();
 
-	_cmd.Execute();
+	command.Execute();
 }
 
-bool Drawer::DrawGraph(const INT x, const INT y, const int graphHandle)
+bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
 {
 	if (graphHandle == -1) return false;
 
-	auto& texRes = _texLoader.GetTextureResouse(graphHandle);
+	auto& texRes = _dx12.GetTexLoader().GetTextureResouse(graphHandle);
 
 	DrawImage drawImage;
 	drawImage.texHandle = texRes.gpuHandleForTex;
@@ -337,11 +318,11 @@ bool Drawer::DrawGraph(const INT x, const INT y, const int graphHandle)
 	return true;
 }
 
-bool Drawer::DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle)
+bool SpriteDrawer::DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle)
 {
 	if (graphHandle == -1) return false;
 
-	auto& texRes = _texLoader.GetTextureResouse(graphHandle);
+	auto& texRes = _dx12.GetTexLoader().GetTextureResouse(graphHandle);
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
@@ -355,11 +336,11 @@ bool Drawer::DrawRotaGraph(const INT x, const INT y, const float exRate, const f
 	return true;
 }
 
-bool Drawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const UINT centerY, const float exRate, const float angle, const int graphHandle)
+bool SpriteDrawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const UINT centerY, const float exRate, const float angle, const int graphHandle)
 {
 	if (graphHandle == -1) return false;
 
-	auto& texRes = _texLoader.GetTextureResouse(graphHandle);
+	auto& texRes = _dx12.GetTexLoader().GetTextureResouse(graphHandle);
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
@@ -373,11 +354,11 @@ bool Drawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const 
 	return true;
 }
 
-bool Drawer::DrawRectGraph(const INT destX, const INT destY, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle)
+bool SpriteDrawer::DrawRectGraph(const INT destX, const INT destY, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle)
 {
 	if (graphHandle == -1) return false;
 
-	auto& texRes = _texLoader.GetTextureResouse(graphHandle);
+	auto& texRes = _dx12.GetTexLoader().GetTextureResouse(graphHandle);
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
@@ -391,11 +372,11 @@ bool Drawer::DrawRectGraph(const INT destX, const INT destY, const UINT srcX, co
 	return true;
 }
 
-bool Drawer::DrawExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const int graphHandle)
+bool SpriteDrawer::DrawExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const int graphHandle)
 {
 	if (graphHandle == -1) return false;
 
-	auto& texRes = _texLoader.GetTextureResouse(graphHandle);
+	auto& texRes = _dx12.GetTexLoader().GetTextureResouse(graphHandle);
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
@@ -409,11 +390,11 @@ bool Drawer::DrawExtendGraph(const INT left, const INT top, const INT right, con
 	return true;
 }
 
-bool Drawer::DrawRectExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle)
+bool SpriteDrawer::DrawRectExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle)
 {
 	if (graphHandle == -1) return false;
 
-	auto& texRes = _texLoader.GetTextureResouse(graphHandle);
+	auto& texRes = _dx12.GetTexLoader().GetTextureResouse(graphHandle);
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;

@@ -8,6 +8,8 @@
 #include "System/Command.h"
 #include "VMDMotion.h"
 #include "System/Application.h"
+#include "System/TexLoader.h"
+#include "System/SpriteDrawer.h"
 
 using namespace std;
 using namespace DirectX;
@@ -359,7 +361,7 @@ bool ModelRenderer::Init()
 	}
 
 	auto wsize = Application::Instance().GetWindowSize();
-	_screenH = _dx12.MakeScreen(wsize.w, wsize.h);
+	_screenH = _dx12.GetTexLoader().MakeScreen(wsize.w, wsize.h);
 
 	return true;
 }
@@ -386,18 +388,18 @@ void ModelRenderer::Update()
 
 void ModelRenderer::Draw()
 {
-	_dx12.DrawGraph(0,0,_screenH);
+	_dx12.GetSpriteDrawer().DrawGraph(0,0,_screenH);
 }
 
 void ModelRenderer::DrawToMyScreen()
 {
-	_dx12.SetDrawScreen(_screenH);
-	_dx12.ClsDrawScreen();
+	auto& texLoader = _dx12.GetTexLoader();
+	texLoader.SetDrawScreen(_screenH);
+	texLoader.ClsDrawScreen();
 
 	_dx12.SetDefaultViewAndScissor();
 
-	auto& command = _dx12.GetCommand();
-	auto& commandList = command.CommandList();
+	auto& commandList = _dx12.GetCommand().CommandList();
 	commandList.SetPipelineState(_modelPL.Get());
 	commandList.SetGraphicsRootSignature(_modelRS.Get());
 	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -408,8 +410,6 @@ void ModelRenderer::DrawToMyScreen()
 	{
 		actor->Draw();
 	}
-
-	command.Execute();
 }
 
 void ModelRenderer::SetModelRS()

@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "Dx12Wrapper.h"
 #include "TexLoader.h"
-#include "Drawer.h"
+#include "SpriteDrawer.h"
 #include "FPSManager.h"
 #include "Scene/SceneController.h"
 #include <d3d12.h>
@@ -106,7 +106,8 @@ bool Application::Initialize()
 }
 
 void Application::Run()
-{// ウィンドウの表示
+{
+	// ウィンドウの表示
 	ShowWindow(_hwnd, SW_SHOW);
 
 	MSG msg = {};

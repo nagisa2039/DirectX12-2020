@@ -12,6 +12,7 @@
 #include "PMDData.h"
 #include "VMDMotion.h"
 #include "System/Dx12Wrapper.h"
+#include "System/TexLoader.h"
 
 using namespace std;
 using namespace DirectX; 
@@ -402,11 +403,12 @@ bool ModelActor::CreateMaterialTextureBuffer()
 
 	bool debug = false;
 
-	auto GetTexture = [&dx12 = _dx12](const std::wstring & path, TextureResorce & texRes)
+	auto& texLoader = _dx12.GetTexLoader();
+	auto GetTexture = [&texLoader = texLoader](const std::wstring & path, TextureResorce & texRes)
 	{
 		if (path != L"")
 		{
-			dx12.GetTextureResouse(path, texRes);
+			texLoader.GetTextureResouse(path, texRes);
 		}
 	};
 
@@ -506,7 +508,7 @@ bool ModelActor::CreateMaterialCBV()
 
 void ModelActor::CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT& heapStride, unsigned int bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)
 {
-	auto& dummyTextures = _dx12.GetDummyTextures();
+	auto& dummyTextures = _dx12.GetTexLoader().GetDummyTextures();
 	auto& dev = _dx12.GetDevice();
 
 	auto CreateShaderResourceView = [&dev, &srvDesc, &handle, &dummyTextures, &heapStride](TextureResorce& texRes)

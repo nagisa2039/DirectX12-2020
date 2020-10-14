@@ -60,9 +60,6 @@
     <ClInclude Include="Resource\Source\System\Command.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\System\Drawer.h">
-      <Filter>ヘッダー ファイル\System</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\System\Dx12Wrapper.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
@@ -96,12 +93,12 @@
     <ClInclude Include="Resource\Source\System\TextureStruct.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\System\SpriteDrawer.h">
+      <Filter>ヘッダー ファイル\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
-      <Filter>ソース ファイル\System</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\System\Drawer.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\System\Dx12Wrapper.cpp">
@@ -145,6 +142,9 @@
     </ClCompile>
     <ClCompile Include="Resource\Source\Model\VMDMotion.cpp">
       <Filter>ソース ファイル\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\System\SpriteDrawer.cpp">
+      <Filter>ソース ファイル\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

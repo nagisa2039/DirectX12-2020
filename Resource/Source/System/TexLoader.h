@@ -6,25 +6,21 @@
 #include "TextureStruct.h"
 
 class IDXGISwapChain4;
-
+class Dx12Wrapper;
 
 class TexLoader
 {
 public:
-	TexLoader(ID3D12Device& dev, Command& cmd);
+	TexLoader(ID3D12Device& dev, Command& cmd, IDXGISwapChain4& swapChain);
 	~TexLoader();
 
-	bool Init();
 	const ComPtr<ID3D12DescriptorHeap>& GetTextureHeap()const;
 
 	const DummyTextures& GetDummyTextures()const;
-	bool GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes);
 	TextureResorce& GetTextureResouse(const int handle);
+	bool GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes);
 
-	int LoadTexture(const std::string& path);
-	void CreateSRV(TextureResorce& texRes);
-
-	bool CreateSwapChainBuffer(IDXGISwapChain4& swapChain);
+	int LoadGraph(const std::string& path);
 
 	void ClsDrawScreen();
 	void SetDrawScreen(const int screenH);
@@ -37,9 +33,13 @@ public:
 	bool GetScreenSize(unsigned int& width, unsigned int& height)const;
 
 private:
-
 	ID3D12Device& _dev;
 	Command& _cmd;
+
+	TexLoader(const TexLoader&) = delete;
+	TexLoader& operator=(const TexLoader&) = delete;
+
+	bool Init();
 
 	// 画像ロード用lambda格納マップ
 	using LoadLambda_t = std::function<HRESULT(const std::wstring&, DirectX::TexMetadata*, DirectX::ScratchImage&)>;
@@ -56,12 +56,14 @@ private:
 	int _renderTergetHandle;
 
 	// 描画用深度バッファ
-	Resource _depthBuffer;
+	Resource _depthResouerce;
 	// シャドウマップ用深度バッファ
-	Resource _lightDepthBuffer;
+	Resource _lightDepthResource;
 
 	ComPtr<ID3D12DescriptorHeap> _depthDSVHeap = nullptr;
 	ComPtr<ID3D12DescriptorHeap> _depthSRVHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> _lightDSVHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> _lightSRVHeap = nullptr;
 
 	// スクリーン用バッファの生成　作成先バッファ	ｽｸﾘｰﾝの幅と高さ		初期化色
 	bool CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const int color = 0);
@@ -83,4 +85,7 @@ private:
 	bool CreateDepthBuffer();
 	// 深度ステンシルビューの作成
 	bool CreateDSVAndSRV();
+
+	void CreateSRV(TextureResorce& texRes);
+	bool CreateSwapChainBuffer(IDXGISwapChain4& swapChain);
 };

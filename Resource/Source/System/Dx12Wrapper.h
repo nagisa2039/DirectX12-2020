@@ -15,7 +15,7 @@ using Microsoft::WRL::ComPtr;
 
 class Command;
 class TexLoader;
-class Drawer;
+class SpriteDrawer;
 
 class Dx12Wrapper
 {
@@ -37,21 +37,10 @@ public:
 	Command& GetCommand();
 
 	TexLoader& GetTexLoader();
-	Drawer& GetDrawer();
-
-	int LoadGraph(const std::string& filePath);
-	void DrawGraph(const int x, const int y, const int handle);
+	SpriteDrawer& GetSpriteDrawer();
 	
-	void ClsDrawScreen();
-	void ScreenFlip();
-	void DrawEnd();
-	void SetDrawScreen(const int screenHandle);
-	int MakeScreen(const UINT width, const UINT height);
 	int GetBackScreenHandle();
-
-	const DummyTextures& GetDummyTextures();
-	bool GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes);
-	TextureResorce& GetTextureResouse(const int handle);
+	void ScreenFlip();
 
 	void SetCameraDescriptorHeap(const UINT rootParamIdx);
 
@@ -65,7 +54,7 @@ private:
 	ComPtr<IDXGISwapChain4> _swapChain = nullptr;
 
 	std::shared_ptr<TexLoader> _texLoader;
-	std::shared_ptr<Drawer> _drawer;
+	std::shared_ptr<SpriteDrawer> _spriteDrawer;
 	std::shared_ptr<Command> _cmd;
 
 	// カメラ行列用定数バッファ
@@ -92,6 +81,10 @@ private:
 	// 注視点(見る対象の位置)
 	// 上ベクトル(上)
 	Camera _camera;
+
+	D3D12_VIEWPORT _viewport;
+	D3D12_RECT _scissorRect;
+
 
 	// カメラのバッファとビューを作成
 	bool CreateCameraConstantBufferAndView();

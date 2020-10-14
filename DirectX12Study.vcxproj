@@ -30,7 +30,7 @@
     <ClInclude Include="Resource\Source\Scene\SceneController.h" />
     <ClInclude Include="Resource\Source\System\Application.h" />
     <ClInclude Include="Resource\Source\System\Command.h" />
-    <ClInclude Include="Resource\Source\System\Drawer.h" />
+    <ClInclude Include="Resource\Source\System\SpriteDrawer.h" />
     <ClInclude Include="Resource\Source\System\Dx12Wrapper.h" />
     <ClInclude Include="Resource\Source\System\FPSManager.h" />
     <ClInclude Include="Resource\Source\System\TexLoader.h" />
@@ -50,7 +50,7 @@
     <ClCompile Include="Resource\Source\Scene\SceneController.cpp" />
     <ClCompile Include="Resource\Source\System\Application.cpp" />
     <ClCompile Include="Resource\Source\System\Command.cpp" />
-    <ClCompile Include="Resource\Source\System\Drawer.cpp" />
+    <ClCompile Include="Resource\Source\System\SpriteDrawer.cpp" />
     <ClCompile Include="Resource\Source\System\Dx12Wrapper.cpp" />
     <ClCompile Include="Resource\Source\System\FPSManager.cpp" />
     <ClCompile Include="Resource\Source\System\main.cpp" />
@@ -146,6 +146,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>Resource\Source;$(DXTEX_DIR);$(DXTK_DIR)\Inc</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(DXTEX_DIR)\Bin\Desktop_2019_Win10\x64\Debug;$(DXTK_DIR)\Bin\Desktop_2019_Win10\x64\Debug</AdditionalLibraryDirectories>
@@ -176,6 +177,7 @@
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(DXTEX_DIR);$(DXTK_DIR)\Inc;D:\DirectXTK12-master\Inc;Resource\Source</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

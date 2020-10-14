@@ -8,7 +8,7 @@ class PlayScene :
 	public Scene
 {
 public:
-	PlayScene(SceneController & ctrl);
+	PlayScene(SceneController& ctrl);
 	~PlayScene();
 
 	void Update()override;
@@ -16,4 +16,7 @@ public:
 
 private:
 	std::unique_ptr<ModelRenderer> modelRenderer_;
+	int _tnktH;
+	int _dmdnH;
+
 };

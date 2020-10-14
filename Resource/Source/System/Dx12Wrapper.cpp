@@ -5,7 +5,7 @@
 #include "Command.h"
 #include "TexLoader.h"
 #include "Utility/dx12Tool.h"
-#include "Drawer.h"
+#include "SpriteDrawer.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -22,6 +22,9 @@ Dx12Wrapper::Dx12Wrapper(HWND hwnd): _hwnd(hwnd)
 	_camera.target = { 0, 10, 0 };
 	_camera.up = { 0, 1, 0 };
 	_mappedCam = nullptr;
+
+	_viewport = {};
+	_scissorRect = {};
 }
 
 
@@ -51,12 +54,13 @@ bool Dx12Wrapper::Init()
 	// ÉJÉÅÉâÇÃçÏê¨
 	CreateCameraConstantBufferAndView();
 
-	_texLoader = make_shared<TexLoader>(GetDevice(), GetCommand());
-	_texLoader->CreateSwapChainBuffer(*_swapChain.Get());
+	_texLoader = make_shared<TexLoader>(GetDevice(), GetCommand(), *_swapChain.Get());
 
-	_drawer = make_shared<Drawer>(GetDevice(), GetCommand(), GetTexLoader());
+	_spriteDrawer = make_shared<SpriteDrawer>(*this);
 
 	UpdateSceneMatrix();
+
+	_texLoader->SetDrawScreen(GetBackScreenHandle());
 
 	return true;
 }
@@ -71,59 +75,14 @@ Command& Dx12Wrapper::GetCommand()
 	return *_cmd;
 }
 
-int Dx12Wrapper::LoadGraph(const std::string& filePath)
-{
-	return GetTexLoader().LoadTexture(filePath);
-}
-
-void Dx12Wrapper::DrawGraph(const int x, const int y, const int handle)
-{
-	_drawer->DrawGraph(x, y, handle);
-}
-
-void Dx12Wrapper::ClsDrawScreen()
-{
-	_texLoader->ClsDrawScreen();
-}
-
-void Dx12Wrapper::ScreenFlip()
-{
-	_texLoader->ScreenFlip(*_swapChain.Get());
-}
-
-void Dx12Wrapper::DrawEnd()
-{
-	_drawer->End();
-}
-
-void Dx12Wrapper::SetDrawScreen(const int screenHandle)
-{
-	_texLoader->SetDrawScreen(screenHandle);
-}
-
-int Dx12Wrapper::MakeScreen(const UINT width, const UINT height)
-{
-	return _texLoader->MakeScreen(width, height);
-}
-
 int Dx12Wrapper::GetBackScreenHandle()
 {
 	return _swapChain->GetCurrentBackBufferIndex();
 }
 
-const DummyTextures& Dx12Wrapper::GetDummyTextures()
+void Dx12Wrapper::ScreenFlip()
 {
-	return _texLoader->GetDummyTextures();
-}
-
-bool Dx12Wrapper::GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes)
-{
-	return _texLoader->GetTextureResouse(texPath, texRes);
-}
-
-TextureResorce& Dx12Wrapper::GetTextureResouse(const int handle)
-{
-	return _texLoader->GetTextureResouse(handle);
+	_texLoader->ScreenFlip(*_swapChain.Get());
 }
 
 void Dx12Wrapper::CreateSwapChain()
@@ -150,9 +109,9 @@ TexLoader& Dx12Wrapper::GetTexLoader()
 	return *_texLoader;
 }
 
-Drawer& Dx12Wrapper::GetDrawer()
+SpriteDrawer& Dx12Wrapper::GetSpriteDrawer()
 {
-	return *_drawer;
+	return *_spriteDrawer;
 }
 
 void Dx12Wrapper::SetCameraDescriptorHeap(const UINT rootParamIdx)
@@ -166,7 +125,24 @@ void Dx12Wrapper::SetCameraDescriptorHeap(const UINT rootParamIdx)
 
 void Dx12Wrapper::SetDefaultViewAndScissor()
 {
-	_drawer->SetDefaultViewAndScissor();
+	unsigned int screenW, screenH;
+	_texLoader->GetScreenSize(screenW, screenH);
+
+	_viewport.TopLeftX = 0;
+	_viewport.TopLeftY = 0;
+	_viewport.Width = screenW;
+	_viewport.Height = screenH;
+	_viewport.MaxDepth = 1.0f;
+	_viewport.MinDepth = 0.0f;
+
+	_scissorRect.left = 0;
+	_scissorRect.top = 0;
+	_scissorRect.right = screenW;
+	_scissorRect.bottom = screenH;
+
+	auto& commandList = _cmd->CommandList();
+	commandList.RSSetViewports(1, &_viewport);
+	commandList.RSSetScissorRects(1, &_scissorRect);
 }
 
 bool Dx12Wrapper::CreateCameraConstantBufferAndView()

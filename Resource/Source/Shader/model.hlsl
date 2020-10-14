@@ -72,8 +72,8 @@ cbuffer Setting : register(b4)
 struct PixelOutPut
 {
 	float4 col:SV_TARGET0;//カラー値を出力
-	float4 normal : SV_TARGET1; //法線を出力
-	float4 bright : SV_TARGET2; // 輝度出力
+	//float4 normal : SV_TARGET1; //法線を出力
+	//float4 bright : SV_TARGET2; // 輝度出力
 };
 
 // テクスチャ
@@ -179,14 +179,14 @@ PixelOutPut PS(Out input) : SV_TARGET
 	
 	po.col = ret;
 
-	po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
-	po.normal.a = input.normal.a = 1;
+	//po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
+	//po.normal.a = input.normal.a = 1;
 
-	po.bright = float4(0, 0, 0, 1);
-	float b = dot(po.col.rgb, float3(0.3f, 0.6, 0.1f)) > 0.9f ? 1.0f : 0.0f;
-	{
-		po.bright = float4(b, b, b, 1);
-	}
+	//po.bright = float4(0, 0, 0, 1);
+	//float b = dot(po.col.rgb, float3(0.3f, 0.6, 0.1f)) > 0.9f ? 1.0f : 0.0f;
+	//{
+	//	po.bright = float4(b, b, b, 1);
+	//}
 
 	return po;
 }

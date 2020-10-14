@@ -6,19 +6,14 @@
 #include<SpriteFont.h>
 #include<ResourceUploadBatch.h>
 
-class Command;
-class TexLoader;
+class Dx12Wrapper;
 using Microsoft::WRL::ComPtr;
 
-class Drawer
+class SpriteDrawer
 {
 public:
-	Drawer(ID3D12Device& dev, Command& cmd, TexLoader& texLoader);
-	~Drawer();
-
-	void End();
-
-	void SetDefaultViewAndScissor();
+	SpriteDrawer(Dx12Wrapper& dx12);
+	~SpriteDrawer();
 
 	bool DrawGraph(const INT x, const INT y, const int graphHandle);
 	bool DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle);
@@ -27,10 +22,13 @@ public:
 	bool DrawExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const int graphHandle);
 	bool DrawRectExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
 
+	void End();
+
 private:
-	Command& _cmd;
-	ID3D12Device& _dev; 
-	TexLoader& _texLoader;
+	SpriteDrawer(const SpriteDrawer&) = delete;
+	SpriteDrawer& operator=(const SpriteDrawer&) = delete;
+
+	Dx12Wrapper& _dx12;
 
 	struct VertexInf
 	{
@@ -58,9 +56,6 @@ private:
 
 	std::vector<VertexResource> _squareCBs;
 	ComPtr<ID3D12DescriptorHeap> _squareCBV = nullptr;
-
-	D3D12_VIEWPORT _viewport;
-	D3D12_RECT _scissorRect;
 
 	std::vector<DrawImage> _drawImages;
 

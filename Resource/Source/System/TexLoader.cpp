@@ -16,9 +16,11 @@ namespace
 }
 
 
-TexLoader::TexLoader(ID3D12Device& dev, Command& cmd): _dev(dev), _cmd(cmd)
+TexLoader::TexLoader(ID3D12Device& dev, Command& cmd, IDXGISwapChain4& swapChain)
+	: _dev(dev), _cmd(cmd)
 {
 	Init();
+	CreateSwapChainBuffer(swapChain);
 }
 
 
@@ -259,7 +261,7 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 	ScratchImage scratchImg = {};
 
 	int idx = static_cast<int>(texPath.find_last_of(L'.'));
-	auto ext = texPath.substr(idx + 1, texPath.length() - idx - 1);
+	auto ext = texPath.substr(static_cast<size_t>(idx) + 1, texPath.length() - idx - 1);
 	if (FAILED(_loadLambdaTable[ext](texPath, &metaData, scratchImg)))
 	{
 		//assert(false);
@@ -340,10 +342,10 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 	return true;
 }
 
-int TexLoader::LoadTexture(const std::string& path)
+int TexLoader::LoadGraph(const std::string& path)
 {
 	auto wstringPath = WStringFromString(path);
-	if (_resouseHandleTable.find(wstringPath) != _resouseHandleTable.end())
+	if (_resouseHandleTable.contains(wstringPath))
 	{
 		return _resouseHandleTable[wstringPath];
 	}
@@ -437,6 +439,7 @@ void TexLoader::SetDrawScreen(const int screenH)
 			_texResources[_renderTergetHandle].resource.Barrier(_cmd, _renderTergetHandle >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
 		}
 
+		_depthResouerce.Barrier(_cmd, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		D3D12_CPU_DESCRIPTOR_HANDLE* depthH = &_depthDSVHeap->GetCPUDescriptorHandleForHeapStart();
 
 		// セットするレンダーターゲットのステートをRENDER_TARGEにする
@@ -548,16 +551,15 @@ bool TexLoader::CreateDepthBuffer()
 	depthClearValue.DepthStencil.Depth = 1.0f;
 	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;
 
-	_depthBuffer.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	_depthResouerce.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	
-
 	if (FAILED(_dev.CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&depthResDesc,
-		_depthBuffer.state,
+		_depthResouerce.state,
 		&depthClearValue,
-		IID_PPV_ARGS(_depthBuffer.buffer.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(_depthResouerce.buffer.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -566,14 +568,14 @@ bool TexLoader::CreateDepthBuffer()
 	// シャドウマップ用
 	depthResDesc.Width = shadow_resolution;
 	depthResDesc.Height = shadow_resolution;
-	_lightDepthBuffer.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	_lightDepthResource.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	if (FAILED(_dev.CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&depthResDesc,
-		_lightDepthBuffer.state,
+		_lightDepthResource.state,
 		&depthClearValue,
-		IID_PPV_ARGS(_lightDepthBuffer.buffer.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(_lightDepthResource.buffer.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -593,7 +595,7 @@ bool TexLoader::CreateDSVAndSRV()
 	// 深度バッファビューの作成
 	// デスクリプタヒープの作成
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-	dsvHeapDesc.NumDescriptors = 1;		// 0 は描画深度 1 はライト深度
+	dsvHeapDesc.NumDescriptors = 2;		// 0 は描画深度 1 はライト深度
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	if (FAILED(_dev.CreateDescriptorHeap(
 		&dsvHeapDesc,
@@ -612,16 +614,16 @@ bool TexLoader::CreateDSVAndSRV()
 
 	// 描画用
 	_dev.CreateDepthStencilView(
-		_depthBuffer.buffer.Get(),
+		_depthResouerce.buffer.Get(),
 		&dsvDesc,
 		DSVhandle);
 	DSVhandle.ptr += _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-	//// シャドウマップ用
-	//_dev.CreateDepthStencilView(
-	//	_lightDepthBuffer.buffer.Get(),
-	//	&dsvDesc,
-	//	DSVhandle);
+	// シャドウマップ用
+	_dev.CreateDepthStencilView(
+		_lightDepthResource.buffer.Get(),
+		&dsvDesc,
+		DSVhandle);
 
 	//  SR用デスクリプタヒープの作成
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
@@ -647,16 +649,16 @@ bool TexLoader::CreateDSVAndSRV()
 
 	// 描画用
 	_dev.CreateShaderResourceView(
-		_depthBuffer.buffer.Get(),
+		_depthResouerce.buffer.Get(),
 		&srvDesc,
 		SRVhandle);
 	SRVhandle.ptr += _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	//// シャドウマップ用
-	//_dev.CreateShaderResourceView(
-	//	_lightDepthBuffer.buffer.Get(),
-	//	&srvDesc,
-	//	SRVhandle);
+	// シャドウマップ用
+	_dev.CreateShaderResourceView(
+		_lightDepthResource.buffer.Get(),
+		&srvDesc,
+		SRVhandle);
 
 	return true;
 }
