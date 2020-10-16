@@ -138,4 +138,5 @@ void Application::Terminate()
 
 Application::~Application()
 {
+	UnregisterClass(_wndClass.lpszClassName, _wndClass.hInstance);
 }
