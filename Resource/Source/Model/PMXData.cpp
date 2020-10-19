@@ -121,39 +121,31 @@ void PMXData::LoadVertex(FILE * fp)
 
 	weightFun[BDEF4] = [](FILE * fp, int boneIdexSize, ModelData::Vertex& vert)
 	{
+		int cnt = 4;
+		vector<int> boneIdx(cnt);
+		vector<float> boneWeight(cnt);
+		fread(boneIdx.data(), boneIdexSize * boneIdx.size(), 1, fp);
+		fread(boneWeight.data(), sizeof(boneWeight[0]) * boneWeight.size(), 1, fp);
+
 		float total = 0.0f;
-		pair<int, float> bone[4];
-		for (int idx = 0; idx < 4; idx++)
+		for(float weight : boneWeight)
 		{
-			fread(&bone[idx].first, boneIdexSize, 1, fp);
-			fread(&bone[idx].second, sizeof(bone[idx].second), 1, fp);
-			total += bone[idx].second;
+			total += weight;
 		}
 
-		vert.boneIdx.x = bone[0].first;
-		vert.weight.x = bone[0].second / total;
-		vert.boneIdx.y = bone[1].first;
-		vert.weight.y = bone[1].second / total;
-		vert.boneIdx.z = bone[2].first;
-		vert.weight.z = bone[2].second / total;
-		vert.boneIdx.w = bone[3].first;
-		vert.weight.w = bone[3].second / total;
+		vert.boneIdx.x = boneIdx[0];
+		vert.weight.x = boneWeight[0] / total;
+		vert.boneIdx.y = boneIdx[1];
+		vert.weight.y = boneWeight[1] / total;
+		vert.boneIdx.z = boneIdx[2];
+		vert.weight.z = boneWeight[2] / total;
+		vert.boneIdx.w = boneIdx[3];
+		vert.weight.w = boneWeight[3] / total;
 	};
 
-	weightFun[SDEF] = [](FILE * fp, int boneIdexSize, ModelData::Vertex& vert)
+	weightFun[SDEF] = [weightFun = weightFun](FILE * fp, int boneIdexSize, ModelData::Vertex& vert)
 	{
-		int boneNum1 = 0;
-		fread(&boneNum1, boneIdexSize, 1, fp);
-		int boneNum2 = 0;
-		fread(&boneNum2, boneIdexSize, 1, fp);
-
-		float weight = 0.0f;
-		fread(&weight, sizeof(weight), 1, fp);
-
-		vert.boneIdx.x = boneNum1;
-		vert.weight.x = weight;
-		vert.boneIdx.y = boneNum2;
-		vert.weight.y = 1.0f - weight;
+		weightFun[BDEF2](fp, boneIdexSize, vert);
 
 		// ¡“x‚â‚é
 		XMFLOAT3 c;
@@ -323,7 +315,7 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 			if (toonIdx < 10)
 			{
 				ostringstream oss;
-				oss << "toon/toon" << setw(2) << setfill('0') << static_cast<int>(toonIdx + 1) << ".bmp";
+				oss << "Resource/Image/toon/toon" << setw(2) << setfill('0') << static_cast<int>(toonIdx + 1) << ".bmp";
 				_texPaths[idx].toonPath = WStringFromString(oss.str());
 			}
 		}

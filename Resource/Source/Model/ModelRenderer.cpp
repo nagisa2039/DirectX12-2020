@@ -343,9 +343,9 @@ bool ModelRenderer::Init()
 		assert(false);
 		return false;
 	}
-	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
-	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式夕立改二/ぽんぷ長式夕立改二.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
+	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/安柏/安柏.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
+	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式夕立改二/ぽんぷ長式夕立改二.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
+	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/斑鳩/斑鳩.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/葛城/葛城.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	

@@ -129,7 +129,7 @@ PixelOutPut PS(Out input) : SV_TARGET
 
 	//return float4(input.normal.xyz,1);
 	//// 光源ベクトルの反射ベクトル
-	float3 lightDirNormal = normalize(light_dir);
+	float3 lightDirNormal = normalize( /*light_dir*/float3(1.0f, -1.0f, 1.0f));
 	float3 rLight = reflect(lightDirNormal, input.normal.rgb);
 
 	//// 視線ベクトル
@@ -159,25 +159,27 @@ PixelOutPut PS(Out input) : SV_TARGET
 	float4 specColor = float4((specular * specB).rgb, 0);
 	float4 ambientColor = float4((ambient * 0.005f).rgb, 0);
 	float4 ret = diffuseColor * texColor * toonColor + specColor + ambientColor;
-	//return float4(ret);
-
-
-	float shadowWeight = 1.0f;
-	float3 posFromLight = input.tpos.xyz / input.tpos.w;
-	float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
-	float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z - 0.005f);
-	if (posFromLight.z > shadowZ + 0.0005f)
-	{
-		shadowWeight = 0.7f;
-	}
-
-	float edge = abs(dot(eyeRay, input.normal.xyz)) < edgeWidth ? 1 - edgePower : 1;
-	float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
-	lim = pow(lim, limColor.a);
-
-	ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, ret.a);
 	
 	po.col = ret;
+	return po;
+
+
+	//float shadowWeight = 1.0f;
+	//float3 posFromLight = input.tpos.xyz / input.tpos.w;
+	//float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
+	//float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z - 0.005f);
+	//if (posFromLight.z > shadowZ + 0.0005f)
+	//{
+	//	shadowWeight = 0.7f;
+	//}
+
+	//float edge = abs(dot(eyeRay, input.normal.xyz)) < edgeWidth ? 1 - edgePower : 1;
+	//float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
+	//lim = pow(lim, limColor.a);
+
+	//ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, ret.a);
+	
+	//po.col = ret;
 
 	//po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
 	//po.normal.a = input.normal.a = 1;
