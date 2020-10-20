@@ -60,39 +60,38 @@ private:
 		float power;	// スペキュラ乗数
 	};
 
-	ModelRenderer& _renderer;
-	Dx12Wrapper& _dx12;
+	ModelRenderer& renderer_;
+	Dx12Wrapper& dx12_;
 
 
-	std::shared_ptr<ModelData> _modelData;
+	std::shared_ptr<ModelData> modelData_;
 
 	// 頂点バッファ
-	ComPtr<ID3D12Resource> _vertexBuffer = nullptr;
+	ComPtr<ID3D12Resource> vertexBuffer_ = nullptr;
 	// 頂点バッファビューの作成
-	D3D12_VERTEX_BUFFER_VIEW _vbView = {};
+	D3D12_VERTEX_BUFFER_VIEW vbView_ = {};
 
 
 	// 頂点インデックスバッファ
-	ComPtr<ID3D12Resource> _indexBuffer = nullptr;
+	ComPtr<ID3D12Resource> indexBuffer_ = nullptr;
 	// インデックスバッファビュー
-	D3D12_INDEX_BUFFER_VIEW _ibView = {};
+	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
 
 	// テクスチャリソース
-	std::vector<MultiTexture> _textures;
+	std::vector<MultiTexture> textures_;
 
 	// マテリアルバッファ
-	ComPtr<ID3D12Resource> _materialBuffer = nullptr;
-	ComPtr<ID3D12DescriptorHeap> _materialHeap = nullptr;
+	ComPtr<ID3D12Resource> materialBuffer_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> materialHeap_ = nullptr;
 
-	Transform _trans;
-	DirectX::XMMATRIX* _mappedTrans;
+	Transform trans_;
+	DirectX::XMMATRIX* mappedTrans_;
 
 	// 座標行列用定数バッファ
-	ComPtr<ID3D12Resource> _transCB = nullptr;
+	ComPtr<ID3D12Resource> transCB_ = nullptr;
 	// transCBを入れるヒープ
-	ComPtr<ID3D12DescriptorHeap> _worldHeap = nullptr;
-
+	ComPtr<ID3D12DescriptorHeap> worldHeap_ = nullptr;
 
 	struct BoneNode
 	{
@@ -102,16 +101,16 @@ private:
 		std::vector<BoneNode*> children; // 子供たちへのリンク
 	};
 
-	std::vector<DirectX::XMMATRIX> _boneMats;	// 各ボーンのtransform情報を格納
-	std::unordered_map<std::wstring, BoneNode> _boneMap;	// ボーン名からboneMatsのインデックスをとる
+	std::vector<DirectX::XMMATRIX> boneMats_;	// 各ボーンのtransform情報を格納
+	std::unordered_map<std::wstring, BoneNode> boneMap_;	// ボーン名からboneMatsのインデックスをとる
 
-	ComPtr<ID3D12Resource> _boneCB = nullptr;
-	DirectX::XMMATRIX* _mappedBones;
+	ComPtr<ID3D12Resource> boneCB_ = nullptr;
+	DirectX::XMMATRIX* mappedBones_;
 
 	//vmd
-	VMDMotion& _vmdMotion;
+	VMDMotion& vmdMotion_;
 
-	uint32_t _lastTickTime;
+	uint64_t lastTickTime_;
 
 	// 頂点bufferの作成
 	bool CreateVertexBuffer();

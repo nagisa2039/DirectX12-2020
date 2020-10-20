@@ -53,7 +53,7 @@ namespace
 }
 
 ModelActor::ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& renderer, VMDMotion& vmd)
-	:_dx12(dx12), _renderer(renderer), _vmdMotion(vmd)
+	:dx12_(dx12), renderer_(renderer), vmdMotion_(vmd)
 {
 	if (!Init(modelPath))
 	{
@@ -72,11 +72,11 @@ bool ModelActor::Init(std::string modelPath)
 	auto ext = GetExtension(modelPath);
 	if (ext == "pmx")
 	{
-		_modelData = make_shared<PMXData>(modelPath);
+		modelData_ = make_shared<PMXData>(modelPath);
 	}
 	else if (ext == "pmd")
 	{
-		_modelData = make_shared<PMDData>(modelPath);
+		modelData_ = make_shared<PMDData>(modelPath);
 	}
 	else
 	{
@@ -124,12 +124,12 @@ bool ModelActor::Init(std::string modelPath)
 	
 
 	// ボーン回転の初期化
-	fill(_boneMats.begin(), _boneMats.end(), XMMatrixIdentity());
+	fill(boneMats_.begin(), boneMats_.end(), XMMatrixIdentity());
 
 	// 諸々の初期化
-	_trans.pos = { 0,0,0 };
-	_trans.rotate = { 0,0,0 };
-	_lastTickTime = 0;
+	trans_.pos = { 0,0,0 };
+	trans_.rotate = { 0,0,0 };
+	lastTickTime_ = 0;
 
 	return true;
 }
@@ -137,38 +137,38 @@ bool ModelActor::Init(std::string modelPath)
 
 bool ModelActor::CreateBoneHierarchy()
 {
-	auto bones = _modelData->GetBoneData();
-	_boneMats.resize(bones.size());
+	auto bones = modelData_->GetBoneData();
+	boneMats_.resize(bones.size());
 
 	for (int idx = 0; idx < static_cast<int>(bones.size()); ++idx)
 	{
 		auto& b = bones[idx];
-		auto& boneNode = _boneMap[b.name];
+		auto& boneNode = boneMap_[b.name];
 		boneNode.boneIdx = idx;
 		boneNode.startPos = b.startPos;
 		boneNode.endPos = b.endPos;
 	}
 
-	for (auto& bone : _boneMap)
+	for (auto& bone : boneMap_)
 	{
 		auto parentIdx = bones[bone.second.boneIdx].parentIdx;
 		if (parentIdx >= bones.size() || parentIdx < 0)
 		{
 			continue;
 		}
-		_boneMap[bones[parentIdx].name].children.emplace_back(&bone.second);
+		boneMap_[bones[parentIdx].name].children.emplace_back(&bone.second);
 	}
 
 	// 全ての親を追加
-	if (_boneMap.find(L"全ての親") == _boneMap.end())
+	if (boneMap_.find(L"全ての親") == boneMap_.end())
 	{
 		BoneNode node = {};
-		_boneMats.emplace_back(XMMatrixIdentity());
-		node.boneIdx = static_cast<int>(_boneMats.size() - 1);
-		node.children.emplace_back(&_boneMap.find(L"センター")->second);
-		_boneMap[L"全ての親"] = node;
+		boneMats_.emplace_back(XMMatrixIdentity());
+		node.boneIdx = static_cast<int>(boneMats_.size() - 1);
+		node.children.emplace_back(&boneMap_.find(L"センター")->second);
+		boneMap_[L"全ての親"] = node;
 	}
-	fill(_boneMats.begin(), _boneMats.end(), XMMatrixIdentity());
+	fill(boneMats_.begin(), boneMats_.end(), XMMatrixIdentity());
 
 	return true;
 }
@@ -176,9 +176,9 @@ bool ModelActor::CreateBoneHierarchy()
 void ModelActor::MotionUpdate(const unsigned int motionFrame)
 {
 	// ボーン回転の初期化
-	fill(_boneMats.begin(), _boneMats.end(), XMMatrixIdentity());
+	fill(boneMats_.begin(), boneMats_.end(), XMMatrixIdentity());
 	
-	auto animation = _vmdMotion.GetAnimation();
+	auto animation = vmdMotion_.GetAnimation();
 
 	for (auto& anim : animation)
 	{
@@ -222,11 +222,11 @@ void ModelActor::MotionUpdate(const unsigned int motionFrame)
 
 	//ツリーをトラバース
 	XMMATRIX rootmat = XMMatrixIdentity();
-	RecursiveMatrixMultiply(_boneMap[L"全ての親"], rootmat);
+	RecursiveMatrixMultiply(boneMap_[L"全ての親"], rootmat);
 
 	// ボーン行列の更新
 	// _boneMatsの内容を_mappedBoneにコピーする
-	copy(_boneMats.begin(), _boneMats.end(), _mappedBones);
+	copy(boneMats_.begin(), boneMats_.end(), mappedBones_);
 
 	return;
 
@@ -236,52 +236,52 @@ void ModelActor::Update()
 {
 	// モーションの更新
 	auto fps = 30;
-	unsigned int motionFrame = static_cast<unsigned int>(static_cast<float>(GetTickCount() - _lastTickTime) / (1000.0f / fps));
-	if (motionFrame > _vmdMotion.GetLastFrame())
+	unsigned int motionFrame = static_cast<unsigned int>(static_cast<float>(GetTickCount64() - lastTickTime_) / (1000.0f / fps));
+	if (motionFrame > vmdMotion_.GetLastFrame())
 	{
-		_lastTickTime = GetTickCount64();
+		lastTickTime_ = GetTickCount64();
 	}
 	MotionUpdate(motionFrame);
 
 	// 座標更新
 	const float deg2rad = (XM_PI / 180.0f);
-	*_mappedTrans =
-		XMMatrixRotationRollPitchYaw(_trans.rotate.x * deg2rad, _trans.rotate.y * deg2rad, _trans.rotate.z * deg2rad)
-		*XMMatrixTranslation(_trans.pos.x, _trans.pos.y, _trans.pos.z);
+	*mappedTrans_ =
+		XMMatrixRotationRollPitchYaw(trans_.rotate.x * deg2rad, trans_.rotate.y * deg2rad, trans_.rotate.z * deg2rad)
+		*XMMatrixTranslation(trans_.pos.x, trans_.pos.y, trans_.pos.z);
 }
 
 void ModelActor::Draw(bool isShadow)
 {
-	auto handleW = _worldHeap->GetGPUDescriptorHandleForHeapStart();
+	auto handleW = worldHeap_->GetGPUDescriptorHandleForHeapStart();
 
 	// 座標行列用デスクリプタヒープのセット
-	auto& commandList = _dx12.GetCommand().CommandList();
-	auto& dev = _dx12.GetDevice();
+	auto& commandList = dx12_.GetCommand().CommandList();
+	auto& dev = dx12_.GetDevice();
 
-	commandList.SetDescriptorHeaps(1, _worldHeap.GetAddressOf());
+	commandList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
 	commandList.SetGraphicsRootDescriptorTable(2, handleW);
 	handleW.ptr += dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// マテリアル用デスクリプタヒープの設定
-	commandList.SetDescriptorHeaps(1, _materialHeap.GetAddressOf());
+	commandList.SetDescriptorHeaps(1, materialHeap_.GetAddressOf());
 
 	// インデックスバッファのセット
-	commandList.IASetIndexBuffer(&_ibView);
+	commandList.IASetIndexBuffer(&ibView_);
 	// 頂点バッファビューの設定
-	commandList.IASetVertexBuffers(0, 1, &_vbView);
+	commandList.IASetVertexBuffers(0, 1, &vbView_);
 
 	// 描画コマンドの生成
 	// 第一引数 インデックス数
 	int idxOffset = 0;
-	auto handle = _materialHeap->GetGPUDescriptorHandleForHeapStart();
+	auto handle = materialHeap_->GetGPUDescriptorHandleForHeapStart();
 
 	if (isShadow)
 	{
-		commandList.DrawIndexedInstanced(static_cast<UINT>(_modelData->GetIndexData().size()), 1, 0, 0, 0);
+		commandList.DrawIndexedInstanced(static_cast<UINT>(modelData_->GetIndexData().size()), 1, 0, 0, 0);
 	}
 	else
 	{
-		auto materials = _modelData->GetMaterialData();
+		auto materials = modelData_->GetMaterialData();
 		for (const auto& material : materials)
 		{
 			commandList.SetGraphicsRootDescriptorTable(0, handle);
@@ -295,35 +295,35 @@ void ModelActor::Draw(bool isShadow)
 
 void ModelActor::StartAnimation()
 {
-	_lastTickTime = GetTickCount64();
+	lastTickTime_ = GetTickCount64();
 }
 
 ModelActor::Transform & ModelActor::GetTransform()
 {
-	return _trans;
+	return trans_;
 }
 
 void ModelActor::SetTransform(const Transform & trans)
 {
-	_trans = trans;
+	trans_ = trans;
 }
 
 // 頂点バッファの作成
 bool ModelActor::CreateVertexBuffer()
 {
-	auto vertices = _modelData->GetVertexData();
+	auto vertices = modelData_->GetVertexData();
 
 	D3D12_HEAP_PROPERTIES heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 
 	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(vertices[0]) * vertices.size());
 
-	if (FAILED(_dx12.GetDevice().CreateCommittedResource(
+	if (FAILED(dx12_.GetDevice().CreateCommittedResource(
 		&heapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&resDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(_vertexBuffer.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(vertexBuffer_.ReleaseAndGetAddressOf()))))
 	{
 		return false;
 	}
@@ -332,40 +332,40 @@ bool ModelActor::CreateVertexBuffer()
 	// vertexBufferにverMapの内容を書き込む
 	// 頂点書き込み
 	ModelData::Vertex* verMap = nullptr;
-	if (FAILED(_vertexBuffer->Map(0, nullptr, (void**)&verMap)))
+	if (FAILED(vertexBuffer_->Map(0, nullptr, (void**)&verMap)))
 	{
 		return false;
 	}
 	copy(vertices.begin(), vertices.end(), verMap);
 	// 終了したのでアンマップ
-	_vertexBuffer->Unmap(0, nullptr);
+	vertexBuffer_->Unmap(0, nullptr);
 
 
 	// 頂点バッファビューの設定
 	// 頂点バッファのGPUにおけるアドレスを記録
-	_vbView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
+	vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress();
 
 	// データ全体のサイズ指定
-	_vbView.SizeInBytes = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
+	vbView_.SizeInBytes = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
 
 	// 1頂点当たりのバイト数指定	(全体のバイト数 / 頂点数)
-	_vbView.StrideInBytes = static_cast<UINT>(_vbView.SizeInBytes / vertices.size());
+	vbView_.StrideInBytes = static_cast<UINT>(vbView_.SizeInBytes / vertices.size());
 
 	return true;
 }
 
 bool ModelActor::CreateIndexBuffer()
 {
-	auto indices = _modelData->GetIndexData();
+	auto indices = modelData_->GetIndexData();
 
 	auto bufferSize = sizeof(indices[0]) * indices.size();
-	if (FAILED(_dx12.GetDevice().CreateCommittedResource(
+	if (FAILED(dx12_.GetDevice().CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(_indexBuffer.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(indexBuffer_.ReleaseAndGetAddressOf()))))
 	{
 		return false;
 	}
@@ -374,36 +374,36 @@ bool ModelActor::CreateIndexBuffer()
 	// indexBufferにverMapの内容を書き込む
 	// 頂点書き込み
 	uint16_t* indexMap = nullptr;
-	if (FAILED(_indexBuffer->Map(0, nullptr, (void**)&indexMap)))
+	if (FAILED(indexBuffer_->Map(0, nullptr, (void**)&indexMap)))
 	{
 		return false;
 	}
 	copy(indices.begin(), indices.end(), indexMap);
 	// 終了したのでアンマップ
-	_indexBuffer->Unmap(0, nullptr);
+	indexBuffer_->Unmap(0, nullptr);
 
 
 	// インデックスバッファビューの設定
 	//バッファのGPUアドレス
-	_ibView.BufferLocation = _indexBuffer->GetGPUVirtualAddress();
+	ibView_.BufferLocation = indexBuffer_->GetGPUVirtualAddress();
 
 	// フォーマット
-	_ibView.Format = DXGI_FORMAT_R16_UINT;
+	ibView_.Format = DXGI_FORMAT_R16_UINT;
 
 	// 総サイズ
-	_ibView.SizeInBytes = static_cast<UINT>(bufferSize);
+	ibView_.SizeInBytes = static_cast<UINT>(bufferSize);
 
 	return true;
 }
 
 bool ModelActor::CreateMaterialTextureBuffer()
 {
-	auto texPaths = _modelData->GetTexturePaths();
-	_textures.resize(texPaths.size());
+	auto texPaths = modelData_->GetTexturePaths();
+	textures_.resize(texPaths.size());
 
 	bool debug = false;
 
-	auto& texLoader = _dx12.GetTexLoader();
+	auto& texLoader = dx12_.GetTexLoader();
 	auto GetTexture = [&texLoader = texLoader](const std::wstring & path, TextureResorce & texRes)
 	{
 		if (path != L"")
@@ -414,18 +414,18 @@ bool ModelActor::CreateMaterialTextureBuffer()
 
 	for (unsigned int j = 0; j < texPaths.size(); j++)
 	{
-		GetTexture(texPaths[j].texPath,  _textures[j].texResource);
-		GetTexture(texPaths[j].sphPath,  _textures[j].sphResource);
-		GetTexture(texPaths[j].spaPath,  _textures[j].spaResource);
-		GetTexture(texPaths[j].subPath,	 _textures[j].subResource);
-		GetTexture(texPaths[j].toonPath, _textures[j].toonResource);
+		GetTexture(texPaths[j].texPath,  textures_[j].texResource);
+		GetTexture(texPaths[j].sphPath,  textures_[j].sphResource);
+		GetTexture(texPaths[j].spaPath,  textures_[j].spaResource);
+		GetTexture(texPaths[j].subPath,	 textures_[j].subResource);
+		GetTexture(texPaths[j].toonPath, textures_[j].toonResource);
 	}
 	return true;
 }
 
 bool ModelActor::CreateMaterialBuffer()
 {
-	auto materials = _modelData->GetMaterialData();
+	auto materials = modelData_->GetMaterialData();
 	// バッファの作成
 	D3D12_HEAP_PROPERTIES heapProp = {};
 	heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -437,20 +437,20 @@ bool ModelActor::CreateMaterialBuffer()
 		D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 
 	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(aliSize * materials.size());
-	if (FAILED(_dx12.GetDevice().CreateCommittedResource(
+	if (FAILED(dx12_.GetDevice().CreateCommittedResource(
 		&heapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&resDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(_materialBuffer.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(materialBuffer_.ReleaseAndGetAddressOf()))))
 	{
 		return false;
 	}
 
 	// マップでコピー
 	uint8_t* mappedMaterial = nullptr;
-	_materialBuffer->Map(0, nullptr, (void**)&mappedMaterial);
+	materialBuffer_->Map(0, nullptr, (void**)&mappedMaterial);
 	for (auto& material : materials)
 	{
 		((MaterialForBuffer*)mappedMaterial)->diffuse = material.diffuse;
@@ -461,14 +461,14 @@ bool ModelActor::CreateMaterialBuffer()
 		((MaterialForBuffer*)mappedMaterial)->power = material.power;
 		mappedMaterial += aliSize;
 	}
-	_materialBuffer->Unmap(0, nullptr);
+	materialBuffer_->Unmap(0, nullptr);
 
 	return true;
 }
 
 bool ModelActor::CreateMaterialCBV()
 {
-	auto materials = _modelData->GetMaterialData();
+	auto materials = modelData_->GetMaterialData();
 
 	// デスクリプタヒープの作成
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -477,10 +477,10 @@ bool ModelActor::CreateMaterialCBV()
 	heapDesc.NumDescriptors = static_cast<UINT>(materials.size() * 6);	// マテリアルとテクスチャとsphとspaとtoon
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
-	auto& dev = _dx12.GetDevice();
+	auto& dev = dx12_.GetDevice();
 	if (FAILED(dev.CreateDescriptorHeap(
 		&heapDesc,
-		IID_PPV_ARGS(_materialHeap.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(materialHeap_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -488,9 +488,9 @@ bool ModelActor::CreateMaterialCBV()
 
 	// 定数バッファビューの作成
 	D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = {};
-	viewDesc.BufferLocation = _materialBuffer->GetGPUVirtualAddress();
-	viewDesc.SizeInBytes = static_cast<UINT>(_materialBuffer->GetDesc().Width / materials.size());
-	auto handle = _materialHeap->GetCPUDescriptorHandleForHeapStart();
+	viewDesc.BufferLocation = materialBuffer_->GetGPUVirtualAddress();
+	viewDesc.SizeInBytes = static_cast<UINT>(materialBuffer_->GetDesc().Width / materials.size());
+	auto handle = materialHeap_->GetCPUDescriptorHandleForHeapStart();
 	auto heapStride = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	auto bufferStride
 		= AlignmentValue(sizeof(MaterialForBuffer), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
@@ -508,8 +508,8 @@ bool ModelActor::CreateMaterialCBV()
 
 void ModelActor::CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT& heapStride, unsigned int bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)
 {
-	auto& dummyTextures = _dx12.GetTexLoader().GetDummyTextures();
-	auto& dev = _dx12.GetDevice();
+	auto& dummyTextures = dx12_.GetTexLoader().GetDummyTextures();
+	auto& dev = dx12_.GetDevice();
 
 	auto CreateShaderResourceView = [&dev, &srvDesc, &handle, &dummyTextures, &heapStride](TextureResorce& texRes)
 	{
@@ -527,42 +527,42 @@ void ModelActor::CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& view
 		handle.ptr += heapStride;
 	};
 
-	for (unsigned int j = 0; j < _textures.size(); j++)
+	for (unsigned int j = 0; j < textures_.size(); j++)
 	{
 		dev.CreateConstantBufferView(&viewDesc, handle);
 		handle.ptr += heapStride;
 		viewDesc.BufferLocation += bufferStride;
 
 		// テクスチャ
-		CreateShaderResourceView(_textures[j].texResource);
+		CreateShaderResourceView(textures_[j].texResource);
 		// スフィアマップ(乗算)
-		CreateShaderResourceView(_textures[j].sphResource);
+		CreateShaderResourceView(textures_[j].sphResource);
 		// スフィアマップ(加算)
-		CreateShaderResourceView(_textures[j].spaResource);
+		CreateShaderResourceView(textures_[j].spaResource);
 		// 追加テクスチャ
-		CreateShaderResourceView(_textures[j].subResource);
+		CreateShaderResourceView(textures_[j].subResource);
 		// toon
-		CreateShaderResourceView(_textures[j].toonResource);
+		CreateShaderResourceView(textures_[j].toonResource);
 	}
 }
 
 void ModelActor::RecursiveMatrixMultiply(BoneNode & node, DirectX::XMMATRIX& inMat)
 {
-	_boneMats[node.boneIdx] *= inMat;
+	boneMats_[node.boneIdx] *= inMat;
 	for (auto& cnode : node.children)
 	{
-		RecursiveMatrixMultiply(*cnode, _boneMats[node.boneIdx]);
+		RecursiveMatrixMultiply(*cnode, boneMats_[node.boneIdx]);
 	}
 }
 
 void ModelActor::RotateBone(std::wstring boneName, DirectX::XMVECTOR location, DirectX::XMFLOAT4& q1, DirectX::XMFLOAT4& q2, float t)
 {
-	auto bone = _boneMap[boneName];
+	auto bone = boneMap_[boneName];
 	auto vec = XMLoadFloat3(&bone.startPos);
 	auto quaternion1 = XMLoadFloat4(&q1);
 	auto quaternion2 = XMLoadFloat4(&q2);
 
-	vec = XMVector3Transform(vec, _boneMats[bone.boneIdx]);
+	vec = XMVector3Transform(vec, boneMats_[bone.boneIdx]);
 
 	XMMATRIX mat =
 		XMMatrixTranslationFromVector(XMVectorScale(vec, -1))
@@ -571,35 +571,35 @@ void ModelActor::RotateBone(std::wstring boneName, DirectX::XMVECTOR location, D
 
 	mat *= XMMatrixTranslationFromVector(location);
 
-	_boneMats[bone.boneIdx] *= mat;
+	boneMats_[bone.boneIdx] *= mat;
 }
 
 bool ModelActor::CreateConstanteBuffers()
 {
 	// 座標の定数バッファの作成
-	auto& dev = _dx12.GetDevice();
-	CreateConstantBuffer(&dev, _transCB, sizeof(*_mappedTrans));
-	_transCB->Map(0, nullptr, (void**)&_mappedTrans);
+	auto& dev = dx12_.GetDevice();
+	CreateConstantBuffer(&dev, transCB_, sizeof(*mappedTrans_));
+	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
 
 	// 座標のヒープ作成
-	CreateDescriptorHeap(&dev, _worldHeap, 2);
+	CreateDescriptorHeap(&dev, worldHeap_, 2);
 
 	// 定数バッファビューの作成
 	D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = {};
-	viewDesc.BufferLocation = _transCB->GetGPUVirtualAddress();
-	viewDesc.SizeInBytes = static_cast<UINT>(_transCB->GetDesc().Width);
-	auto handle = _worldHeap->GetCPUDescriptorHandleForHeapStart();
+	viewDesc.BufferLocation = transCB_->GetGPUVirtualAddress();
+	viewDesc.SizeInBytes = static_cast<UINT>(transCB_->GetDesc().Width);
+	auto handle = worldHeap_->GetCPUDescriptorHandleForHeapStart();
 	dev.CreateConstantBufferView(&viewDesc, handle);
 	handle.ptr += dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// ボーンの定数バッファの作成
-	CreateConstantBuffer(&dev, _boneCB, static_cast<UINT>(sizeof(_boneMats[0]) * _boneMats.size()));
-	_boneCB->Map(0, nullptr, (void**)&_mappedBones);
+	CreateConstantBuffer(&dev, boneCB_, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
+	boneCB_->Map(0, nullptr, (void**)&mappedBones_);
 
 	// 定数バッファビューの作成
 	viewDesc = {};
-	viewDesc.BufferLocation = _boneCB->GetGPUVirtualAddress();
-	viewDesc.SizeInBytes = static_cast<UINT>(_boneCB->GetDesc().Width);
+	viewDesc.BufferLocation = boneCB_->GetGPUVirtualAddress();
+	viewDesc.SizeInBytes = static_cast<UINT>(boneCB_->GetDesc().Width);
 	dev.CreateConstantBufferView(&viewDesc, handle);
 
 	return true;

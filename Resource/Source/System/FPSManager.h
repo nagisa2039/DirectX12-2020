@@ -31,19 +31,19 @@ private:
 	FPSManager(const FPSManager&) = delete;
 	FPSManager& operator=(const FPSManager&) = delete;
 
-	const int _fixedFPS;
+	const int fixedFPS_;
 
 	/// <summary>
 	/// 開始ミリ秒
 	/// </summary>
-	unsigned int _startTime;
+	unsigned int startTime_;
 
 	/// <summary>
 	/// 前フレームの開始ミリ秒
 	/// </summary>
-	unsigned int _prevFrameStartTime;
+	unsigned int prevFrameStartTime_;
 
-	float _deltaTime;
+	float deltaTime_;
 
 };
 

@@ -5,19 +5,14 @@
 #include "Command.h"
 #include "Application.h"
 #include "Utility/dx12Tool.h"
+#include "Utility/Constant.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace std;
 
-namespace
-{
-	constexpr uint32_t shadow_resolution = 2048;
-}
-
-
 TexLoader::TexLoader(ID3D12Device& dev, Command& cmd, IDXGISwapChain4& swapChain)
-	: _dev(dev), _cmd(cmd)
+	: dev_(dev), cmd_(cmd)
 {
 	Init();
 	CreateSwapChainBuffer(swapChain);
@@ -31,19 +26,19 @@ TexLoader::~TexLoader()
 bool TexLoader::Init()
 {
 	// 白テクスチャの作成
-	if (!CreateScreenBuffer(_dummyTextures.whiteTex, 4, 4 ,255))
+	if (!CreateScreenBuffer(dummyTextures_.whiteTex, 4, 4 ,255))
 	{
 		assert(false);
 		return false;
 	}
 	// 黒テクスチャの作成
-	if (!CreateScreenBuffer(_dummyTextures.blackTex, 4, 4, 255))
+	if (!CreateScreenBuffer(dummyTextures_.blackTex, 4, 4, 255))
 	{
 		assert(false);
 		return false;
 	}
 	// グラデーションテクスチャの作成
-	if (!CreateGradTexture(_dummyTextures.gradTex))
+	if (!CreateGradTexture(dummyTextures_.gradTex))
 	{
 		assert(false);
 		return false;
@@ -67,31 +62,31 @@ bool TexLoader::Init()
 
 const ComPtr<ID3D12DescriptorHeap>& TexLoader::GetTextureHeap() const
 {
-	return _texHeap;
+	return texHeap_;
 }
 
 const DummyTextures & TexLoader::GetDummyTextures()const
 {
-	return _dummyTextures;
+	return dummyTextures_;
 }
 
 TextureResorce& TexLoader::GetTextureResouse(const int handle)
 {
-	if (handle < 0 || handle >= _texResources.size())
+	if (handle < 0 || handle >= texResources_.size())
 	{
 		assert(false);
 	}
 
-	return _texResources[handle];
+	return texResources_[handle];
 }
 
 bool TexLoader::GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes)
 {
 	// リソーステールにあったらそれを返す
-	auto it = _resouseHandleTable.find(texPath);
-	if (it != _resouseHandleTable.end())
+	int handle = GetGraphHandle(texPath);
+	if (handle != FAILED)
 	{
-		texRes = _texResources[(*it).second];
+		texRes = GetTextureResouse(handle);
 		return true;
 	}
 
@@ -100,6 +95,15 @@ bool TexLoader::GetTextureResouse(const std::wstring& texPath, TextureResorce& t
 		return false;
 	}
 	return true;
+}
+
+int TexLoader::GetGraphHandle(const std::wstring& texPath)const
+{
+	if (resouseHandleTable_.contains(texPath))
+	{
+		return resouseHandleTable_.at(texPath);
+	}
+	return FAILED;
 }
 
 bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const int color)
@@ -114,12 +118,12 @@ bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const U
 
 	// ランダムカラー画像の作成
 	const UINT pixelSize = 4;
-	vector<uint8_t> col(width * height * pixelSize);
+	vector<uint8_t> col(static_cast<size_t>(width) * height * pixelSize);
 	fill(col.begin(), col.end(), color);
 	resource.state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
 	D3D12_CLEAR_VALUE clearValue = { DXGI_FORMAT_R8G8B8A8_UNORM , { 0.0f, 0.0f, 0.0f, 1.0f } };
-	H_ASSERT(_dev.CreateCommittedResource(
+	H_ASSERT(dev_.CreateCommittedResource(
 		&heapProp,
 		D3D12_HEAP_FLAG_NONE,//特に指定なし
 		&resDesc,
@@ -154,11 +158,11 @@ bool TexLoader::CreateGradTexture(Resource& resource)
 		uint8_t r, g, b, a;
 		Color(uint8_t inr, uint8_t ing, uint8_t inb, uint8_t ina) :
 			r(inr), g(ing), b(inb), a(ina) {};
-		Color() {};
+		Color():r(0), g(0), b(0), a(0) {};
 	};
 
 	unsigned int redWidthUint = static_cast<unsigned int>(resDesc.Width);
-	vector<Color> col(redWidthUint * 256);
+	vector<Color> col(Size_t(redWidthUint) * 256);
 	auto it = col.begin();
 	for (int j = 255; j >= 0; j--)
 	{
@@ -167,7 +171,7 @@ bool TexLoader::CreateGradTexture(Resource& resource)
 		it += redWidthUint;
 	}
 
-	H_ASSERT(_dev.CreateCommittedResource(
+	H_ASSERT(dev_.CreateCommittedResource(
 		&heapProp,
 		D3D12_HEAP_FLAG_NONE,//特に指定なし
 		&resDesc,
@@ -188,17 +192,17 @@ bool TexLoader::CreateGradTexture(Resource& resource)
 
 bool TexLoader::CretateLoadLambdaTable()
 {
-	_loadLambdaTable[L"bmp"] = _loadLambdaTable[L"sph"] = _loadLambdaTable[L"spa"]
-		= _loadLambdaTable[L"png"] = _loadLambdaTable[L"jpg"] = _loadLambdaTable[L"jpeg"] =
+	loadTable_[L"bmp"] = loadTable_[L"sph"] = loadTable_[L"spa"]
+		= loadTable_[L"png"] = loadTable_[L"jpg"] = loadTable_[L"jpeg"] =
 		[](const wstring& path, TexMetadata* meta, ScratchImage&img)->HRESULT
 	{
 		return LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_NONE, meta, img);
 	};
-	_loadLambdaTable[L"tga"] = [](const wstring& path, TexMetadata* meta, ScratchImage& img) -> HRESULT
+	loadTable_[L"tga"] = [](const wstring& path, TexMetadata* meta, ScratchImage& img) -> HRESULT
 	{
 		return LoadFromTGAFile(path.c_str(), meta, img);
 	};
-	_loadLambdaTable[L"dds"] = [](const wstring& path, TexMetadata* meta, ScratchImage& img) -> HRESULT
+	loadTable_[L"dds"] = [](const wstring& path, TexMetadata* meta, ScratchImage& img) -> HRESULT
 	{
 		return LoadFromDDSFile(path.c_str(), DDS_FLAGS::DDS_FLAGS_NONE, meta, img);
 	};
@@ -242,7 +246,7 @@ bool TexLoader::CreateTextureFromImageData(const ScratchImage& scrachImage, Reso
 	resource.state = isDiscrete ?
 		D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-	H_ASSERT(_dev.CreateCommittedResource(
+	H_ASSERT(dev_.CreateCommittedResource(
 		&heapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&resDesc,
@@ -262,7 +266,7 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 
 	int idx = static_cast<int>(texPath.find_last_of(L'.'));
 	auto ext = texPath.substr(static_cast<size_t>(idx) + 1, texPath.length() - idx - 1);
-	if (FAILED(_loadLambdaTable[ext](texPath, &metaData, scratchImg)))
+	if (FAILED(loadTable_[ext](texPath, &metaData, scratchImg)))
 	{
 		//assert(false);
 		return false;
@@ -291,7 +295,7 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(imgRowPitch * img->height);
 
 	ComPtr<ID3D12Resource> uploadbuff = nullptr;
-	H_ASSERT(_dev.CreateCommittedResource(
+	H_ASSERT(dev_.CreateCommittedResource(
 		&heapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&resDesc,
@@ -331,27 +335,27 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 	dst.SubresourceIndex = 0;
 
 	// コピー命令
-	auto& cmdList = _cmd.CommandList();
+	auto& cmdList = cmd_.CommandList();
 	cmdList.CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
 
 	// バリアの設定
-	texRes.resource.Barrier(_cmd, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	texRes.resource.Barrier(cmd_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	
-	_cmd.Execute();
+	cmd_.Execute();
 
 	return true;
 }
 
-int TexLoader::LoadGraph(const std::string& path)
+int TexLoader::LoadGraph(const std::wstring& path)
 {
-	auto wstringPath = WStringFromString(path);
-	if (_resouseHandleTable.contains(wstringPath))
+	int handle = GetGraphHandle(path);
+	if (handle != FAILED)
 	{
-		return _resouseHandleTable[wstringPath];
+		return handle;
 	}
 
 	TextureResorce texRes;
-	if (!GetTextureResouse(wstringPath, texRes))
+	if (!GetTextureResouse(path, texRes))
 	{
 		return -1;
 	}
@@ -359,10 +363,10 @@ int TexLoader::LoadGraph(const std::string& path)
 	// ResourceをもとSRVをに作成
 	CreateSRV(texRes);
 
-	_texResources.emplace_back(texRes);
-	_resouseHandleTable[wstringPath] = _texResources.size() - 1;
+	texResources_.emplace_back(texRes);
+	resouseHandleTable_[path] = Int(texResources_.size() - 1);
 
-	return _resouseHandleTable[wstringPath];
+	return resouseHandleTable_[path];
 }
 
 void TexLoader::CreateSRV(TextureResorce& texRes)
@@ -373,26 +377,26 @@ void TexLoader::CreateSRV(TextureResorce& texRes)
 	srvDesc.Texture2D.MipLevels = 1;
 	srvDesc.Format = texRes.resource.buffer->GetDesc().Format;
 
-	auto incSize = _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	auto cpuHandle = _texHeap->GetCPUDescriptorHandleForHeapStart();
-	cpuHandle.ptr += _texResources.size() * incSize;
-	_dev.CreateShaderResourceView(texRes.resource.buffer.Get(), &srvDesc, cpuHandle);
+	auto incSize = dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	auto cpuHandle = texHeap_->GetCPUDescriptorHandleForHeapStart();
+	cpuHandle.ptr += texResources_.size() * incSize;
+	dev_.CreateShaderResourceView(texRes.resource.buffer.Get(), &srvDesc, cpuHandle);
 
 	texRes.cpuHandleForTex = cpuHandle;
-	texRes.gpuHandleForTex = _texHeap->GetGPUDescriptorHandleForHeapStart();
-	texRes.gpuHandleForTex.ptr += _texResources.size() * incSize;
+	texRes.gpuHandleForTex = texHeap_->GetGPUDescriptorHandleForHeapStart();
+	texRes.gpuHandleForTex.ptr += texResources_.size() * incSize;
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 	rtvDesc.Format = texRes.resource.buffer->GetDesc().Format;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-	incSize = _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	cpuHandle = _rtvHeap->GetCPUDescriptorHandleForHeapStart();
-	cpuHandle.ptr += _texResources.size() * incSize;
-	_dev.CreateRenderTargetView(texRes.resource.buffer.Get(), &rtvDesc, cpuHandle);
+	incSize = dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	cpuHandle = rtvHeap_->GetCPUDescriptorHandleForHeapStart();
+	cpuHandle.ptr += texResources_.size() * incSize;
+	dev_.CreateRenderTargetView(texRes.resource.buffer.Get(), &rtvDesc, cpuHandle);
 	texRes.cpuHandleForRtv = cpuHandle;
-	texRes.gpuHandleForRtv = _rtvHeap->GetGPUDescriptorHandleForHeapStart();
-	texRes.gpuHandleForRtv.ptr += _texResources.size() * incSize;
+	texRes.gpuHandleForRtv = rtvHeap_->GetGPUDescriptorHandleForHeapStart();
+	texRes.gpuHandleForRtv.ptr += texResources_.size() * incSize;
 }
 
 bool TexLoader::CreateSwapChainBuffer(IDXGISwapChain4& swapChain)
@@ -403,12 +407,12 @@ bool TexLoader::CreateSwapChainBuffer(IDXGISwapChain4& swapChain)
 	for (size_t i = 0; i < swDesc.BufferCount; i++)
 	{
 		TextureResorce texRes;
-		H_ASSERT(swapChain.GetBuffer(i, IID_PPV_ARGS(texRes.resource.buffer.ReleaseAndGetAddressOf())));
+		H_ASSERT(swapChain.GetBuffer(Uint(i), IID_PPV_ARGS(texRes.resource.buffer.ReleaseAndGetAddressOf())));
 		texRes.resource.state	= D3D12_RESOURCE_STATE_PRESENT;
 		texRes.imageInf.width	= swDesc.Width;
 		texRes.imageInf.height	= swDesc.Height;
 		CreateSRV(texRes);
-		_texResources.emplace_back(texRes);
+		texResources_.emplace_back(texRes);
 	}
 
 	return true;
@@ -416,58 +420,64 @@ bool TexLoader::CreateSwapChainBuffer(IDXGISwapChain4& swapChain)
 
 void TexLoader::ClsDrawScreen()
 {
-	assert(_renderTergetHandle >= 0 && _renderTergetHandle < _texResources.size());
+	assert(renderTergetHandle_ >= 0 && renderTergetHandle_ < texResources_.size());
 
-	auto& commandList = _cmd.CommandList();
+	auto& commandList = cmd_.CommandList();
 
 	float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	commandList.ClearRenderTargetView(_texResources[_renderTergetHandle].cpuHandleForRtv, clearColor, 0, nullptr);
+	commandList.ClearRenderTargetView(texResources_[renderTergetHandle_].cpuHandleForRtv, clearColor, 0, nullptr);
 
 	// 深度バッファを初期化
 	commandList.ClearDepthStencilView(
-		_depthDSVHeap->GetCPUDescriptorHandleForHeapStart(),
+		depthDSVHeap_->GetCPUDescriptorHandleForHeapStart(),
 		D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
 
 void TexLoader::SetDrawScreen(const int screenH)
 {
-	if (screenH != _renderTergetHandle)
+	if (screenH != renderTergetHandle_)
 	{
-		if (_renderTergetHandle >= 0)
+		if (renderTergetHandle_ >= 0)
 		{
 			// 今までのレンダーターゲットのステートをPIXEL_SHADER_RESOURCEにする
-			_texResources[_renderTergetHandle].resource.Barrier(_cmd, _renderTergetHandle >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
+			texResources_[renderTergetHandle_].resource.Barrier(cmd_, renderTergetHandle_ >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
 		}
 
-		_depthResouerce.Barrier(_cmd, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		D3D12_CPU_DESCRIPTOR_HANDLE* depthH = &_depthDSVHeap->GetCPUDescriptorHandleForHeapStart();
+		depthResouerce_.Barrier(cmd_, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		D3D12_CPU_DESCRIPTOR_HANDLE* depthH = &depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
 
 		// セットするレンダーターゲットのステートをRENDER_TARGEにする
-		_texResources[screenH].resource.Barrier(_cmd, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		_cmd.CommandList().OMSetRenderTargets(1, &_texResources[screenH].cpuHandleForRtv, false, depthH);
-		_renderTergetHandle = screenH;
+		texResources_[screenH].resource.Barrier(cmd_, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		cmd_.CommandList().OMSetRenderTargets(1, &texResources_[screenH].cpuHandleForRtv, false, depthH);
+		renderTergetHandle_ = screenH;
 	}
 }
 
 void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 {
 	// swapChainのダブルバッファ以外が指定されていたら例外
-	assert(_renderTergetHandle < 2);
+	assert(renderTergetHandle_ < 2);
 
 	// レンダーターゲットをプレゼント用にバリアを張る
-	auto& texRes = GetTextureResouse(_renderTergetHandle);
+	auto& texRes = GetTextureResouse(renderTergetHandle_);
 	assert(texRes.resource.state == D3D12_RESOURCE_STATE_RENDER_TARGET);
-	texRes.resource.Barrier(_cmd, D3D12_RESOURCE_STATE_PRESENT);
+	texRes.resource.Barrier(cmd_, D3D12_RESOURCE_STATE_PRESENT);
 
-	_cmd.Execute();
+	cmd_.Execute();
 
 	// 裏画面と表画面の切り替え
 	swapChain.Present(1, 0);
 
 }
 
-int TexLoader::MakeScreen(const UINT width, const UINT height)
+int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height)
 {
+	int handle = GetGraphHandle(resourceName);
+	if (handle != FAILED)
+	{
+		return handle;
+	}
+
 	TextureResorce texRes = {};
 	CreateScreenBuffer(texRes.resource, width, height);
 	texRes.imageInf.format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -476,25 +486,29 @@ int TexLoader::MakeScreen(const UINT width, const UINT height)
 
 	CreateSRV(texRes);
 
-	_texResources.emplace_back(texRes);
-	return _texResources.size() - 1;
+	texResources_.emplace_back(texRes);
+	handle = Int(texResources_.size() - 1);
+	
+	resouseHandleTable_[resourceName] = handle;
+
+	return handle;
 }
 
 int TexLoader::GetCurrentRenderTarget() const
 {
-	return _renderTergetHandle;
+	return renderTergetHandle_;
 }
 
 bool TexLoader::GetGraphSize(const int graphH, unsigned int& width, unsigned int& height)const
 {
-	if (graphH < 0 || graphH >= _texResources.size())
+	if (graphH < 0 || graphH >= texResources_.size())
 	{
 		assert(false);
 		return false;
 	}
 
-	width	= _texResources[graphH].imageInf.width;
-	height	= _texResources[graphH].imageInf.height;
+	width	= Uint(texResources_[graphH].imageInf.width);
+	height	= Uint(texResources_[graphH].imageInf.height);
 	return true;
 }
 
@@ -513,16 +527,16 @@ void TexLoader::CreateTextureHeap()
 	heapDesc.NumDescriptors = imageMax;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
-	H_ASSERT(_dev.CreateDescriptorHeap(
+	H_ASSERT(dev_.CreateDescriptorHeap(
 		&heapDesc,
-		IID_PPV_ARGS(_texHeap.ReleaseAndGetAddressOf())));
+		IID_PPV_ARGS(texHeap_.ReleaseAndGetAddressOf())));
 
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-	H_ASSERT(_dev.CreateDescriptorHeap(
+	H_ASSERT(dev_.CreateDescriptorHeap(
 		&heapDesc,
-		IID_PPV_ARGS(_rtvHeap.ReleaseAndGetAddressOf())));
+		IID_PPV_ARGS(rtvHeap_.ReleaseAndGetAddressOf())));
 }
 
 bool Resource::Barrier(Command& cmd, const D3D12_RESOURCE_STATES changeState)
@@ -551,31 +565,31 @@ bool TexLoader::CreateDepthBuffer()
 	depthClearValue.DepthStencil.Depth = 1.0f;
 	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;
 
-	_depthResouerce.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	depthResouerce_.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 	
-	if (FAILED(_dev.CreateCommittedResource(
+	if (FAILED(dev_.CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&depthResDesc,
-		_depthResouerce.state,
+		depthResouerce_.state,
 		&depthClearValue,
-		IID_PPV_ARGS(_depthResouerce.buffer.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(depthResouerce_.buffer.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
 	}
 
 	// シャドウマップ用
-	depthResDesc.Width = shadow_resolution;
-	depthResDesc.Height = shadow_resolution;
-	_lightDepthResource.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-	if (FAILED(_dev.CreateCommittedResource(
+	depthResDesc.Width = SHADOW_RESOLUTION;
+	depthResDesc.Height = SHADOW_RESOLUTION;
+	lightDepthResource_.state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	if (FAILED(dev_.CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&depthResDesc,
-		_lightDepthResource.state,
+		lightDepthResource_.state,
 		&depthClearValue,
-		IID_PPV_ARGS(_lightDepthResource.buffer.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(lightDepthResource_.buffer.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -597,9 +611,9 @@ bool TexLoader::CreateDSVAndSRV()
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 	dsvHeapDesc.NumDescriptors = 2;		// 0 は描画深度 1 はライト深度
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-	if (FAILED(_dev.CreateDescriptorHeap(
+	if (FAILED(dev_.CreateDescriptorHeap(
 		&dsvHeapDesc,
-		IID_PPV_ARGS(_depthDSVHeap.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(depthDSVHeap_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -610,18 +624,18 @@ bool TexLoader::CreateDSVAndSRV()
 	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	auto DSVhandle = _depthDSVHeap->GetCPUDescriptorHandleForHeapStart();
+	auto DSVhandle = depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
 
 	// 描画用
-	_dev.CreateDepthStencilView(
-		_depthResouerce.buffer.Get(),
+	dev_.CreateDepthStencilView(
+		depthResouerce_.buffer.Get(),
 		&dsvDesc,
 		DSVhandle);
-	DSVhandle.ptr += _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	DSVhandle.ptr += dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	// シャドウマップ用
-	_dev.CreateDepthStencilView(
-		_lightDepthResource.buffer.Get(),
+	dev_.CreateDepthStencilView(
+		lightDepthResource_.buffer.Get(),
 		&dsvDesc,
 		DSVhandle);
 
@@ -631,9 +645,9 @@ bool TexLoader::CreateDSVAndSRV()
 	srvHeapDesc.NumDescriptors = 2;		// 0 は描画深度 1 はライト深度
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
-	if (FAILED(_dev.CreateDescriptorHeap(
+	if (FAILED(dev_.CreateDescriptorHeap(
 		&srvHeapDesc,
-		IID_PPV_ARGS(_depthSRVHeap.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(depthSRVHeap_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -645,18 +659,18 @@ bool TexLoader::CreateDSVAndSRV()
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
-	auto SRVhandle = _depthSRVHeap->GetCPUDescriptorHandleForHeapStart();
+	auto SRVhandle = depthSRVHeap_->GetCPUDescriptorHandleForHeapStart();
 
 	// 描画用
-	_dev.CreateShaderResourceView(
-		_depthResouerce.buffer.Get(),
+	dev_.CreateShaderResourceView(
+		depthResouerce_.buffer.Get(),
 		&srvDesc,
 		SRVhandle);
-	SRVhandle.ptr += _dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	SRVhandle.ptr += dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// シャドウマップ用
-	_dev.CreateShaderResourceView(
-		_lightDepthResource.buffer.Get(),
+	dev_.CreateShaderResourceView(
+		lightDepthResource_.buffer.Get(),
 		&srvDesc,
 		SRVhandle);
 

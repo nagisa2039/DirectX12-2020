@@ -1,29 +1,30 @@
 #include "FPSManager.h"
 #include <windows.h>
+#include "Utility/Constant.h"
 
-FPSManager::FPSManager(const int fps): _fixedFPS(fps)
+FPSManager::FPSManager(const int fps): fixedFPS_(fps)
 {
-	_startTime = GetTickCount();
-	_prevFrameStartTime = 0;
-	_deltaTime = 0.0f;
+	startTime_ = Uint(GetTickCount64());
+	prevFrameStartTime_ = 0;
+	deltaTime_ = 0.0f;
 }
 
 void FPSManager::Wait()
 {
-	int wait = GetTickCount() - _prevFrameStartTime;
-	int targetTime = 1000 / _fixedFPS;
+	int wait = Int(GetTickCount64() - prevFrameStartTime_);
+	int targetTime = 1000 / fixedFPS_;
 	Sleep(max(targetTime - wait,0));
-	wait = GetTickCount() - _prevFrameStartTime;
-	_prevFrameStartTime += wait;
-	_deltaTime = wait / 1000.0f;
+	wait = Int(GetTickCount64() - prevFrameStartTime_);
+	prevFrameStartTime_ += wait;
+	deltaTime_ = wait / 1000.0f;
 }
 
 int FPSManager::FixedFPS()
 {
-	return _fixedFPS;
+	return fixedFPS_;
 }
 
 float FPSManager::GetFPS()
 {
-	return 1.0f / _deltaTime;
+	return 1.0f / deltaTime_;
 }

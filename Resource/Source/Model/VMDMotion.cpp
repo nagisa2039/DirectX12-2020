@@ -17,8 +17,8 @@ bool VMDMotion::LoadVMDMotion(std::string filePath)
 	fseek(fp, 50, SEEK_CUR);
 
 	// モーション数の読み込み
-	_keyFrameNum = 0;
-	fread(&_keyFrameNum, sizeof(_keyFrameNum), 1, fp);
+	keyFrameNum_ = 0;
+	fread(&keyFrameNum_, sizeof(keyFrameNum_), 1, fp);
 
 
 #pragma pack(1)
@@ -33,7 +33,7 @@ bool VMDMotion::LoadVMDMotion(std::string filePath)
 #pragma pack()
 
 	// キー数の読み込み
-	vector<t_keyframe> keyFrames(_keyFrameNum);
+	vector<t_keyframe> keyFrames(keyFrameNum_);
 	fread(keyFrames.data(), sizeof(keyFrames[0]) * keyFrames.size(), 1, fp);
 
 	fclose(fp);
@@ -41,7 +41,7 @@ bool VMDMotion::LoadVMDMotion(std::string filePath)
 	// ボーン名ごとにマップに追加
 	for (auto& key : keyFrames)
 	{
-		_animation[key.boneName].emplace_back(
+		animation_[key.boneName].emplace_back(
 			KeyFrame(
 				key.frameNo, 
 				key.location,
@@ -52,8 +52,8 @@ bool VMDMotion::LoadVMDMotion(std::string filePath)
 
 	// キーフレームの番号順に昇順で並び替え
 	// 後、最終フレームの取得
-	_lastFrame = 0;
-	for (auto& anim : _animation)
+	lastFrame_ = 0;
+	for (auto& anim : animation_)
 	{
 		auto& animVec = anim.second;
 		std::sort(animVec.begin(), animVec.end(), [](const KeyFrame& key1, const KeyFrame& key2)
@@ -64,7 +64,7 @@ bool VMDMotion::LoadVMDMotion(std::string filePath)
 		int vecSize = static_cast<int>(animVec.size());
 		if (vecSize > 0)
 		{
-			_lastFrame = max(_lastFrame, animVec[vecSize - 1].frameNo);
+			lastFrame_ = max(lastFrame_, animVec[vecSize - 1].frameNo);
 		}
 	}
 
@@ -83,15 +83,15 @@ VMDMotion::~VMDMotion()
 
 unsigned int VMDMotion::GetKeyFrameNum()
 {
-	return _keyFrameNum;
+	return keyFrameNum_;
 }
 
 unsigned int VMDMotion::GetLastFrame()
 {
-	return _lastFrame;
+	return lastFrame_;
 }
 
 std::map<std::string, std::vector<VMDMotion::KeyFrame>> VMDMotion::GetAnimation()
 {
-	return _animation;
+	return animation_;
 }

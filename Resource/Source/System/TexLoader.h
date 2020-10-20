@@ -5,7 +5,7 @@
 #include <array>
 #include "TextureStruct.h"
 
-class IDXGISwapChain4;
+struct IDXGISwapChain4;
 class Dx12Wrapper;
 
 class TexLoader
@@ -20,21 +20,23 @@ public:
 	TextureResorce& GetTextureResouse(const int handle);
 	bool GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes);
 
-	int LoadGraph(const std::string& path);
+	int GetGraphHandle(const std::wstring& texPath)const;
+
+	int LoadGraph(const std::wstring& path);
 
 	void ClsDrawScreen();
 	void SetDrawScreen(const int screenH);
 	void ScreenFlip(IDXGISwapChain4& swapChain);
 
-	int MakeScreen(const UINT width, const UINT height);
+	int MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height);
 
 	int GetCurrentRenderTarget()const;
 	bool GetGraphSize(const int graphH, unsigned int& width, unsigned int& height)const;
 	bool GetScreenSize(unsigned int& width, unsigned int& height)const;
 
 private:
-	ID3D12Device& _dev;
-	Command& _cmd;
+	ID3D12Device& dev_;
+	Command& cmd_;
 
 	TexLoader(const TexLoader&) = delete;
 	TexLoader& operator=(const TexLoader&) = delete;
@@ -43,27 +45,27 @@ private:
 
 	// 画像ロード用lambda格納マップ
 	using LoadLambda_t = std::function<HRESULT(const std::wstring&, DirectX::TexMetadata*, DirectX::ScratchImage&)>;
-	std::unordered_map<std::wstring, LoadLambda_t> _loadLambdaTable;
+	std::unordered_map<std::wstring, LoadLambda_t> loadTable_;
 
 	// テクスチャバッファ
-	std::unordered_map<std::wstring, int> _resouseHandleTable;
-	DummyTextures _dummyTextures;
+	std::unordered_map<std::wstring, int> resouseHandleTable_;
+	DummyTextures dummyTextures_;
 
-	std::vector<TextureResorce> _texResources;
-	ComPtr<ID3D12DescriptorHeap> _texHeap = nullptr;
-	ComPtr<ID3D12DescriptorHeap> _rtvHeap = nullptr;
+	std::vector<TextureResorce> texResources_;
+	ComPtr<ID3D12DescriptorHeap> texHeap_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> rtvHeap_ = nullptr;
 
-	int _renderTergetHandle;
+	int renderTergetHandle_;
 
 	// 描画用深度バッファ
-	Resource _depthResouerce;
+	Resource depthResouerce_;
 	// シャドウマップ用深度バッファ
-	Resource _lightDepthResource;
+	Resource lightDepthResource_;
 
-	ComPtr<ID3D12DescriptorHeap> _depthDSVHeap = nullptr;
-	ComPtr<ID3D12DescriptorHeap> _depthSRVHeap = nullptr;
-	ComPtr<ID3D12DescriptorHeap> _lightDSVHeap = nullptr;
-	ComPtr<ID3D12DescriptorHeap> _lightSRVHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> depthDSVHeap_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> depthSRVHeap_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> lightDSVHeap_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> lightSRVHeap_ = nullptr;
 
 	// スクリーン用バッファの生成　作成先バッファ	ｽｸﾘｰﾝの幅と高さ		初期化色
 	bool CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const int color = 0);

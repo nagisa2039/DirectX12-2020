@@ -16,7 +16,7 @@ public:
 
 private:
 	std::unique_ptr<ModelRenderer> modelRenderer_;
-	int _tnktH;
-	int _dmdnH;
-
+	int tnktH_;
+	int dmdnH_;
+	int d3dH_;
 };

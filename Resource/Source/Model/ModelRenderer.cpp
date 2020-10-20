@@ -10,11 +10,12 @@
 #include "System/Application.h"
 #include "System/TexLoader.h"
 #include "System/SpriteDrawer.h"
+#include "Utility/Constant.h"
 
 using namespace std;
 using namespace DirectX;
 
-ModelRenderer::ModelRenderer(Dx12Wrapper& dx12): _dx12(dx12)
+ModelRenderer::ModelRenderer(Dx12Wrapper& dx12): dx12_(dx12)
 {
 	Init();
 }
@@ -36,9 +37,9 @@ bool ModelRenderer::CreateModelRS()
 
 	D3D12_ROOT_SIGNATURE_DESC rsd = {};
 	rsd.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	rsd.NumParameters = rps.size();
+	rsd.NumParameters = Uint(rps.size());
 	rsd.pParameters = rps.data();
-	rsd.NumStaticSamplers = samplers.size();
+	rsd.NumStaticSamplers = Uint(samplers.size());
 	rsd.pStaticSamplers = samplers.data();
 
 	ComPtr<ID3D10Blob> sigBlob = nullptr;
@@ -56,11 +57,11 @@ bool ModelRenderer::CreateModelRS()
 
 	// からのルートシグネチャの生成
 	// VRAM状にある情報をどう読むか
-	if (FAILED(_dx12.GetDevice().CreateRootSignature(
+	if (FAILED(dx12_.GetDevice().CreateRootSignature(
 		0,
 		sigBlob->GetBufferPointer(),
 		sigBlob->GetBufferSize(),
-		IID_PPV_ARGS(_modelRS.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(modelRS_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -215,7 +216,7 @@ bool ModelRenderer::CreateModelPL()
 
 	//ルートシグネチャと頂点レイアウトの設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpsd = {};
-	gpsd.pRootSignature = _modelRS.Get();
+	gpsd.pRootSignature = modelRS_.Get();
 	gpsd.InputLayout.pInputElementDescs = inputLayoutDescs;
 	gpsd.InputLayout.NumElements = _countof(inputLayoutDescs);
 
@@ -285,7 +286,7 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	gpsd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-	if (FAILED(_dx12.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(_modelPL.ReleaseAndGetAddressOf()))))
+	if (FAILED(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(modelPL_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -343,25 +344,25 @@ bool ModelRenderer::Init()
 		assert(false);
 		return false;
 	}
-	_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/安柏/安柏.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
-	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式夕立改二/ぽんぷ長式夕立改二.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
+	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/安柏/安柏.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
+	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
 	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/斑鳩/斑鳩.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/葛城/葛城.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	
-	for (int j = 0; j < _modelActors.size(); j++)
+	for (int j = 0; j < modelActors_.size(); j++)
 	{
 		int moveZ = (j + 1) / 2;
 		int moveX = moveZ * ((j % 2) * 2 - 1);
 
-		auto trans = _modelActors[j]->GetTransform();
+		auto trans = modelActors_[j]->GetTransform();
 		trans.pos = XMFLOAT3(8.0f * moveX, 0.0f, 5.0f * moveZ);
-		_modelActors[j]->SetTransform(trans);
-		_modelActors[j]->StartAnimation();
+		modelActors_[j]->SetTransform(trans);
+		modelActors_[j]->StartAnimation();
 	}
 
 	auto wsize = Application::Instance().GetWindowSize();
-	_screenH = _dx12.GetTexLoader().MakeScreen(wsize.w, wsize.h);
+	screenH_ = dx12_.GetTexLoader().MakeScreen(D3D_SPACE_SCREEN, wsize.w, wsize.h);
 
 	return true;
 }
@@ -369,7 +370,7 @@ bool ModelRenderer::Init()
 void ModelRenderer::Update()
 {
 	BYTE keycodeTbl[256];
-	GetKeyboardState(keycodeTbl);
+	auto result = GetKeyboardState(keycodeTbl);
 
 	auto move = [&](float& target, const unsigned int keycode, const float speed)
 	{
@@ -380,7 +381,7 @@ void ModelRenderer::Update()
 		}
 	};
 
-	for (auto& actor : _modelActors)
+	for (auto& actor : modelActors_)
 	{
 		actor->Update();
 	}
@@ -388,25 +389,25 @@ void ModelRenderer::Update()
 
 void ModelRenderer::Draw()
 {
-	_dx12.GetSpriteDrawer().DrawGraph(0,0,_screenH);
+	dx12_.GetSpriteDrawer().DrawGraph(0,0,screenH_);
 }
 
 void ModelRenderer::DrawToMyScreen()
 {
-	auto& texLoader = _dx12.GetTexLoader();
-	texLoader.SetDrawScreen(_screenH);
+	auto& texLoader = dx12_.GetTexLoader();
+	texLoader.SetDrawScreen(screenH_);
 	texLoader.ClsDrawScreen();
 
-	_dx12.SetDefaultViewAndScissor();
+	dx12_.SetDefaultViewAndScissor();
 
-	auto& commandList = _dx12.GetCommand().CommandList();
-	commandList.SetPipelineState(_modelPL.Get());
-	commandList.SetGraphicsRootSignature(_modelRS.Get());
+	auto& commandList = dx12_.GetCommand().CommandList();
+	commandList.SetPipelineState(modelPL_.Get());
+	commandList.SetGraphicsRootSignature(modelRS_.Get());
 	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	_dx12.SetCameraDescriptorHeap(1);
+	dx12_.SetCameraDescriptorHeap(1);
 
-	for (auto& actor : _modelActors)
+	for (auto& actor : modelActors_)
 	{
 		actor->Draw();
 	}
@@ -414,24 +415,24 @@ void ModelRenderer::DrawToMyScreen()
 
 void ModelRenderer::SetModelRS()
 {
-	_dx12.GetCommand().CommandList().SetGraphicsRootSignature(_modelRS.Get());
+	dx12_.GetCommand().CommandList().SetGraphicsRootSignature(modelRS_.Get());
 }
 
 void ModelRenderer::SetModelPL()
 {
-	_dx12.GetCommand().CommandList().SetPipelineState(_modelPL.Get());
+	dx12_.GetCommand().CommandList().SetPipelineState(modelPL_.Get());
 }
 
 
 void ModelRenderer::DrawFramShadow()
 {
 	// パイプラインステートの設定
-	_dx12.GetCommand().CommandList().SetPipelineState(_shadowPL.Get());
+	dx12_.GetCommand().CommandList().SetPipelineState(shadowPL_.Get());
 
 	// トポロジの設定
-	_dx12.GetCommand().CommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	dx12_.GetCommand().CommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	for (auto& actor : _modelActors)
+	for (auto& actor : modelActors_)
 	{
 		actor->Draw(true);
 	}
@@ -439,9 +440,9 @@ void ModelRenderer::DrawFramShadow()
 
 VMDMotion & ModelRenderer::GetVMDMotion(std::string motionPath)
 {
-	if (_vmdMotions.find(motionPath) == _vmdMotions.end())
+	if (vmdMotions_.find(motionPath) == vmdMotions_.end())
 	{
-		_vmdMotions.emplace(motionPath, make_shared<VMDMotion>(motionPath));
+		vmdMotions_.emplace(motionPath, make_shared<VMDMotion>(motionPath));
 	}
-	return *_vmdMotions[motionPath];
+	return *vmdMotions_[motionPath];
 }

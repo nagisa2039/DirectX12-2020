@@ -38,18 +38,18 @@ public:
 	VMDMotion& GetVMDMotion(std::string motionPath);
 
 private:
-	Dx12Wrapper& _dx12;
+	Dx12Wrapper& dx12_;
 
-	ComPtr<ID3D12RootSignature> _modelRS = nullptr;
-	ComPtr<ID3D12PipelineState> _modelPL = nullptr;
+	ComPtr<ID3D12RootSignature> modelRS_ = nullptr;
+	ComPtr<ID3D12PipelineState> modelPL_ = nullptr;
 
 	// 影用パイプラインステート
-	ComPtr<ID3D12PipelineState> _shadowPL = nullptr;
+	ComPtr<ID3D12PipelineState> shadowPL_ = nullptr;
 
-	std::vector<std::shared_ptr<ModelActor>> _modelActors;
-	std::map<std::string, std::shared_ptr<VMDMotion>> _vmdMotions;
+	std::vector<std::shared_ptr<ModelActor>> modelActors_;
+	std::map<std::string, std::shared_ptr<VMDMotion>> vmdMotions_;
 
-	int _screenH;
+	int screenH_;
 
 	bool CreateModelRS();
 	void CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges);

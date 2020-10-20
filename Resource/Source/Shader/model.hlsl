@@ -94,11 +94,11 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 	int4 boneno  : BONENO, float4 weight : WEIGHT, uint instanceID : SV_InstanceID)
 {
 	Out o;
-
-	matrix mixMat = boneMats[boneno.x] * weight.x
-		+ boneMats[boneno.y] * weight.y
-		+ boneMats[boneno.z] * weight.z
-		+ boneMats[boneno.w] * weight.w;
+	
+	matrix mixMat =	boneMats[boneno.x] * weight.x
+				  + boneMats[boneno.y] * weight.y
+				  + boneMats[boneno.z] * weight.z
+				  + boneMats[boneno.w] * weight.w;
 
 	mixMat = mul(world, mixMat);
 
@@ -198,9 +198,9 @@ float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCO
 	int4 boneno : BONENO, float4 weight : WEIGHT) : SV_POSITION
 {
 	matrix mixMat = boneMats[boneno.x] * weight.x
-		+ boneMats[boneno.y] * weight.y
-		+ boneMats[boneno.z] * weight.z
-		+ boneMats[boneno.w] * weight.w;
+				  + boneMats[boneno.y] * weight.y
+				  + boneMats[boneno.z] * weight.z
+				  + boneMats[boneno.w] * weight.w;
 
 	pos = mul(world, mul(mixMat, pos));
 

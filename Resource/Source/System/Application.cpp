@@ -14,6 +14,8 @@ namespace
 	constexpr unsigned int window_height = 720;
 
 	constexpr unsigned int FPS = 60;
+	
+	constexpr UINT IMAGE_MAX = 512;
 }
 
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -29,10 +31,10 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 
-Application::Application():_imageMax(512)
+Application::Application()
 {
-	_hwnd = {};
-	_wndClass = {};
+	hwnd_ = {};
+	wndClass_ = {};
 }
 
 
@@ -43,12 +45,12 @@ Application::Size Application::GetWindowSize()
 
 UINT Application::GetImageMax()
 {
-	return _imageMax;
+	return IMAGE_MAX;
 }
 
 Dx12Wrapper& Application::GetDx12()
 {
-	return *_dx12;
+	return *dx12_;
 }
 
 bool Application::Initialize()
@@ -60,15 +62,15 @@ bool Application::Initialize()
 	}
 
 	// ハンドルの取得(作成)
-	_wndClass.hInstance = GetModuleHandle(0);
+	wndClass_.hInstance = GetModuleHandle(0);
 	//自分のサイズを渡す
-	_wndClass.cbSize = sizeof(WNDCLASSEX);
+	wndClass_.cbSize = sizeof(WNDCLASSEX);
 	// windowに関数ポインタを渡している ウィンドウの×ボタンが押された時などに通知される
-	_wndClass.lpfnWndProc = (WNDPROC)WindowProcedure;
+	wndClass_.lpfnWndProc = (WNDPROC)WindowProcedure;
 	// アプリケーションクラス名
-	_wndClass.lpszClassName = ("DirectX");
+	wndClass_.lpszClassName = ("DirectX");
 	//設定を渡す
-	RegisterClassEx(&_wndClass);
+	RegisterClassEx(&wndClass_);
 
 	RECT wrc = {};
 	wrc.left = 0;
@@ -79,7 +81,7 @@ bool Application::Initialize()
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 	// ウィンドウハンドルの取得
-	_hwnd = CreateWindow(_wndClass.lpszClassName,	// クラス名の設定
+	hwnd_ = CreateWindow(wndClass_.lpszClassName,	// クラス名の設定
 		"1816030_堀島渚",		// タイトルバーの文字
 		WS_OVERLAPPEDWINDOW,	// タイトルバーと境界線のあるウィンドウ
 		CW_USEDEFAULT,			// X座標をosに任せる
@@ -88,19 +90,19 @@ bool Application::Initialize()
 		wrc.bottom - wrc.top,	// ウィンドウ縦幅
 		nullptr,				// 親ウィンドウハンドル
 		nullptr,				// メニューウィンドウハンドル
-		_wndClass.hInstance,	// 呼び出しアプリケーションハンドル
+		wndClass_.hInstance,	// 呼び出しアプリケーションハンドル
 		nullptr					// 追加パラメーター
 	);
 
 	// ウィンドウハンドルが取得できなければfalseを返す
-	if (_hwnd == 0)return false;
+	if (hwnd_ == 0)return false;
 
-	_dx12 = make_unique<Dx12Wrapper>(_hwnd);
-	_dx12->Init();
+	dx12_ = make_unique<Dx12Wrapper>(hwnd_);
+	dx12_->Init();
 
-	_fpsManager.reset(new FPSManager(FPS));
+	fpsManager_.reset(new FPSManager(FPS));
 
-	_sceneController = make_unique<SceneController>();
+	sceneController_ = make_unique<SceneController>();
 
 	return true;
 }
@@ -108,7 +110,7 @@ bool Application::Initialize()
 void Application::Run()
 {
 	// ウィンドウの表示
-	ShowWindow(_hwnd, SW_SHOW);
+	ShowWindow(hwnd_, SW_SHOW);
 
 	MSG msg = {};
 	while (true)
@@ -126,9 +128,9 @@ void Application::Run()
 			break;
 		}
 
-		_sceneController->SceneUpdate();
+		sceneController_->SceneUpdate();
 
-		_fpsManager->Wait();
+		fpsManager_->Wait();
 	}
 }
 
@@ -138,5 +140,5 @@ void Application::Terminate()
 
 Application::~Application()
 {
-	UnregisterClass(_wndClass.lpszClassName, _wndClass.hInstance);
+	UnregisterClass(wndClass_.lpszClassName, wndClass_.hInstance);
 }

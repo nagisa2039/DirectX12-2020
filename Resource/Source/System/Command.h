@@ -18,14 +18,14 @@ public:
 	void Execute();
 
 private:
-	ID3D12Device& _dev;
+	ID3D12Device& dev_;
 
-	ComPtr<ID3D12CommandAllocator> _cmdAlc = nullptr;
-	ComPtr<ID3D12GraphicsCommandList> _cmdList = nullptr;
-	ComPtr<ID3D12CommandQueue> _cmdQue = nullptr;
+	ComPtr<ID3D12CommandAllocator> cmdAlc_ = nullptr;
+	ComPtr<ID3D12GraphicsCommandList> cmdList_ = nullptr;
+	ComPtr<ID3D12CommandQueue> cmdQue_ = nullptr;
 
-	ComPtr<ID3D12Fence> _fence = nullptr;
-	UINT64 _fenceValue = 0;
+	ComPtr<ID3D12Fence> fence_ = nullptr;
+	UINT64 fenceValue_ = 0;
 
 	void WaitFence();
 	bool CommandReset();

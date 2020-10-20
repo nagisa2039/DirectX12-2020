@@ -28,7 +28,7 @@ private:
 	SpriteDrawer(const SpriteDrawer&) = delete;
 	SpriteDrawer& operator=(const SpriteDrawer&) = delete;
 
-	Dx12Wrapper& _dx12;
+	Dx12Wrapper& dx12_;
 
 	struct VertexInf
 	{
@@ -45,24 +45,24 @@ private:
 	struct VertexResource
 	{
 		ComPtr<ID3D12Resource> resorce;
-		VertexInf* mappedVertexInf;
+		VertexInf* mappedVertexInf = nullptr;
 	};
 
-	ComPtr<ID3D12Resource> _vertBuff = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW _vbView = {};
+	ComPtr<ID3D12Resource> vertBuff_ = nullptr;
+	D3D12_VERTEX_BUFFER_VIEW vbView_ = {};
 
-	ComPtr<ID3D12RootSignature> _rootSignature = nullptr;
-	ComPtr<ID3D12PipelineState> _pipelineState = nullptr;
+	ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
+	ComPtr<ID3D12PipelineState> pipelineState_ = nullptr;
 
-	std::vector<VertexResource> _squareCBs;
-	ComPtr<ID3D12DescriptorHeap> _squareCBV = nullptr;
+	std::vector<VertexResource> squareCBs_;
+	ComPtr<ID3D12DescriptorHeap> squareCBV_ = nullptr;
 
-	std::vector<DrawImage> _drawImages;
+	std::vector<DrawImage> drawImages_;
 
-	ComPtr<ID3D12DescriptorHeap> _spriteFontHeap = nullptr;
-	std::shared_ptr<DirectX::GraphicsMemory> _gmemory = nullptr;//グラフィクスメモリオブジェクト
-	std::shared_ptr<DirectX::SpriteFont> _spriteFont = nullptr;//フォント表示用オブジェクト
-	std::shared_ptr<DirectX::SpriteBatch> _spriteBatch = nullptr;//スプライト表示用オブジェクト
+	ComPtr<ID3D12DescriptorHeap> spriteFontHeap_ = nullptr;
+	std::shared_ptr<DirectX::GraphicsMemory> gmemory_ = nullptr;//グラフィクスメモリオブジェクト
+	std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト
+	std::shared_ptr<DirectX::SpriteBatch> spriteBatch_ = nullptr;//スプライト表示用オブジェクト
 
 	void CreateVertexConstantBuffer();
 
@@ -74,8 +74,6 @@ private:
 	void SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const UINT centerX, const UINT centerY, const float exRate = 1.0f, const float angle = 0.0f);
 	void SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img);
 
-
 	void CreateSpriteHeap();
-
 };
 

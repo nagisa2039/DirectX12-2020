@@ -16,15 +16,15 @@
 using namespace DirectX;
 using namespace std;
 
-Dx12Wrapper::Dx12Wrapper(HWND hwnd): _hwnd(hwnd)
+Dx12Wrapper::Dx12Wrapper(HWND hwnd): hwnd_(hwnd)
 {
-	_camera.eye = { 0, 20, -30 };
-	_camera.target = { 0, 10, 0 };
-	_camera.up = { 0, 1, 0 };
-	_mappedCam = nullptr;
+	camera_.eye = { 0, 20, -30 };
+	camera_.target = { 0, 10, 0 };
+	camera_.up = { 0, 1, 0 };
+	mappedCam_ = nullptr;
 
-	_viewport = {};
-	_scissorRect = {};
+	viewport_ = {};
+	scissorRect_ = {};
 }
 
 
@@ -40,13 +40,13 @@ bool Dx12Wrapper::Init()
 	debuglayer->EnableDebugLayer();
 
 	// Deviceの作成
-	H_ASSERT(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(_dev.ReleaseAndGetAddressOf())));
+	H_ASSERT(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(dev_.ReleaseAndGetAddressOf())));
 
 	// DXGIFactoryの作成
-	H_ASSERT(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(_dxgiFactory.ReleaseAndGetAddressOf())));
+	H_ASSERT(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(dxgiFactory_.ReleaseAndGetAddressOf())));
 
 	// コマンド系を作成
-	_cmd = make_shared<Command>(*_dev.Get());
+	cmd_ = make_shared<Command>(*dev_.Get());
 
 	// スワップチェインの作成
 	CreateSwapChain();
@@ -54,35 +54,35 @@ bool Dx12Wrapper::Init()
 	// カメラの作成
 	CreateCameraConstantBufferAndView();
 
-	_texLoader = make_shared<TexLoader>(GetDevice(), GetCommand(), *_swapChain.Get());
+	texLoader_ = make_shared<TexLoader>(GetDevice(), GetCommand(), *swapChain_.Get());
 
-	_spriteDrawer = make_shared<SpriteDrawer>(*this);
+	spriteDrawer_ = make_shared<SpriteDrawer>(*this);
 
 	UpdateSceneMatrix();
 
-	_texLoader->SetDrawScreen(GetBackScreenHandle());
+	texLoader_->SetDrawScreen(GetBackScreenHandle());
 
 	return true;
 }
 
 ID3D12Device& Dx12Wrapper::GetDevice()
 {
-	return *_dev.Get();
+	return *dev_.Get();
 }
 
 Command& Dx12Wrapper::GetCommand()
 {
-	return *_cmd;
+	return *cmd_;
 }
 
 int Dx12Wrapper::GetBackScreenHandle()
 {
-	return _swapChain->GetCurrentBackBufferIndex();
+	return swapChain_->GetCurrentBackBufferIndex();
 }
 
 void Dx12Wrapper::ScreenFlip()
 {
-	_texLoader->ScreenFlip(*_swapChain.Get());
+	texLoader_->ScreenFlip(*swapChain_.Get());
 }
 
 void Dx12Wrapper::CreateSwapChain()
@@ -100,60 +100,60 @@ void Dx12Wrapper::CreateSwapChain()
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.BufferCount = 2;
 
-	H_ASSERT(_dxgiFactory->CreateSwapChainForHwnd(&_cmd->CommandQueue(), _hwnd, &swapChainDesc,
-		nullptr, nullptr, (IDXGISwapChain1**)_swapChain.ReleaseAndGetAddressOf()));
+	H_ASSERT(dxgiFactory_->CreateSwapChainForHwnd(&cmd_->CommandQueue(), hwnd_, &swapChainDesc,
+		nullptr, nullptr, (IDXGISwapChain1**)swapChain_.ReleaseAndGetAddressOf()));
 }
 
 TexLoader& Dx12Wrapper::GetTexLoader()
 {
-	return *_texLoader;
+	return *texLoader_;
 }
 
 SpriteDrawer& Dx12Wrapper::GetSpriteDrawer()
 {
-	return *_spriteDrawer;
+	return *spriteDrawer_;
 }
 
 void Dx12Wrapper::SetCameraDescriptorHeap(const UINT rootParamIdx)
 {
 	// カメラ用デスクリプタヒープの設定
-	auto& commandList = _cmd->CommandList();
-	commandList.SetDescriptorHeaps(1, _cameraHeap.GetAddressOf());
+	auto& commandList = cmd_->CommandList();
+	commandList.SetDescriptorHeaps(1, cameraHeap_.GetAddressOf());
 	commandList.SetGraphicsRootDescriptorTable(rootParamIdx,
-		_cameraHeap->GetGPUDescriptorHandleForHeapStart());
+		cameraHeap_->GetGPUDescriptorHandleForHeapStart());
 }
 
 void Dx12Wrapper::SetDefaultViewAndScissor()
 {
 	unsigned int screenW, screenH;
-	_texLoader->GetScreenSize(screenW, screenH);
+	texLoader_->GetScreenSize(screenW, screenH);
 
-	_viewport.TopLeftX = 0;
-	_viewport.TopLeftY = 0;
-	_viewport.Width = screenW;
-	_viewport.Height = screenH;
-	_viewport.MaxDepth = 1.0f;
-	_viewport.MinDepth = 0.0f;
+	viewport_.TopLeftX = 0;
+	viewport_.TopLeftY = 0;
+	viewport_.Width = Float(screenW);
+	viewport_.Height = Float(screenH);
+	viewport_.MaxDepth = 1.0f;
+	viewport_.MinDepth = 0.0f;
 
-	_scissorRect.left = 0;
-	_scissorRect.top = 0;
-	_scissorRect.right = screenW;
-	_scissorRect.bottom = screenH;
+	scissorRect_.left = 0;
+	scissorRect_.top = 0;
+	scissorRect_.right = screenW;
+	scissorRect_.bottom = screenH;
 
-	auto& commandList = _cmd->CommandList();
-	commandList.RSSetViewports(1, &_viewport);
-	commandList.RSSetScissorRects(1, &_scissorRect);
+	auto& commandList = cmd_->CommandList();
+	commandList.RSSetViewports(1, &viewport_);
+	commandList.RSSetScissorRects(1, &scissorRect_);
 }
 
 bool Dx12Wrapper::CreateCameraConstantBufferAndView()
 {
-	CreateConstantBuffer(_dev.Get(), _cameraCB, sizeof(*_mappedCam));
-	_cameraCB->Map(0, nullptr, (void**)&_mappedCam);
+	CreateConstantBuffer(dev_.Get(), cameraCB_, sizeof(*mappedCam_));
+	cameraCB_->Map(0, nullptr, (void**)&mappedCam_);
 
-	CreateDescriptorHeap(_dev.Get(), _cameraHeap);
+	CreateDescriptorHeap(dev_.Get(), cameraHeap_);
 
 	// 定数バッファビューの作成
-	CreateConstantBufferView(_dev.Get(), _cameraCB, _cameraHeap->GetCPUDescriptorHandleForHeapStart());
+	CreateConstantBufferView(dev_.Get(), cameraCB_, cameraHeap_->GetCPUDescriptorHandleForHeapStart());
 
 	return true;
 }
@@ -162,19 +162,19 @@ void Dx12Wrapper::UpdateSceneMatrix()
 {
 	// カメラの更新
 	auto wsize = Application::Instance().GetWindowSize();
-	XMVECTOR eyePos = XMLoadFloat3(&_camera.eye);
-	XMVECTOR targetPos = XMLoadFloat3(&_camera.target);
-	XMVECTOR upVec = XMLoadFloat3(&_camera.up);
+	XMVECTOR eyePos = XMLoadFloat3(&camera_.eye);
+	XMVECTOR targetPos = XMLoadFloat3(&camera_.target);
+	XMVECTOR upVec = XMLoadFloat3(&camera_.up);
 	//XMVECTOR lightVec = XMLoadFloat3(&_mappedSetting->light_dir);
 
 	auto view = XMMatrixLookAtLH(eyePos, targetPos, upVec);
 	auto proj = XMMatrixPerspectiveFovLH(
-		_camera.fov,
+		camera_.fov,
 		static_cast<float>(wsize.w) / static_cast<float>(wsize.h),
 		0.05f, 1000.0f);
 
-	_mappedCam->view = view;
-	_mappedCam->proj = proj;
-	_mappedCam->eye = _camera.eye;
-	_mappedCam->invProj = XMMatrixInverse(nullptr, proj);
+	mappedCam_->view = view;
+	mappedCam_->proj = proj;
+	mappedCam_->eye = camera_.eye;
+	mappedCam_->invProj = XMMatrixInverse(nullptr, proj);
 }

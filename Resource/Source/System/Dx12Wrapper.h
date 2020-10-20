@@ -20,13 +20,6 @@ class SpriteDrawer;
 class Dx12Wrapper
 {
 public:
-	struct Camera
-	{
-		DirectX::XMFLOAT3 eye;
-		DirectX::XMFLOAT3 target;
-		DirectX::XMFLOAT3 up;
-		float fov = DirectX::XM_PIDIV4;
-	};
 
 	Dx12Wrapper(HWND hwnd);
 	~Dx12Wrapper();
@@ -47,20 +40,20 @@ public:
 	void SetDefaultViewAndScissor();
 
 private:
-	HWND _hwnd;
+	HWND hwnd_;
 
-	ComPtr<ID3D12Device> _dev = nullptr;
-	ComPtr<IDXGIFactory6> _dxgiFactory = nullptr;
-	ComPtr<IDXGISwapChain4> _swapChain = nullptr;
+	ComPtr<ID3D12Device> dev_ = nullptr;
+	ComPtr<IDXGIFactory6> dxgiFactory_ = nullptr;
+	ComPtr<IDXGISwapChain4> swapChain_ = nullptr;
 
-	std::shared_ptr<TexLoader> _texLoader;
-	std::shared_ptr<SpriteDrawer> _spriteDrawer;
-	std::shared_ptr<Command> _cmd;
+	std::shared_ptr<TexLoader> texLoader_;
+	std::shared_ptr<SpriteDrawer> spriteDrawer_;
+	std::shared_ptr<Command> cmd_;
 
 	// カメラ行列用定数バッファ
-	ComPtr<ID3D12Resource> _cameraCB = nullptr;
+	ComPtr<ID3D12Resource> cameraCB_ = nullptr;
 	// transCBを入れるヒープ
-	ComPtr<ID3D12DescriptorHeap> _cameraHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> cameraHeap_ = nullptr;
 	
 	// GPUに渡す行列をまとめた構造体
 	struct Scene
@@ -73,18 +66,26 @@ private:
 		DirectX::XMMATRIX shadow;
 		DirectX::XMFLOAT3 eye;	// 視点
 	};
+
+	struct Camera
+	{
+		DirectX::XMFLOAT3 eye;
+		DirectX::XMFLOAT3 target;
+		DirectX::XMFLOAT3 up;
+		float fov = DirectX::XM_PIDIV4;
+	};
+
 	// 定数バッファのアドレスを格納	
 	// _cameraCBの内容を変更したいときはこいつを通じて変更してね
-	Scene* _mappedCam;
+	Scene* mappedCam_;
 
 	// 視点(カメラの位置)
 	// 注視点(見る対象の位置)
 	// 上ベクトル(上)
-	Camera _camera;
+	Camera camera_;
 
-	D3D12_VIEWPORT _viewport;
-	D3D12_RECT _scissorRect;
-
+	D3D12_VIEWPORT viewport_;
+	D3D12_RECT scissorRect_;
 
 	// カメラのバッファとビューを作成
 	bool CreateCameraConstantBufferAndView();

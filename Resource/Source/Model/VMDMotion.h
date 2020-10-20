@@ -33,9 +33,9 @@ public:
 	std::map<std::string, std::vector<KeyFrame>> GetAnimation();
 
 private:
-	unsigned int _keyFrameNum;
-	unsigned int _lastFrame;	// モーションの最終フレーム数
-	std::map<std::string, std::vector<KeyFrame>> _animation;
+	unsigned int keyFrameNum_;
+	unsigned int lastFrame_;	// モーションの最終フレーム数
+	std::map<std::string, std::vector<KeyFrame>> animation_;
 
 	bool LoadVMDMotion(std::string filePath);
 

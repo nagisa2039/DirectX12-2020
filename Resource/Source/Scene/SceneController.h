@@ -30,6 +30,6 @@ public:
 	Scene& GetCurrentScene();
 
 private:
-	std::deque<std::shared_ptr<Scene>> _scene;
+	std::deque<std::shared_ptr<Scene>> scene_;
 };
 

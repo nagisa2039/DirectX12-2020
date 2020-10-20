@@ -3,7 +3,7 @@
 #include <string>
 #include <windows.h>
 #include <cassert>
-
+#include "Utility/Constant.h"
 
 namespace
 {
@@ -31,7 +31,7 @@ namespace
 	std::string GetExtension(const std::string& path)
 	{
 		int idx = static_cast<int>(path.find_last_of('.'));
-		return path.substr(idx + 1, path.length() - idx - 1);
+		return path.substr(Size_t(idx) + 1, path.length() - idx - 1);
 	}
 
 	// 1ƒoƒCƒgstring‚ðwstring‚É•ÏŠ·‚·‚é
@@ -69,7 +69,7 @@ namespace
 		int pathIndex1 = static_cast<int>(modelPath.rfind('/'));
 		int pathIndex2 = static_cast<int>(modelPath.rfind('\\'));
 		auto pathIndex = max(pathIndex1, pathIndex2);
-		auto folderPath = modelPath.substr(0, pathIndex + 1);
+		auto folderPath = modelPath.substr(0, Size_t(pathIndex) + 1);
 		return folderPath;
 	}
 }

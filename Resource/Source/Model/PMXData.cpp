@@ -31,8 +31,8 @@ bool PMXData::LoadFromPMX(std::string modelPath)
 	uint8_t length = 0;
 	fread(&length, sizeof(length), 1, fp);
 
-	_info.resize(length);
-	fread(_info.data(), length, 1, fp);
+	info_.resize(length);
+	fread(info_.data(), length, 1, fp);
 
 	wstring modelName;
 	ReadTextBuf(modelName, fp);
@@ -73,7 +73,7 @@ void PMXData::LoadVertexIndex(FILE * fp)
 
 	for (int idx = 0; idx < indexNum; idx++)
 	{
-		fread(&_indexData[idx], _info[2], 1, fp);
+		fread(&_indexData[idx], info_[2], 1, fp);
 	}
 }
 
@@ -163,15 +163,15 @@ void PMXData::LoadVertex(FILE * fp)
 		fread(&_vertexData[j].uv, sizeof(_vertexData[j].uv), 1, fp);
 
 		std::vector<DirectX::XMFLOAT3> adduv;
-		adduv.resize(_info[1]);
-		for (int k = 0; k < _info[1]; k++)
+		adduv.resize(info_[1]);
+		for (int k = 0; k < info_[1]; k++)
 		{
 			fread(&adduv[k], sizeof(adduv[k]), 1, fp);
 		}
 
 		uint8_t boneformat = 0;
 		fread(&boneformat, sizeof(boneformat), 1, fp);
-		weightFun[boneformat](fp, _info[5], _vertexData[j]);
+		weightFun[boneformat](fp, info_[5], _vertexData[j]);
 
 		float edge = 0;
 		fread(&edge, sizeof(edge), 1, fp);
@@ -183,7 +183,7 @@ void PMXData::ReadTextBuf(std::wstring& wstrBuf, FILE * fp)
 	int buffLen = 0;
 	fread(&buffLen, sizeof(buffLen), 1, fp);
 
-	if (_info[0] == 0)
+	if (info_[0] == 0)
 	{
 		wstrBuf.resize(buffLen / 2);
 		fread(&wstrBuf[0], buffLen, 1, fp);
@@ -249,10 +249,10 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 		fread(&tMat, sizeof(t_Material), 1, fp);
 
 		uint32_t texIdx = 0;
-		fread(&texIdx, _info[3], 1, fp);
+		fread(&texIdx, info_[3], 1, fp);
 
 		uint32_t spIdx = 0;
-		fread(&spIdx, _info[3], 1, fp);
+		fread(&spIdx, info_[3], 1, fp);
 
 		uint8_t spMode = 0;
 		fread(&spMode, sizeof(spMode), 1, fp);
@@ -263,7 +263,7 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 		uint32_t toonIdx = 0;
 		if (shareToomFlag == 0)
 		{
-			fread(&toonIdx, _info[3], 1, fp);
+			fread(&toonIdx, info_[3], 1, fp);
 		}
 		else
 		{
@@ -378,7 +378,7 @@ void PMXData::LoadBone(FILE * fp)
 		// ボーンの開始座標
 		fread(&bone.startpos, sizeof(bone.startpos), 1, fp);
 		// 親ボーンのインデックス
-		fread(&bone.parentBoneIdx, _info[5], 1, fp);
+		fread(&bone.parentBoneIdx, info_[5], 1, fp);
 		// 変形階層
 		fread(&bone.transformHierarchy, sizeof(bone.transformHierarchy), 1, fp);
 		// ビットフラグ
@@ -387,7 +387,7 @@ void PMXData::LoadBone(FILE * fp)
 		// 接続先
 		if (bone.bitFlag & 0x0001)
 		{
-			fread(&bone.endBoneIdx, _info[5], 1, fp);
+			fread(&bone.endBoneIdx, info_[5], 1, fp);
 		}
 		else
 		{
@@ -396,7 +396,7 @@ void PMXData::LoadBone(FILE * fp)
 		// 回転付与 または 移動付与
 		if ((bone.bitFlag & 0x0100) | (bone.bitFlag & 0x0200))
 		{
-			fread(bone.bitFlag & 0x0100 ? &bone.rotateGrant : &bone.moveGrant, _info[5], 1, fp);
+			fread(bone.bitFlag & 0x0100 ? &bone.rotateGrant : &bone.moveGrant, info_[5], 1, fp);
 			fread(&bone.grandParsent, sizeof(bone.grandParsent), 1, fp);
 		}
 		// 軸固定
@@ -418,7 +418,7 @@ void PMXData::LoadBone(FILE * fp)
 		// IK
 		if (bone.bitFlag & 0x0020)
 		{
-			fread(&bone.ikBoneIdx, _info[5], 1, fp);
+			fread(&bone.ikBoneIdx, info_[5], 1, fp);
 			fread(&bone.roopCnt, sizeof(bone.roopCnt), 1, fp);
 			fread(&bone.radLimit, sizeof(bone.radLimit), 1, fp);
 
@@ -428,7 +428,7 @@ void PMXData::LoadBone(FILE * fp)
 
 			for (auto& ikLink : bone.ikLinkVec)
 			{
-				fread(&ikLink.boneIdx, _info[5], 1, fp);
+				fread(&ikLink.boneIdx, info_[5], 1, fp);
 				fread(&ikLink.radLimit, sizeof(ikLink.radLimit), 1, fp);
 				if (ikLink.radLimit)
 				{

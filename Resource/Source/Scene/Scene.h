@@ -16,6 +16,6 @@ public:
 	virtual void Off() {};
 
 protected:
-	SceneController& _controller;
+	SceneController& controller_;
 };
 

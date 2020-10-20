@@ -12,7 +12,7 @@ public:
 	struct Size
 	{
 		unsigned int w, h;
-		Size() {};
+		Size():w(0),h(0) {};
 		Size(unsigned int w, unsigned int h) :w(w), h(h) {};
 	};
 
@@ -42,17 +42,15 @@ public:
 	~Application();
 
 private:
-	HWND _hwnd;
-	WNDCLASSEX _wndClass;
+	HWND hwnd_;
+	WNDCLASSEX wndClass_;
 
-	std::unique_ptr<Dx12Wrapper> _dx12;
-	std::unique_ptr<FPSManager> _fpsManager;
-	std::unique_ptr<SceneController> _sceneController;
+	std::unique_ptr<Dx12Wrapper> dx12_;
+	std::unique_ptr<FPSManager> fpsManager_;
+	std::unique_ptr<SceneController> sceneController_;
 
 	Application();
 	Application(const Application&) = delete;
 	Application& operator=(const Application&) = delete;
-
-	const UINT _imageMax;
 };
 

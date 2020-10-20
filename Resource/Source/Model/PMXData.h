@@ -11,7 +11,7 @@ public:
 	~PMXData();
 
 private:
-	std::vector<uint8_t> _info;
+	std::vector<uint8_t> info_;
 	// pmdƒ‚ƒfƒ‹‚Ì“Ç‚İ‚İ
 	bool LoadFromPMX(std::string modelPath);
 

@@ -17,10 +17,10 @@ SceneController::~SceneController()
 void SceneController::SceneUpdate()
 {
 	// スタックの一番上のシーンを更新
-	_scene.front()->Update();
+	scene_.front()->Update();
 
 	// スタックの一番下から順番に描画
-	for (auto rit = _scene.rbegin(); rit != _scene.rend(); rit++)
+	for (auto rit = scene_.rbegin(); rit != scene_.rend(); rit++)
 	{
 		(*rit)->Draw();
 	}
@@ -28,38 +28,38 @@ void SceneController::SceneUpdate()
 
 void SceneController::ChangeScene(shared_ptr<Scene> scene)
 {
-	if (_scene.size() > 0)
+	if (scene_.size() > 0)
 	{
-		_scene.front()->Off();
+		scene_.front()->Off();
 	}
-	_scene.clear();
-	_scene.push_front(scene);
+	scene_.clear();
+	scene_.push_front(scene);
 	scene->On();
 }
 
 void SceneController::PushScene(std::shared_ptr<Scene> scene)
 {
-	if (_scene.size() > 0)
+	if (scene_.size() > 0)
 	{
-		_scene.front()->Off();
+		scene_.front()->Off();
 	}
-	_scene.push_front(scene);
+	scene_.push_front(scene);
 	scene->On();
 }
 
 void SceneController::PopScene(void)
 {
-	assert(_scene.size() > 0);
-	_scene.front()->Off();
-	_scene.pop_front();
-	if (_scene.size() > 0)
+	assert(scene_.size() > 0);
+	scene_.front()->Off();
+	scene_.pop_front();
+	if (scene_.size() > 0)
 	{
-		_scene.front()->On();
+		scene_.front()->On();
 	}
 }
 
 Scene& SceneController::GetCurrentScene()
 {
-	assert(_scene.size() > 0);
-	return *_scene.front();
+	assert(scene_.size() > 0);
+	return *scene_.front();
 }
