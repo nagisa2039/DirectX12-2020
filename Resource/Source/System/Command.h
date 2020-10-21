@@ -7,14 +7,27 @@ using Microsoft::WRL::ComPtr;
 class Command
 {
 public:
+	/// <summary>
+	/// コマンド管理クラス
+	/// </summary>
+	/// <param name="dev">デバイスの参照</param>
 	Command(ID3D12Device& dev);
 	~Command();
 
-	void Init();
 
+	/// <summary>
+	/// CommandListの取得
+	/// </summary>
 	ID3D12GraphicsCommandList& CommandList();
+
+	/// <summary>
+	/// CommandQueueの取得
+	/// </summary>
 	ID3D12CommandQueue& CommandQueue();
 
+	/// <summary>
+	/// コマンドの実行
+	/// </summary>
 	void Execute();
 
 private:
@@ -26,6 +39,11 @@ private:
 
 	ComPtr<ID3D12Fence> fence_ = nullptr;
 	UINT64 fenceValue_ = 0;
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	void Init();
 
 	void WaitFence();
 	bool CommandReset();

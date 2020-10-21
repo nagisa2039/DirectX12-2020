@@ -22,7 +22,15 @@ public:
 		return instance;
 	}
 
+	/// <summary>
+	/// ウィンドウサイズの取得
+	/// </summary>
 	Size GetWindowSize();
+
+	/// <summary>
+	/// 1フレームに出せる最大画像数の取得
+	/// </summary>
+	/// <returns></returns>
 	UINT GetImageMax();
 
 	/// <summary>
@@ -31,12 +39,20 @@ public:
 	Dx12Wrapper& GetDx12();
 
 	// アプリケーションを初期化する
+
+	/// <summary>
+	/// アプリケーションを初期化する
+	/// </summary>
 	bool Initialize();
 
-	// アプリケーションを実行する
+	/// <summary>
+	/// アプリケーションを実行する
+	/// </summary>
 	void Run();
 
-	// 終了処理
+	/// <summary>
+	/// 終了処理
+	/// </summary>
 	void Terminate();
 
 	~Application();

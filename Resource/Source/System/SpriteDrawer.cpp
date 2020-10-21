@@ -190,7 +190,7 @@ void SpriteDrawer::CreateVertextBuffer()
 void SpriteDrawer::CreateIndexBuffer()
 {
 	std::vector<uint16_t> indices = { 0, 2, 1, 1, 2, 3 };
-	auto size = Size_t(sizeof(indices.data()));
+	auto size = Size_t(sizeof(indices[0]) * indices.size());
 	CreateUploadResource(&dx12_.GetDevice(), indexResource_, size);
 
 	uint16_t* indexMap = nullptr;
@@ -275,8 +275,9 @@ void SpriteDrawer::End()
 	cmdList.SetPipelineState(pipelineState_.Get());
 	cmdList.SetGraphicsRootSignature(rootSignature_.Get());
 
-	cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList.IASetVertexBuffers(0, 1, &vbView_);
+	cmdList.IASetIndexBuffer(&ibView_);
 
 	auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
 	auto sqHandle = squareCBV_->GetGPUDescriptorHandleForHeapStart();
@@ -293,7 +294,7 @@ void SpriteDrawer::End()
 		cmdList.SetGraphicsRootDescriptorTable(1, sqHandle);
 		sqHandle.ptr += incSize;
 
-		cmdList.DrawInstanced(4, 1, 0, 0);
+		cmdList.DrawIndexedInstanced(6, 1, 0, 0, 0);
 	}
 
 	drawImages_.clear();

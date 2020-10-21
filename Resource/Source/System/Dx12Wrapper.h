@@ -20,23 +20,58 @@ class SpriteDrawer;
 class Dx12Wrapper
 {
 public:
-
+	/// <summary>
+	/// DirectX管理クラス
+	/// </summary>
+	/// <param name="hwnd">ウィンドウハンドル</param>
 	Dx12Wrapper(HWND hwnd);
 	~Dx12Wrapper();
 
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <returns>成否</returns>
 	bool Init();
 
+	/// <summary>
+	/// デバイスの取得
+	/// </summary>
 	ID3D12Device& GetDevice();
+
+	/// <summary>
+	/// コマンドの取得
+	/// </summary>
 	Command& GetCommand();
 
+	/// <summary>
+	/// テクスチャリソースの管理クラス取得
+	/// </summary>
 	TexLoader& GetTexLoader();
+
+	/// <summary>
+	/// 2D描画管理クラスの取得
+	/// </summary>
 	SpriteDrawer& GetSpriteDrawer();
 	
+	/// <summary>
+	/// 現在の裏画面ハンドルの取得
+	/// </summary>
 	int GetBackScreenHandle();
+
+	/// <summary>
+	/// 裏画面と表画面の入れ替え
+	/// </summary>
 	void ScreenFlip();
 
+	/// <summary>
+	/// カメラのヒープを設定
+	/// </summary>
+	/// <param name="rootParamIdx">rootSignatureインデックス</param>
 	void SetCameraDescriptorHeap(const UINT rootParamIdx);
 
+	/// <summary>
+	/// 全画面にViewportとScissorを設定する
+	/// </summary>
 	void SetDefaultViewAndScissor();
 
 private:

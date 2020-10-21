@@ -9,20 +9,6 @@
 
 namespace
 {
-	void CreateUploadBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, const UINT64& resourceSize);
-
-	/// <summary>
-	/// upload用バッファの作成
-	/// </summary>
-	/// <param name="dev">I3D12Deviceのポインタ</param>
-	/// <param name="resource">格納するリソース</param>
-	/// <param name="resourceSize">リソースのサイズ</param>
-	void CreateUploadResource(ID3D12Device* dev, Resource& resource, const UINT64& resourceSize)
-	{
-		resource.state = D3D12_RESOURCE_STATE_GENERIC_READ;
-		CreateUploadBuffer(dev, resource.buffer, resourceSize);
-	}
-
 	/// <summary>
 	/// upload用バッファの作成
 	/// </summary>
@@ -37,6 +23,18 @@ namespace
 
 		H_ASSERT(dev->CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(pBuffer.ReleaseAndGetAddressOf())));
+	}
+
+	/// <summary>
+	/// upload用バッファの作成
+	/// </summary>
+	/// <param name="dev">I3D12Deviceのポインタ</param>
+	/// <param name="resource">格納するリソース</param>
+	/// <param name="resourceSize">リソースのサイズ</param>
+	void CreateUploadResource(ID3D12Device* dev, Resource& resource, const UINT64& resourceSize)
+	{
+		resource.state = D3D12_RESOURCE_STATE_GENERIC_READ;
+		CreateUploadBuffer(dev, resource.buffer, resourceSize);
 	}
 
 	/// <summary>
@@ -59,7 +57,6 @@ namespace
 			resource.buffer->Unmap(0, nullptr);
 		}
 	}
-
 
 	/// <summary>
 	/// DescriptorHeapの作成
