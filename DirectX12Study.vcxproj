@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\Utility\DirectXStruct.h" />
     <ClInclude Include="Resource\Source\Utility\Constant.h" />
     <ClInclude Include="Resource\Source\Model\ModelActor.h" />
     <ClInclude Include="Resource\Source\Model\ModelData.h" />
@@ -37,7 +38,7 @@
     <ClInclude Include="Resource\Source\System\TexLoader.h" />
     <ClInclude Include="Resource\Source\Utility\dx12Tool.h" />
     <ClInclude Include="Resource\Source\Utility\Tool.h" />
-    <ClInclude Include="Resource\Source\System\TextureStruct.h" />
+    <ClInclude Include="Resource\Source\Utility\TextureStruct.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\Model\ModelActor.cpp" />

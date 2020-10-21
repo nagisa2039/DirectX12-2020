@@ -147,7 +147,7 @@ void Dx12Wrapper::SetDefaultViewAndScissor()
 
 bool Dx12Wrapper::CreateCameraConstantBufferAndView()
 {
-	CreateConstantBuffer(dev_.Get(), cameraCB_, sizeof(*mappedCam_));
+	CreateUploadBuffer(dev_.Get(), cameraCB_, sizeof(*mappedCam_));
 	cameraCB_->Map(0, nullptr, (void**)&mappedCam_);
 
 	CreateDescriptorHeap(dev_.Get(), cameraHeap_);

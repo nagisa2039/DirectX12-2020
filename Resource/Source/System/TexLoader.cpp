@@ -325,7 +325,7 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 	src.PlacedFootprint.Footprint.Width = static_cast<UINT>(metaData.width);
 	src.PlacedFootprint.Footprint.Height = static_cast<UINT>(metaData.height);
 	src.PlacedFootprint.Footprint.Depth = static_cast<UINT>(metaData.depth);
-	src.PlacedFootprint.Footprint.RowPitch = imgRowPitch;
+	src.PlacedFootprint.Footprint.RowPitch = Uint(imgRowPitch);
 	src.PlacedFootprint.Footprint.Format = img->format;
 
 

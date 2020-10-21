@@ -5,9 +5,9 @@
 #include <DirectXMath.h>
 #include<SpriteFont.h>
 #include<ResourceUploadBatch.h>
+#include "Utility/DirectXStruct.h"
 
 class Dx12Wrapper;
-using Microsoft::WRL::ComPtr;
 
 class SpriteDrawer
 {
@@ -44,12 +44,15 @@ private:
 
 	struct VertexResource
 	{
-		ComPtr<ID3D12Resource> resorce;
+		Resource resorce;
 		VertexInf* mappedVertexInf = nullptr;
 	};
 
-	ComPtr<ID3D12Resource> vertBuff_ = nullptr;
+	Resource vertResource_;
 	D3D12_VERTEX_BUFFER_VIEW vbView_ = {};
+
+	Resource indexResource_;
+	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
 	ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
 	ComPtr<ID3D12PipelineState> pipelineState_ = nullptr;
@@ -69,6 +72,8 @@ private:
 	void CreatePiplineState();
 	void CreateRootSignature();
 	void CreateVertextBuffer();
+
+	void CreateIndexBuffer();
 
 	void SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const float exRate = 1.0f, const float angle = 0.0f);
 	void SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const UINT centerX, const UINT centerY, const float exRate = 1.0f, const float angle = 0.0f);

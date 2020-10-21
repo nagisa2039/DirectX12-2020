@@ -15,6 +15,8 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 	// 頂点の作成
 	CreateVertextBuffer();
 
+	CreateIndexBuffer();
+
 	// ルートシグネチャの作成
 	CreateRootSignature();
 
@@ -173,19 +175,30 @@ void SpriteDrawer::CreateVertextBuffer()
 		{{ 1.0f, -1.0f, 0.0f},	{1, 1} }  // 右下
 	};
 
-	auto heapPro = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-	auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(vertices));
-
-	H_ASSERT(dx12_.GetDevice().CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &resDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(vertBuff_.ReleaseAndGetAddressOf())));
+	auto size = sizeof(vertices);
+	CreateUploadResource(&dx12_.GetDevice(), vertResource_, size);
 
 	Vertex_t* vertMap = nullptr;
-	H_ASSERT(vertBuff_->Map(0, nullptr, (void**)&vertMap));
-	std::copy(std::begin(vertices), std::end(vertices), vertMap);
+	Map(vertMap, vertResource_, begin(vertices), end(vertices));
 
-	vbView_.BufferLocation = vertBuff_->GetGPUVirtualAddress();
-	vbView_.StrideInBytes = sizeof(vertices[0]);
-	vbView_.SizeInBytes = sizeof(vertices);
+	vbView_.BufferLocation = vertResource_.buffer->GetGPUVirtualAddress();
+	vbView_.StrideInBytes = Uint(size / _countof(vertices));
+	vbView_.SizeInBytes = Uint(size);
+
+}
+
+void SpriteDrawer::CreateIndexBuffer()
+{
+	std::vector<uint16_t> indices = { 0, 2, 1, 1, 2, 3 };
+	auto size = Size_t(sizeof(indices.data()));
+	CreateUploadResource(&dx12_.GetDevice(), indexResource_, size);
+
+	uint16_t* indexMap = nullptr;
+	Map(indexMap, indexResource_, indices.begin(), indices.end());
+
+	ibView_.BufferLocation = indexResource_.buffer->GetGPUVirtualAddress();
+	ibView_.SizeInBytes = Uint(size);
+	ibView_.Format = DXGI_FORMAT_R16_UINT;
 }
 
 void SpriteDrawer::CreateVertexConstantBuffer()
@@ -199,9 +212,9 @@ void SpriteDrawer::CreateVertexConstantBuffer()
 
 	for (auto& vertCB : squareCBs_)
 	{
-		CreateConstantBuffer(&dev, vertCB.resorce, Uint(bufSize));
-		H_ASSERT(vertCB.resorce->Map(0, nullptr, (void**)&vertCB.mappedVertexInf));
-		CreateConstantBufferView(&dev, vertCB.resorce, handle);
+		CreateUploadResource(&dev, vertCB.resorce, Uint(bufSize));
+		H_ASSERT(vertCB.resorce.buffer->Map(0, nullptr, (void**)&vertCB.mappedVertexInf));
+		CreateConstantBufferView(&dev, vertCB.resorce.buffer, handle);
 		handle.ptr += incrementSize;
 	}
 }
@@ -334,7 +347,7 @@ bool SpriteDrawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, 
 	DrawImage drawImage;
 	drawImage.texHandle = texRes.gpuHandleForTex;
 
-	SetPosTrans(drawImage.vertexInf.posTans, x - img.width / 2, y - img.height / 2, 
+	SetPosTrans(drawImage.vertexInf.posTans, x - Int(img.width / 2), y - Int(img.height / 2), 
 		Uint(img.width), Uint(img.height), centerX, centerY, exRate, angle);
 	drawImage.vertexInf.uvTrans = XMMatrixIdentity();
 

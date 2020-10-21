@@ -4,17 +4,32 @@
 #include <wrl.h>
 #include <d3dcompiler.h>
 #include "Tool.h"
-#include "Constant.h"
+#include "Utility/DirectXStruct.h"
+#include <algorithm>
 
 namespace
 {
+	void CreateUploadBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, const UINT64& resourceSize);
+
 	/// <summary>
-	/// 定数バッファの作成
+	/// upload用バッファの作成
+	/// </summary>
+	/// <param name="dev">I3D12Deviceのポインタ</param>
+	/// <param name="resource">格納するリソース</param>
+	/// <param name="resourceSize">リソースのサイズ</param>
+	void CreateUploadResource(ID3D12Device* dev, Resource& resource, const UINT64& resourceSize)
+	{
+		resource.state = D3D12_RESOURCE_STATE_GENERIC_READ;
+		CreateUploadBuffer(dev, resource.buffer, resourceSize);
+	}
+
+	/// <summary>
+	/// upload用バッファの作成
 	/// </summary>
 	/// <param name="dev">I3D12Deviceのポインタ</param>
 	/// <param name="pBuffer">格納するバッファ</param>
 	/// <param name="resourceSize">リソースのサイズ</param>
-	void CreateConstantBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, UINT resourceSize)
+	void CreateUploadBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, const UINT64& resourceSize)
 	{
 		auto heapPro = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 		auto resWidth = AlignmentValue(resourceSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
@@ -23,6 +38,28 @@ namespace
 		H_ASSERT(dev->CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &resDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(pBuffer.ReleaseAndGetAddressOf())));
 	}
+
+	/// <summary>
+	/// リソースのマップを行う
+	/// </summary>
+	/// <typeparam name="T">マップを行う型</typeparam>
+	/// <typeparam name="InputIterator">コピー範囲のIterator</typeparam>
+	/// <param name="resource">マップするリソース</param>
+	/// <param name="begin">コピー範囲の最初</param>
+	/// <param name="end">コピー範囲の最後</param>
+	/// <param name="ummap">終了時にummapを行うか</param>
+	template<typename T, typename InputIterator>
+	void Map(T* mapped, Resource& resource, InputIterator begin, InputIterator end, bool ummap = true)
+	{
+		H_ASSERT(resource.buffer->Map(0, nullptr, (void**)&mapped));
+		std::copy(begin, end, mapped);
+
+		if (ummap)
+		{
+			resource.buffer->Unmap(0, nullptr);
+		}
+	}
+
 
 	/// <summary>
 	/// DescriptorHeapの作成

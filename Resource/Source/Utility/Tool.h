@@ -55,7 +55,7 @@ namespace
 		return wstr;
 	}
 
-	unsigned int AlignmentValue(unsigned int size, unsigned int alignment)
+	UINT64 AlignmentValue(UINT64 size, UINT64 alignment)
 	{
 		if (size%alignment == 0)
 		{

@@ -9,7 +9,7 @@
 #include <array>
 #include <DirectXMath.h>
 #include <string>
-#include "TextureStruct.h"
+#include "Utility/TextureStruct.h"
 
 using Microsoft::WRL::ComPtr;
 

@@ -9,7 +9,7 @@
 #include <array>
 #include "ModelData.h"
 #include <memory>
-#include "System/TextureStruct.h"
+#include "Utility/TextureStruct.h"
 
 class VMDMotion;
 class Dx12Wrapper;
@@ -124,7 +124,7 @@ private:
 	// マテリアルのCBV作成
 	bool CreateMaterialCBV();
 	// マテリアルのテクスチャビューの作成
-	void CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT& heapStride, unsigned int bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
+	void CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT64& heapStride, const UINT64& bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
 
 	// ボーン階層の作成
 	bool CreateBoneHierarchy();

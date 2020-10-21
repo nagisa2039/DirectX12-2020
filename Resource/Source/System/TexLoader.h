@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <map>
 #include <array>
-#include "TextureStruct.h"
+#include "Utility/TextureStruct.h"
 
 struct IDXGISwapChain4;
 class Dx12Wrapper;

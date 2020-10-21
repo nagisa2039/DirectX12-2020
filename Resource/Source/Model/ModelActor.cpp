@@ -506,7 +506,8 @@ bool ModelActor::CreateMaterialCBV()
 	return true;
 }
 
-void ModelActor::CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT& heapStride, unsigned int bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)
+void ModelActor::CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, 
+	const UINT64& heapStride, const UINT64& bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)
 {
 	auto& dummyTextures = dx12_.GetTexLoader().GetDummyTextures();
 	auto& dev = dx12_.GetDevice();
@@ -578,7 +579,7 @@ bool ModelActor::CreateConstanteBuffers()
 {
 	// 座標の定数バッファの作成
 	auto& dev = dx12_.GetDevice();
-	CreateConstantBuffer(&dev, transCB_, sizeof(*mappedTrans_));
+	CreateUploadBuffer(&dev, transCB_, sizeof(*mappedTrans_));
 	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
 
 	// 座標のヒープ作成
@@ -593,7 +594,7 @@ bool ModelActor::CreateConstanteBuffers()
 	handle.ptr += dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// ボーンの定数バッファの作成
-	CreateConstantBuffer(&dev, boneCB_, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
+	CreateUploadBuffer(&dev, boneCB_, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
 	boneCB_->Map(0, nullptr, (void**)&mappedBones_);
 
 	// 定数バッファビューの作成
