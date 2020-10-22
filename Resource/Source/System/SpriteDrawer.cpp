@@ -59,17 +59,9 @@ void SpriteDrawer::CreatePiplineState()
 	// 配列の要素数を格納
 	gpsd.InputLayout.NumElements = _countof(inputLayoutDescs);
 
-	ComPtr<ID3DBlob> vertexShader = nullptr;
-	ComPtr<ID3DBlob> pixelShader = nullptr;
-	ComPtr<ID3DBlob> erBlob = nullptr;
-
-	// シェーダーコンパイル
-	ShaderCompile(L"Resource/Source/Shader/2DStanderdVS.hlsl", "VS", "vs_5_1", vertexShader, erBlob);
-	ShaderCompile(L"Resource/Source/Shader/2DStanderdPS.hlsl", "PS", "ps_5_1", pixelShader,  erBlob);
-
 	// シェーダ系
-	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader_.Get());
+	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader_.Get());
 
 	// レンダーターゲット
 	gpsd.NumRenderTargets = 1;
@@ -88,7 +80,6 @@ void SpriteDrawer::CreatePiplineState()
 
 	// ブレンドステート
 	gpsd.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	gpsd.BlendState.AlphaToCoverageEnable = true;
 	gpsd.BlendState.IndependentBlendEnable = false;
 
@@ -107,51 +98,17 @@ void SpriteDrawer::CreatePiplineState()
 
 void SpriteDrawer::CreateRootSignature()
 {
-	D3D12_DESCRIPTOR_RANGE range[2] = {};
-	range[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	range[0].BaseShaderRegister = 0;
-	range[0].NumDescriptors = 1;
-	range[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	ComPtr<ID3DBlob> erBlob = nullptr;
 
-	range[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-	range[1].BaseShaderRegister = 0;
-	range[1].NumDescriptors = 1;
-	range[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	D3D12_ROOT_PARAMETER rp[2] = {};
-	rp[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rp[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rp[0].DescriptorTable.NumDescriptorRanges = 1;
-	rp[0].DescriptorTable.pDescriptorRanges = &range[0];
-
-	rp[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rp[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	rp[1].DescriptorTable.NumDescriptorRanges = 1;
-	rp[1].DescriptorTable.pDescriptorRanges = &range[1];
-
-	D3D12_STATIC_SAMPLER_DESC sampler[1] = {};
-	sampler[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	sampler[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampler[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampler[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampler[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-
-	sampler[0].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-
-	sampler[0].MaxLOD = D3D12_FLOAT32_MAX;
-
-	D3D12_ROOT_SIGNATURE_DESC rsd = {};
-	rsd.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	rsd.NumParameters = _countof(rp);
-	rsd.pParameters = rp;
-	rsd.NumStaticSamplers = _countof(sampler);
-	rsd.pStaticSamplers = sampler;
+	// シェーダーコンパイル
+	ShaderCompile(L"Resource/Source/Shader/2DStanderdVS.hlsl", "VS", "vs_5_1", vertexShader_, erBlob);
+	ShaderCompile(L"Resource/Source/Shader/2DStanderdPS.hlsl", "PS", "ps_5_1", pixelShader_, erBlob);
 
 	ComPtr<ID3DBlob> signature = nullptr;
-	ComPtr<ID3DBlob> error = nullptr;
+	erBlob = nullptr;
 
-	H_ASSERT(D3D12SerializeRootSignature(&rsd, D3D_ROOT_SIGNATURE_VERSION_1,
-		signature.ReleaseAndGetAddressOf(), error.ReleaseAndGetAddressOf()));
+	H_ASSERT(D3DGetBlobPart(vertexShader_->GetBufferPointer(), vertexShader_->GetBufferSize(), 
+		D3D_BLOB_ROOT_SIGNATURE, 0, signature.GetAddressOf()));
 
 	H_ASSERT(dx12_.GetDevice().CreateRootSignature(0,
 		signature->GetBufferPointer(), signature->GetBufferSize(),

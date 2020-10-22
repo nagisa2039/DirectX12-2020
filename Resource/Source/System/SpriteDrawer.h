@@ -62,6 +62,9 @@ private:
 
 	std::vector<DrawImage> drawImages_;
 
+	ComPtr<ID3DBlob> vertexShader_ = nullptr;
+	ComPtr<ID3DBlob> pixelShader_ = nullptr;
+
 	ComPtr<ID3D12DescriptorHeap> spriteFontHeap_ = nullptr;
 	std::shared_ptr<DirectX::GraphicsMemory> gmemory_ = nullptr;//グラフィクスメモリオブジェクト
 	std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト

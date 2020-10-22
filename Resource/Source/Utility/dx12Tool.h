@@ -9,6 +9,14 @@
 
 namespace
 {
+	void OutputBolbString(ID3DBlob* blob)
+	{
+		std::string str;
+		str.resize(blob->GetBufferSize());
+		std::copy_n((char*)blob->GetBufferPointer(), blob->GetBufferSize(), &str[0]);
+		OutputDebugStringA(str.data());
+	}
+
 	/// <summary>
 	/// upload用バッファの作成
 	/// </summary>
@@ -98,7 +106,11 @@ namespace
 	/// <param name="errorBlob">エラー情報を格納するBlob</param>
 	void ShaderCompile(const LPCWSTR& shaderPath, const LPCSTR& entoryPoint, const LPCSTR& shaderModel, ComPtr<ID3DBlob>& shaderBlob, ComPtr<ID3DBlob>& errorBlob)
 	{
-		H_ASSERT(D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entoryPoint, shaderModel,
-			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, shaderBlob.ReleaseAndGetAddressOf(), errorBlob.ReleaseAndGetAddressOf()));
+		if (FAILED(D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entoryPoint, shaderModel,
+			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, shaderBlob.ReleaseAndGetAddressOf(), errorBlob.ReleaseAndGetAddressOf())))
+		{
+			OutputBolbString(errorBlob.Get());
+			assert(false);
+		}
 	}
 }

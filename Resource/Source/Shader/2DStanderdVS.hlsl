@@ -1,8 +1,4 @@
-struct Output
-{
-	float4 svpos : SV_POSITION;
-	float2 uv : TEXCOORD;
-};
+#include "2DStanderd.hlsli"
 
 cbuffer trans : register(b0)
 {
@@ -10,6 +6,7 @@ cbuffer trans : register(b0)
 	matrix uvTrans;
 }
 
+[RootSignature(RS)]
 Output VS(float4 pos : POSITION, float4 uv : TEXCOORD, uint instanceID : SV_InstanceID)
 {
 	Output o;

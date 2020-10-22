@@ -167,4 +167,9 @@
       <Filter>ソース ファイル\Shader</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\Source\Shader\2DStanderd.hlsli">
+      <Filter>ソース ファイル\Shader</Filter>
+    </None>
+  </ItemGroup>
 </Project>

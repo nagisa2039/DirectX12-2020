@@ -1,8 +1,4 @@
-struct Out 
-{
-	float4 svpos : SV_POSITION;
-	float2 uv : TEXCOORD;
-};
+#include "2DStanderd.hlsli"
 
 SamplerState smp : register(s0);
 Texture2D<float4> tex : register(t0);
@@ -14,9 +10,9 @@ cbuffer trans : register(b0)
 }
 
 //頂点シェーダ
-Out VS(float4 pos : POSITION, float4 uv : TEXCOORD, uint instanceID : SV_InstanceID)
+Output VS(float4 pos : POSITION, float4 uv : TEXCOORD, uint instanceID : SV_InstanceID)
 {
-	Out o;
+	Output o;
 
 	o.svpos = mul(posTrans, pos);
 
@@ -27,7 +23,7 @@ Out VS(float4 pos : POSITION, float4 uv : TEXCOORD, uint instanceID : SV_Instanc
 }
 
 //ピクセルシェーダ
-float4 PS(Out input) :SV_Target
+float4 PS(Output input) : SV_Target
 {
 	return tex.Sample(smp, input.uv);
 }

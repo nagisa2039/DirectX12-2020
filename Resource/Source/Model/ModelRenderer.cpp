@@ -11,6 +11,7 @@
 #include "System/TexLoader.h"
 #include "System/SpriteDrawer.h"
 #include "Utility/Constant.h"
+#include "Utility/dx12Tool.h"
 
 using namespace std;
 using namespace DirectX;
@@ -51,6 +52,7 @@ bool ModelRenderer::CreateModelRS()
 		sigBlob.ReleaseAndGetAddressOf(),	// signatureのポインタ
 		errBlob.ReleaseAndGetAddressOf())))	// errorのポインタ
 	{
+		OutputBolbString(errBlob.Get());
 		assert(false);
 		return false;
 	}
@@ -73,32 +75,30 @@ bool ModelRenderer::CreateModelRS()
 void ModelRenderer::CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges)
 {
 	rps.resize(5);
-	// カメラ
-	rps[1] = {};
-	rps[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rps[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	rps[1].DescriptorTable.NumDescriptorRanges = 1;
-	rps[1].DescriptorTable.pDescriptorRanges = &ranges[0];
-
 	// マテリアル + テクスチャ
 	rps[0] = {};
 	rps[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rps[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rps[0].DescriptorTable.NumDescriptorRanges = 2;
-	rps[0].DescriptorTable.pDescriptorRanges = &ranges[1];
+	rps[0].DescriptorTable.pDescriptorRanges = &ranges[0];
+
+	// カメラ
+	rps[1] = {};
+	rps[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rps[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	rps[1].DescriptorTable.NumDescriptorRanges = 1;
+	rps[1].DescriptorTable.pDescriptorRanges = &ranges[2];
 
 	// 座標
 	rps[2] = rps[1];
 	rps[2].DescriptorTable.pDescriptorRanges = &ranges[3];
 
 	// 深度テクスチャ
-	rps[3] = rps[0];
-	rps[3].DescriptorTable.NumDescriptorRanges = 1;
+	rps[3] = rps[1];
 	rps[3].DescriptorTable.pDescriptorRanges = &ranges[4];
 
 	// セッティング情報
 	rps[4] = rps[1];
-	rps[4].DescriptorTable.NumDescriptorRanges = 1;
 	rps[4].DescriptorTable.pDescriptorRanges = &ranges[5];
 }
 
@@ -106,28 +106,28 @@ void ModelRenderer::CreateRSDescriptorRange(std::vector<D3D12_DESCRIPTOR_RANGE>&
 {
 	ranges.resize(6);
 
-	// レンジ0はカメラ
+	// マテリアル
 	ranges[0] = {};
 	ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;	//b
-	ranges[0].BaseShaderRegister = 1;		//1
+	ranges[0].BaseShaderRegister = 0;	//0
 	ranges[0].NumDescriptors = 1;
 	ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	ranges[0].RegisterSpace = 0;
 
-	// レンジ1マテリアル
-	ranges[1] = {};
-	ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;	//b
-	ranges[1].BaseShaderRegister = 0;	//0
-	ranges[1].NumDescriptors = 1;
-	ranges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-	ranges[1].RegisterSpace = 0;
-
 	// テクスチャ
+	ranges[1] = {};
+	ranges[1].NumDescriptors = 5;
+	ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;	// t
+	ranges[1].BaseShaderRegister = 0;	//0
+	ranges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	// カメラ
 	ranges[2] = {};
-	ranges[2].NumDescriptors = 5;
-	ranges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;	// t
-	ranges[2].BaseShaderRegister = 0;	//0
+	ranges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;	//b
+	ranges[2].BaseShaderRegister = 1;		//1
+	ranges[2].NumDescriptors = 1;
 	ranges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	ranges[2].RegisterSpace = 0;
 
 	// レンジ3は座標 + ボーン
 	ranges[3] = {};
