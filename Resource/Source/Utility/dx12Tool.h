@@ -11,6 +11,8 @@ namespace
 {
 	void OutputBolbString(ID3DBlob* blob)
 	{
+		if (!blob)return;
+
 		std::string str;
 		str.resize(blob->GetBufferSize());
 		std::copy_n((char*)blob->GetBufferPointer(), blob->GetBufferSize(), &str[0]);
@@ -104,13 +106,27 @@ namespace
 	/// <param name="shaderModel">シェーダーモデル</param>
 	/// <param name="shaderBlob">コンパイルしたシェーダーを格納するBolb</param>
 	/// <param name="errorBlob">エラー情報を格納するBlob</param>
-	void ShaderCompile(const LPCWSTR& shaderPath, const LPCSTR& entoryPoint, const LPCSTR& shaderModel, ComPtr<ID3DBlob>& shaderBlob, ComPtr<ID3DBlob>& errorBlob)
+	void ShaderCompile(const LPCWSTR& shaderPath, const LPCSTR& entoryPoint, const LPCSTR& shaderModel, ComPtr<ID3DBlob>& shaderBlob)
 	{
+		ComPtr<ID3DBlob> erBlob = nullptr;
+
 		if (FAILED(D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entoryPoint, shaderModel,
-			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, shaderBlob.ReleaseAndGetAddressOf(), errorBlob.ReleaseAndGetAddressOf())))
+			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, shaderBlob.ReleaseAndGetAddressOf(), erBlob.ReleaseAndGetAddressOf())))
 		{
-			OutputBolbString(errorBlob.Get());
+			OutputBolbString(erBlob.Get());
 			assert(false);
 		}
+	}
+
+	void CreateRootSignatureFromShader(ID3D12Device* dev, ComPtr<ID3D12RootSignature>& rootSignature, const ComPtr<ID3DBlob>& shader)
+	{ 
+		ComPtr<ID3DBlob> signature = nullptr;
+
+		H_ASSERT(D3DGetBlobPart(shader->GetBufferPointer(), shader->GetBufferSize(),
+			D3D_BLOB_ROOT_SIGNATURE, 0, signature.GetAddressOf()));
+
+		H_ASSERT(dev->CreateRootSignature(0,
+			signature->GetBufferPointer(), signature->GetBufferSize(),
+			IID_PPV_ARGS(rootSignature.ReleaseAndGetAddressOf())));
 	}
 }

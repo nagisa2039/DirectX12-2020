@@ -1,39 +1,8 @@
-#define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
-                          "DescriptorTable(SRV(t0,numDescriptors = 5,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
-                          "DescriptorTable(CBV(b0,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
-                          "DescriptorTable(CBV(b0,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
-                          "DescriptorTable(CBV(b0,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
-                          "DescriptorTable(CBV(b0,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
-                          "StaticSampler(s0 ,"\
-                                             "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
-                                             "addressU = TEXTURE_ADDRESS_WRAP,"\
-                                             "addressV = TEXTURE_ADDRESS_WRAP,"\
-                                             "addressW = TEXTURE_ADDRESS_WRAP)"\
-						  "StaticSampler(s1 ,"\
-                                             "filter = FILTER_COMPARISON_MIN_MAG_MIP_POINT,"\
-                                             "addressU = TEXTURE_ADDRESS_CLAMP,"\
-                                             "addressV = TEXTURE_ADDRESS_CLAMP,"\
-                                             "addressW = TEXTURE_ADDRESS_CLAMP)"\
-						 "StaticSampler(s2 ,"\
-                                             "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
-                                             "addressU = TEXTURE_ADDRESS_CLAMP,"\
-                                             "addressV = TEXTURE_ADDRESS_CLAMP,"\
-                                             "addressW = TEXTURE_ADDRESS_CLAMP,"\
-											 "comparisonFunc = COMPARISON_FUNC_LESS_EQUAL)"\
-
-struct Out
-{
-	float4 svpos : SV_POSITION;	// Pipelineに投げるためにはSV_POSITIONが必要	カメラからの座標
-	float4 pos : POSITION;	// ワールド座標
-	float4 tpos : POSITION1;	// 頂点変換後の座標
-	float4 normal:NORMAL;	// 法線情報
-	float2 uv : TEXCOORD;	// UV情報
-	uint instanceID : SV_InstanceID;
-};
+#include "Model.hlsli"
 
 SamplerState smp : register(s0);
 SamplerState toomSmp : register(s1);
-SamplerComparisonState shadowSmp : register(s2);
+//SamplerComparisonState shadowSmp : register(s2);
 
 // マテリアル用スロット
 cbuffer materialBuffer : register(b0)
@@ -67,6 +36,7 @@ cbuffer bones : register(b3)
 	matrix boneMats[512];
 };
 
+// 設定
 cbuffer Setting : register(b4)
 {
 	uint directional_light;
@@ -94,7 +64,7 @@ cbuffer Setting : register(b4)
 
 struct PixelOutPut
 {
-	float4 col:SV_TARGET0;//カラー値を出力
+	float4 col : SV_TARGET; //カラー値を出力
 	//float4 normal : SV_TARGET1; //法線を出力
 	//float4 bright : SV_TARGET2; // 輝度出力
 };
@@ -113,6 +83,7 @@ Texture2D<float4> toon : register(t4);
 Texture2D<float> lightDepthTex : register(t5);
 
 //頂点シェーダ
+//[RootSignature(RS)]
 Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD, 
 	int4 boneno  : BONENO, float4 weight : WEIGHT, uint instanceID : SV_InstanceID)
 {
@@ -146,7 +117,8 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 }
 
 //ピクセルシェーダ
-PixelOutPut PS(Out input) : SV_TARGET
+//[RootSignature(RS)]
+PixelOutPut PS(Out input)
 {
 	PixelOutPut po;
 
@@ -213,10 +185,11 @@ PixelOutPut PS(Out input) : SV_TARGET
 	//	po.bright = float4(b, b, b, 1);
 	//}
 
-	return po;
+	//return po;
 }
 
 // 影用座標変換
+//[RootSignature(RS)]
 float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 	int4 boneno : BONENO, float4 weight : WEIGHT) : SV_POSITION
 {
@@ -229,7 +202,9 @@ float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCO
 
 	return mul(lightCamera, pos);
 }
+
 //ピクセルシェーダ
+//[RootSignature(RS)]
 float4 ShadowPS(float4 pos : SV_POSITION) :SV_TARGET
 {
 	return float4(1,1,1,1);

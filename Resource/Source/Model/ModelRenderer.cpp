@@ -27,6 +27,11 @@ ModelRenderer::~ModelRenderer()
 
 bool ModelRenderer::CreateModelRS()
 {
+	ShaderCompile(L"Resource/Source/Shader/3D/ModelVS.hlsl", "VS", "vs_5_1", vertexShader_);
+	ShaderCompile(L"Resource/Source/Shader/3D/ModelPS.hlsl", "PS", "ps_5_1", pixelShader_);
+
+	CreateRootSignatureFromShader(&dx12_.GetDevice(), modelRS_, vertexShader_);
+
 	std::vector<D3D12_DESCRIPTOR_RANGE> ranges;
 	CreateRSDescriptorRange(ranges);
 
@@ -95,6 +100,7 @@ void ModelRenderer::CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps
 
 	// 深度テクスチャ
 	rps[3] = rps[1];
+	rps[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rps[3].DescriptorTable.pDescriptorRanges = &ranges[4];
 
 	// セッティング情報
@@ -132,7 +138,7 @@ void ModelRenderer::CreateRSDescriptorRange(std::vector<D3D12_DESCRIPTOR_RANGE>&
 	// レンジ3は座標 + ボーン
 	ranges[3] = {};
 	ranges[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;	//b
-	ranges[3].BaseShaderRegister = 2;		//2
+	ranges[3].BaseShaderRegister = 2;		//2, 3
 	ranges[3].NumDescriptors = 2;
 	ranges[3].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	ranges[3].RegisterSpace = 0;
@@ -220,29 +226,9 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.InputLayout.pInputElementDescs = inputLayoutDescs;
 	gpsd.InputLayout.NumElements = _countof(inputLayoutDescs);
 
-	ComPtr<ID3DBlob> vertexShader = nullptr;
-	ComPtr<ID3DBlob> pixelShader = nullptr;
-	ComPtr<ID3DBlob> erBlob = nullptr;
-
-	// シェーダーの設定
-	// 第一引数はファイルパス
-	if (FAILED(D3DCompileFromFile(L"Resource/Source/Shader/model.hlsl",nullptr,nullptr,"VS","vs_5_0",
-		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,0,vertexShader.ReleaseAndGetAddressOf(),erBlob.ReleaseAndGetAddressOf())))
-	{
-		assert(false);
-		return false;
-	}
-
-	if (FAILED(D3DCompileFromFile(L"Resource/Source/Shader/model.hlsl", nullptr, nullptr, "PS", "ps_5_0", 
-		D3DCOMPILE_DEBUG |D3DCOMPILE_SKIP_OPTIMIZATION, 0, pixelShader.ReleaseAndGetAddressOf(), nullptr)))
-	{
-		assert(false);
-		return false;
-	}
-
 	// シェーダ系
-	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader_.Get());
+	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader_.Get());
 
 	// レンダーターゲット
 	gpsd.NumRenderTargets = 1;

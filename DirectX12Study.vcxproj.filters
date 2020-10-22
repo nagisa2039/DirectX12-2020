@@ -40,6 +40,12 @@
     <Filter Include="ヘッダー ファイル\Model">
       <UniqueIdentifier>{3b006ebb-1c6c-4625-ac2e-fe2fb655b587}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Shader\2D">
+      <UniqueIdentifier>{5d3152ed-7b84-48f5-bd1c-c8e03d806acd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Shader\3D">
+      <UniqueIdentifier>{68d356b4-7c8c-4333-9ee4-0017bc5b5a96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource\Source\Utility\Tool.h">
@@ -154,22 +160,28 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Resource\Source\Shader\2DStanderd.hlsl">
-      <Filter>ソース ファイル\Shader</Filter>
+    <FxCompile Include="Resource\Source\Shader\2D\2DStanderdPS.hlsl">
+      <Filter>ソース ファイル\Shader\2D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Source\Shader\model.hlsl">
-      <Filter>ソース ファイル\Shader</Filter>
+    <FxCompile Include="Resource\Source\Shader\2D\2DStanderdVS.hlsl">
+      <Filter>ソース ファイル\Shader\2D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Source\Shader\2DStanderdVS.hlsl">
-      <Filter>ソース ファイル\Shader</Filter>
+    <FxCompile Include="Resource\Source\Shader\3D\model.hlsl">
+      <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Source\Shader\2DStanderdPS.hlsl">
-      <Filter>ソース ファイル\Shader</Filter>
+    <FxCompile Include="Resource\Source\Shader\3D\ModelPS.hlsl">
+      <Filter>ソース ファイル\Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\3D\ModelVS.hlsl">
+      <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resource\Source\Shader\2DStanderd.hlsli">
-      <Filter>ソース ファイル\Shader</Filter>
+    <None Include="Resource\Source\Shader\2D\2DStanderd.hlsli">
+      <Filter>ソース ファイル\Shader\2D</Filter>
+    </None>
+    <None Include="Resource\Source\Shader\3D\Model.hlsli">
+      <Filter>ソース ファイル\Shader\3D</Filter>
     </None>
   </ItemGroup>
 </Project>

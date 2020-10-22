@@ -51,6 +51,9 @@ private:
 
 	int screenH_;
 
+	ComPtr<ID3DBlob> vertexShader_ = nullptr;
+	ComPtr<ID3DBlob> pixelShader_ = nullptr;
+
 	bool CreateModelRS();
 	void CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges);
 	void CreateRSDescriptorRange(std::vector<D3D12_DESCRIPTOR_RANGE>& ranges);

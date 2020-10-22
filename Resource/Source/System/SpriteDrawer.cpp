@@ -98,21 +98,11 @@ void SpriteDrawer::CreatePiplineState()
 
 void SpriteDrawer::CreateRootSignature()
 {
-	ComPtr<ID3DBlob> erBlob = nullptr;
-
 	// シェーダーコンパイル
-	ShaderCompile(L"Resource/Source/Shader/2DStanderdVS.hlsl", "VS", "vs_5_1", vertexShader_, erBlob);
-	ShaderCompile(L"Resource/Source/Shader/2DStanderdPS.hlsl", "PS", "ps_5_1", pixelShader_, erBlob);
+	ShaderCompile(L"Resource/Source/Shader/2D/2DStanderdVS.hlsl", "VS", "vs_5_1", vertexShader_);
+	ShaderCompile(L"Resource/Source/Shader/2D/2DStanderdPS.hlsl", "PS", "ps_5_1", pixelShader_);
 
-	ComPtr<ID3DBlob> signature = nullptr;
-	erBlob = nullptr;
-
-	H_ASSERT(D3DGetBlobPart(vertexShader_->GetBufferPointer(), vertexShader_->GetBufferSize(), 
-		D3D_BLOB_ROOT_SIGNATURE, 0, signature.GetAddressOf()));
-
-	H_ASSERT(dx12_.GetDevice().CreateRootSignature(0,
-		signature->GetBufferPointer(), signature->GetBufferSize(),
-		IID_PPV_ARGS(rootSignature_.ReleaseAndGetAddressOf())));
+	CreateRootSignatureFromShader(&dx12_.GetDevice(), rootSignature_, vertexShader_);
 }
 
 void SpriteDrawer::CreateVertextBuffer()
