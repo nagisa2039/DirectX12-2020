@@ -9,6 +9,10 @@
 
 namespace
 {
+	/// <summary>
+	/// ID3DBlobの中身をデバッグ出力に表示
+	/// </summary>
+	/// <param name="blob">ID3DBlobのポインタ</param>
 	void OutputBolbString(ID3DBlob* blob)
 	{
 		if (!blob)return;
@@ -118,6 +122,12 @@ namespace
 		}
 	}
 
+	/// <summary>
+	/// Shaderの定義からRootSignatureを作成
+	/// </summary>
+	/// <param name="dev">デバイス</param>
+	/// <param name="rootSignature">ルートシグネチャの格納先</param>
+	/// <param name="shader">定義を読み込むシェーダー</param>
 	void CreateRootSignatureFromShader(ID3D12Device* dev, ComPtr<ID3D12RootSignature>& rootSignature, const ComPtr<ID3DBlob>& shader)
 	{ 
 		ComPtr<ID3DBlob> signature = nullptr;

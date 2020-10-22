@@ -182,10 +182,16 @@ void SpriteDrawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, cons
 	float moveX = (center.x - wsizeCenter.x) / (screenW / 2.0f);
 	float moveY = (center.y - wsizeCenter.y) / (screenH / 2.0f) * -1.0f;
 
-	posTrans = XMMatrixTransformation2D(
-		XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, XMVectorSet(width / static_cast<float>(screenW)* exRate, height / static_cast<float>(screenH)* exRate, 1.0f, 1.0f),	// ägèk
-		XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f), angle,	// âÒì]
-		XMVectorSet(moveX, moveY, 0.0f, 1.0f));		// à⁄ìÆ
+	auto scaleMat = XMMatrixScaling(width * exRate, height * exRate, 1.0f);
+	auto rotateZMat = XMMatrixRotationZ(angle);
+	auto transMat = XMMatrixTranslation(moveX, moveY, 0.0f);
+
+	auto aspectMat = XMMatrixScaling(1.0f / Float(screenW), 1.0f / Float(screenH), 1.0f);
+	auto mat1 = XMMatrixMultiply(XMMatrixMultiply(scaleMat, rotateZMat), aspectMat);
+
+	auto mat2 = XMMatrixMultiply(mat1, transMat);
+
+	posTrans = mat2;
 }
 
 void SpriteDrawer::SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img)

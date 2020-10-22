@@ -1,9 +1,5 @@
 #include "Model.hlsli"
 
-SamplerState smp : register(s0);
-SamplerState toomSmp : register(s1);
-//SamplerComparisonState shadowSmp : register(s2);
-
 // 座標変換用スロット
 cbuffer transBuffer : register(b1)
 {
@@ -41,7 +37,7 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 
 	mixMat = mul(world, mixMat);
 
-	pos = mul(mixMat, pos);
+    pos = mul(mixMat, pos);
 	pos.z += 5 * instanceID;
 
 	matrix camera = mul(proj, view);

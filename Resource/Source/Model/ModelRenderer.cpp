@@ -27,52 +27,6 @@ ModelRenderer::~ModelRenderer()
 
 bool ModelRenderer::CreateModelRS()
 {
-	ShaderCompile(L"Resource/Source/Shader/3D/ModelVS.hlsl", "VS", "vs_5_1", vertexShader_);
-	ShaderCompile(L"Resource/Source/Shader/3D/ModelPS.hlsl", "PS", "ps_5_1", pixelShader_);
-
-	CreateRootSignatureFromShader(&dx12_.GetDevice(), modelRS_, vertexShader_);
-
-	std::vector<D3D12_DESCRIPTOR_RANGE> ranges;
-	CreateRSDescriptorRange(ranges);
-
-	std::vector<D3D12_ROOT_PARAMETER> rps;
-	CreateRSRootParameter(rps, ranges);
-
-	std::vector<D3D12_STATIC_SAMPLER_DESC> samplers;
-	CreateRSSampler(samplers);
-
-	D3D12_ROOT_SIGNATURE_DESC rsd = {};
-	rsd.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	rsd.NumParameters = Uint(rps.size());
-	rsd.pParameters = rps.data();
-	rsd.NumStaticSamplers = Uint(samplers.size());
-	rsd.pStaticSamplers = samplers.data();
-
-	ComPtr<ID3D10Blob> sigBlob = nullptr;
-	ComPtr<ID3D10Blob> errBlob = nullptr;
-
-	if (FAILED(D3D12SerializeRootSignature(
-		&rsd,	// デスクのポインタ
-		D3D_ROOT_SIGNATURE_VERSION_1,	// バージョン
-		sigBlob.ReleaseAndGetAddressOf(),	// signatureのポインタ
-		errBlob.ReleaseAndGetAddressOf())))	// errorのポインタ
-	{
-		OutputBolbString(errBlob.Get());
-		assert(false);
-		return false;
-	}
-
-	// からのルートシグネチャの生成
-	// VRAM状にある情報をどう読むか
-	if (FAILED(dx12_.GetDevice().CreateRootSignature(
-		0,
-		sigBlob->GetBufferPointer(),
-		sigBlob->GetBufferSize(),
-		IID_PPV_ARGS(modelRS_.ReleaseAndGetAddressOf()))))
-	{
-		assert(false);
-		return false;
-	}
 
 	return true;
 }
@@ -80,7 +34,7 @@ bool ModelRenderer::CreateModelRS()
 void ModelRenderer::CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges)
 {
 	rps.resize(5);
-	// マテリアル + テクスチャ
+	// マテリアル + テクスチャ5
 	rps[0] = {};
 	rps[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rps[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -94,7 +48,7 @@ void ModelRenderer::CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps
 	rps[1].DescriptorTable.NumDescriptorRanges = 1;
 	rps[1].DescriptorTable.pDescriptorRanges = &ranges[2];
 
-	// 座標
+	// 座標+ボーン
 	rps[2] = rps[1];
 	rps[2].DescriptorTable.pDescriptorRanges = &ranges[3];
 
@@ -187,6 +141,12 @@ void ModelRenderer::CreateRSSampler(std::vector<D3D12_STATIC_SAMPLER_DESC>&  sam
 
 bool ModelRenderer::CreateModelPL()
 {
+	// ルートシグネチャの作成
+	ShaderCompile(L"Resource/Source/Shader/3D/ModelVS.hlsl", "VS", "vs_5_1", vertexShader_);
+	ShaderCompile(L"Resource/Source/Shader/3D/ModelPS.hlsl", "PS", "ps_5_1", pixelShader_);
+
+	CreateRootSignatureFromShader(&dx12_.GetDevice(), modelRS_, vertexShader_);
+
 	//頂点レイアウト(仕様)
 	D3D12_INPUT_ELEMENT_DESC inputLayoutDescs[] =
 	{

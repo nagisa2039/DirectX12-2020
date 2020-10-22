@@ -1,6 +1,6 @@
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
-                        "DescriptorTable(SRV(t0,numDescriptors = 5,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
-						"DescriptorTable(CBV(b0,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
+                        "DescriptorTable(CBV(b0,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE),"\
+                                        "SRV(t0,numDescriptors = 5,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
 						"DescriptorTable(CBV(b1,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
 						"DescriptorTable(CBV(b2,numDescriptors = 2,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                         "DescriptorTable(SRV(t5,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
@@ -19,8 +19,8 @@
                                              "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                              "addressU = TEXTURE_ADDRESS_CLAMP,"\
                                              "addressV = TEXTURE_ADDRESS_CLAMP,"\
-                                             "addressW = TEXTURE_ADDRESS_CLAMP)"\
-											 //"comparisonFunc = COMPARISON_FUNC_LESS_EQUAL)"\
+                                             "addressW = TEXTURE_ADDRESS_CLAMP,"\
+											 "comparisonFunc = COMPARISON_LESS_EQUAL)"
 
 struct Out
 {

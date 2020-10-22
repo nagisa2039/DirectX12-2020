@@ -2,7 +2,7 @@
 
 SamplerState smp : register(s0);
 SamplerState toomSmp : register(s1);
-//SamplerComparisonState shadowSmp : register(s2);
+SamplerComparisonState shadowSmp : register(s2);
 
 // マテリアル用スロット
 cbuffer materialBuffer : register(b0)
@@ -75,7 +75,7 @@ Texture2D<float> lightDepthTex : register(t5);
 PixelOutPut PS(Out input)
 {
 	PixelOutPut po;
-
+	
 	//return float4(input.normal.xyz,1);
 	//// 光源ベクトルの反射ベクトル
 	float3 lightDirNormal = normalize( /*light_dir*/float3(1.0f, -1.0f, 1.0f));
