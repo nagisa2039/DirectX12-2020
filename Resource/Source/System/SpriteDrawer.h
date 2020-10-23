@@ -30,22 +30,33 @@ private:
 
 	Dx12Wrapper& dx12_;
 
-	struct VertexInf
+	struct VerticesInf
 	{
 		DirectX::XMMATRIX posTans;
 		DirectX::XMMATRIX uvTrans;
 	};
 
-	struct DrawImage
-	{
-		VertexInf vertexInf;
-		D3D12_GPU_DESCRIPTOR_HANDLE texHandle;
-	};
-
 	struct VertexResource
 	{
-		Resource resorce;
-		VertexInf* mappedVertexInf = nullptr;
+		Resource resource;
+		VerticesInf* mappedVertexInf = nullptr;
+	};
+
+	struct PixelInf
+	{
+		unsigned int texIndex = 0;
+	};
+
+	struct PixelInfResource
+	{
+		Resource resource;
+		PixelInf* mappedPixelInf = nullptr;
+	};
+
+	struct DrawImage
+	{
+		VerticesInf verticesInf;
+		PixelInf pixelInf;
 	};
 
 	Resource vertResource_;
@@ -57,8 +68,11 @@ private:
 	ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
 	ComPtr<ID3D12PipelineState> pipelineState_ = nullptr;
 
-	std::vector<VertexResource> squareCBs_;
-	ComPtr<ID3D12DescriptorHeap> squareCBV_ = nullptr;
+	std::vector<VertexResource> verticesInfCBs_;
+	ComPtr<ID3D12DescriptorHeap> verticesInfHeap_ = nullptr;
+
+	std::vector<PixelInfResource> pixelInfCBs_;
+	ComPtr<ID3D12DescriptorHeap> pixelInfHeap_ = nullptr;
 
 	std::vector<DrawImage> drawImages_;
 
@@ -70,7 +84,8 @@ private:
 	std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト
 	std::shared_ptr<DirectX::SpriteBatch> spriteBatch_ = nullptr;//スプライト表示用オブジェクト
 
-	void CreateVertexConstantBuffer();
+	void CreateVertexCB();
+	void CreatePixelCB();
 
 	void CreatePiplineState();
 	void CreateRootSignature();

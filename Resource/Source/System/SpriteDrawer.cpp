@@ -23,7 +23,8 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 	// パイプラインの作成
 	CreatePiplineState();
 
-	CreateVertexConstantBuffer();
+	CreateVertexCB(); 
+	CreatePixelCB();
 
 	CreateSpriteHeap();
 
@@ -148,20 +149,39 @@ void SpriteDrawer::CreateIndexBuffer()
 	ibView_.Format = DXGI_FORMAT_R16_UINT;
 }
 
-void SpriteDrawer::CreateVertexConstantBuffer()
+void SpriteDrawer::CreateVertexCB()
 {
 	auto& dev = dx12_.GetDevice();
-	CreateDescriptorHeap(&dev, squareCBV_, Application::Instance().GetImageMax());
-	squareCBs_.resize(Application::Instance().GetImageMax());
-	auto bufSize = sizeof(VertexInf);
-	auto handle = squareCBV_->GetCPUDescriptorHandleForHeapStart();
+	CreateDescriptorHeap(&dev, verticesInfHeap_, Application::Instance().GetImageMax());
+	verticesInfCBs_.resize(Application::Instance().GetImageMax());
+	auto bufSize = Uint(sizeof(VerticesInf));
+	auto handle = verticesInfHeap_->GetCPUDescriptorHandleForHeapStart();
 	auto incrementSize = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	for (auto& vertCB : squareCBs_)
+	for (auto& vertCB : verticesInfCBs_)
 	{
-		CreateUploadResource(&dev, vertCB.resorce, Uint(bufSize));
-		H_ASSERT(vertCB.resorce.buffer->Map(0, nullptr, (void**)&vertCB.mappedVertexInf));
-		CreateConstantBufferView(&dev, vertCB.resorce.buffer, handle);
+		CreateUploadResource(&dev, vertCB.resource, bufSize);
+		H_ASSERT(vertCB.resource.buffer->Map(0, nullptr, (void**)&vertCB.mappedVertexInf));
+		CreateConstantBufferView(&dev, vertCB.resource.buffer, handle);
+		handle.ptr += incrementSize;
+	}
+}
+
+void SpriteDrawer::CreatePixelCB()
+{
+	auto& dev = dx12_.GetDevice();
+
+	CreateDescriptorHeap(&dev, pixelInfHeap_, Application::Instance().GetImageMax());
+	pixelInfCBs_.resize(Application::Instance().GetImageMax());
+	auto bufSize = sizeof(PixelInf);
+	auto handle = pixelInfHeap_->GetCPUDescriptorHandleForHeapStart();
+	auto incrementSize = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	for (auto& pixelInfCB : pixelInfCBs_)
+	{
+		CreateUploadResource(&dev, pixelInfCB.resource, Uint(bufSize));
+		H_ASSERT(pixelInfCB.resource.buffer->Map(0, nullptr, (void**)&pixelInfCB.mappedPixelInf));
+		CreateConstantBufferView(&dev, pixelInfCB.resource.buffer, handle);
 		handle.ptr += incrementSize;
 	}
 }
@@ -220,6 +240,12 @@ void SpriteDrawer::CreateSpriteHeap()
 
 void SpriteDrawer::End()
 {
+	for (int i = 0; i < drawImages_.size(); i++)
+	{
+		*verticesInfCBs_[i].mappedVertexInf = drawImages_[i].verticesInf;
+		*pixelInfCBs_[i].mappedPixelInf		= drawImages_[i].pixelInf;
+	}
+
 	auto& command = dx12_.GetCommand();
 	auto& cmdList = command.CommandList();
 
@@ -233,22 +259,20 @@ void SpriteDrawer::End()
 	cmdList.IASetIndexBuffer(&ibView_);
 
 	auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
-	auto sqHandle = squareCBV_->GetGPUDescriptorHandleForHeapStart();
-	auto incSize = dx12_.GetDevice().GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	for (int i = 0; i < drawImages_.size(); i++)
-	{
-		(*squareCBs_[i].mappedVertexInf) = drawImages_[i].vertexInf;
+	// テクスチャ配列のセット
+	cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
+	cmdList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
 
-		cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
-		cmdList.SetGraphicsRootDescriptorTable(0, drawImages_[i].texHandle);
+	// VS情報配列のセット
+	cmdList.SetDescriptorHeaps(1, verticesInfHeap_.GetAddressOf());
+	cmdList.SetGraphicsRootDescriptorTable(1, verticesInfHeap_->GetGPUDescriptorHandleForHeapStart());
 
-		cmdList.SetDescriptorHeaps(1, squareCBV_.GetAddressOf());
-		cmdList.SetGraphicsRootDescriptorTable(1, sqHandle);
-		sqHandle.ptr += incSize;
+	// PS情報配列のセット
+	cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
+	cmdList.SetGraphicsRootDescriptorTable(2, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
 
-		cmdList.DrawIndexedInstanced(6, 1, 0, 0, 0);
-	}
+	cmdList.DrawIndexedInstanced(6, drawImages_.size(), 0, 0, 0);
 
 	drawImages_.clear();
 
@@ -262,10 +286,10 @@ bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
 	auto& texRes = dx12_.GetTexLoader().GetTextureResouse(graphHandle);
 
 	DrawImage drawImage;
-	drawImage.texHandle = texRes.gpuHandleForTex;
+	drawImage.pixelInf.texIndex = graphHandle;
 
-	SetPosTrans(drawImage.vertexInf.posTans, x, y, Uint(texRes.imageInf.width), Uint(texRes.imageInf.height));
-	drawImage.vertexInf.uvTrans = XMMatrixIdentity();
+	SetPosTrans(drawImage.verticesInf.posTans, x, y, Uint(texRes.imageInf.width), Uint(texRes.imageInf.height));
+	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
 
 	drawImages_.emplace_back(drawImage);
 
@@ -280,11 +304,11 @@ bool SpriteDrawer::DrawRotaGraph(const INT x, const INT y, const float exRate, c
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
-	drawImage.texHandle = texRes.gpuHandleForTex;
+	drawImage.pixelInf.texIndex = graphHandle;
 
-	SetPosTrans(drawImage.vertexInf.posTans, x - Int(img.width) / 2, y - Int(img.height) / 2, 
+	SetPosTrans(drawImage.verticesInf.posTans, x - Int(img.width) / 2, y - Int(img.height) / 2, 
 		Uint(img.width), Uint(img.height), exRate, angle);
-	drawImage.vertexInf.uvTrans = XMMatrixIdentity();
+	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
 
 	drawImages_.emplace_back(drawImage);
 
@@ -299,11 +323,11 @@ bool SpriteDrawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, 
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
-	drawImage.texHandle = texRes.gpuHandleForTex;
+	drawImage.pixelInf.texIndex = graphHandle;
 
-	SetPosTrans(drawImage.vertexInf.posTans, x - Int(img.width / 2), y - Int(img.height / 2), 
+	SetPosTrans(drawImage.verticesInf.posTans, x - Int(img.width / 2), y - Int(img.height / 2),
 		Uint(img.width), Uint(img.height), centerX, centerY, exRate, angle);
-	drawImage.vertexInf.uvTrans = XMMatrixIdentity();
+	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
 
 	drawImages_.emplace_back(drawImage);
 
@@ -318,10 +342,10 @@ bool SpriteDrawer::DrawRectGraph(const INT destX, const INT destY, const UINT sr
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
-	drawImage.texHandle = texRes.gpuHandleForTex;
+	drawImage.pixelInf.texIndex = graphHandle;
 
-	SetPosTrans(drawImage.vertexInf.posTans, destX, destY, width, height);
-	SetUVTrans(drawImage.vertexInf.uvTrans, srcX, srcY, width, height, img);
+	SetPosTrans(drawImage.verticesInf.posTans, destX, destY, width, height);
+	SetUVTrans(drawImage.verticesInf.uvTrans, srcX, srcY, width, height, img);
 
 	drawImages_.emplace_back(drawImage);
 
@@ -336,10 +360,10 @@ bool SpriteDrawer::DrawExtendGraph(const INT left, const INT top, const INT righ
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
-	drawImage.texHandle = texRes.gpuHandleForTex;
+	drawImage.pixelInf.texIndex = graphHandle;
 
-	SetPosTrans(drawImage.vertexInf.posTans, left, top, right - left, buttom - top);
-	drawImage.vertexInf.uvTrans = XMMatrixIdentity();
+	SetPosTrans(drawImage.verticesInf.posTans, left, top, right - left, buttom - top);
+	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
 
 	drawImages_.emplace_back(drawImage);
 
@@ -354,10 +378,10 @@ bool SpriteDrawer::DrawRectExtendGraph(const INT left, const INT top, const INT 
 	Image img = texRes.imageInf;
 
 	DrawImage drawImage;
-	drawImage.texHandle = texRes.gpuHandleForTex;
+	drawImage.pixelInf.texIndex = graphHandle;
 
-	SetPosTrans(drawImage.vertexInf.posTans, left, top, right - left, buttom - top);
-	SetUVTrans(drawImage.vertexInf.uvTrans, srcX, srcY, width, height, img);
+	SetPosTrans(drawImage.verticesInf.posTans, left, top, right - left, buttom - top);
+	SetUVTrans(drawImage.verticesInf.uvTrans, srcX, srcY, width, height, img);
 
 	drawImages_.emplace_back(drawImage);
 
