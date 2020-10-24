@@ -29,10 +29,11 @@ namespace
 	/// <param name="dev">I3D12Deviceのポインタ</param>
 	/// <param name="pBuffer">格納するバッファ</param>
 	/// <param name="resourceSize">リソースのサイズ</param>
-	void CreateUploadBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, const UINT64& resourceSize)
+	/// <param name="ajustAligment">resourceSizeのアライメントを揃えるか</param>
+	void CreateUploadBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, const UINT64& resourceSize, const bool ajustAligment = true)
 	{
 		auto heapPro = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-		auto resWidth = AlignmentValue(resourceSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+		auto resWidth = ajustAligment ? AlignmentValue(resourceSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT) : resourceSize;
 		D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(resWidth);
 
 		H_ASSERT(dev->CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &resDesc,
@@ -45,10 +46,11 @@ namespace
 	/// <param name="dev">I3D12Deviceのポインタ</param>
 	/// <param name="resource">格納するリソース</param>
 	/// <param name="resourceSize">リソースのサイズ</param>
-	void CreateUploadResource(ID3D12Device* dev, Resource& resource, const UINT64& resourceSize)
+	/// <param name="ajustAligment">resourceSizeのアライメントを揃えるか</param>
+	void CreateUploadResource(ID3D12Device* dev, Resource& resource, const UINT64& resourceSize, const bool ajustAligment = true)
 	{
 		resource.state = D3D12_RESOURCE_STATE_GENERIC_READ;
-		CreateUploadBuffer(dev, resource.buffer, resourceSize);
+		CreateUploadBuffer(dev, resource.buffer, resourceSize, ajustAligment);
 	}
 
 	/// <summary>

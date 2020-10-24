@@ -23,8 +23,8 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 	// パイプラインの作成
 	CreatePiplineState();
 
-	CreateVertexCB(); 
-	CreatePixelCB();
+	CreateVertexSB(); 
+	CreatePixelSB();
 
 	CreateSpriteHeap();
 
@@ -83,6 +83,10 @@ void SpriteDrawer::CreatePiplineState()
 	gpsd.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	gpsd.BlendState.AlphaToCoverageEnable = true;
 	gpsd.BlendState.IndependentBlendEnable = false;
+	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
+	gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 
 	//その他
 	gpsd.NodeMask = 0;
@@ -149,41 +153,28 @@ void SpriteDrawer::CreateIndexBuffer()
 	ibView_.Format = DXGI_FORMAT_R16_UINT;
 }
 
-void SpriteDrawer::CreateVertexCB()
+void SpriteDrawer::CreateVertexSB()
 {
 	auto& dev = dx12_.GetDevice();
-	CreateDescriptorHeap(&dev, verticesInfHeap_, Application::Instance().GetImageMax());
-	verticesInfCBs_.resize(Application::Instance().GetImageMax());
-	auto bufSize = Uint(sizeof(VerticesInf));
-	auto handle = verticesInfHeap_->GetCPUDescriptorHandleForHeapStart();
-	auto incrementSize = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	CreateDescriptorHeap(&dev, verticesInfHeap_);
 
-	for (auto& vertCB : verticesInfCBs_)
-	{
-		CreateUploadResource(&dev, vertCB.resource, bufSize);
-		H_ASSERT(vertCB.resource.buffer->Map(0, nullptr, (void**)&vertCB.mappedVertexInf));
-		CreateConstantBufferView(&dev, vertCB.resource.buffer, handle);
-		handle.ptr += incrementSize;
-	}
+	int imageMax = Application::Instance().GetImageMax();
+	CreateUploadResource(&dev, verticesInfSB_.resource, Size_t(imageMax * sizeof(VerticesInf)), false);
+	H_ASSERT(verticesInfSB_.resource.buffer->Map(0, nullptr, (void**)&verticesInfSB_.mappedVertexInf));
+	auto handle = verticesInfHeap_->GetCPUDescriptorHandleForHeapStart();
+	CreateConstantBufferView(&dev, verticesInfSB_.resource.buffer, handle);
 }
 
-void SpriteDrawer::CreatePixelCB()
+void SpriteDrawer::CreatePixelSB()
 {
 	auto& dev = dx12_.GetDevice();
+	CreateDescriptorHeap(&dev, pixelInfHeap_);
 
-	CreateDescriptorHeap(&dev, pixelInfHeap_, Application::Instance().GetImageMax());
-	pixelInfCBs_.resize(Application::Instance().GetImageMax());
-	auto bufSize = sizeof(PixelInf);
+	int imageMax = Application::Instance().GetImageMax();
+	CreateUploadResource(&dev, pixelInfSB_.resource, Size_t(imageMax * sizeof(PixelInf)), false);
+	H_ASSERT(pixelInfSB_.resource.buffer->Map(0, nullptr, (void**)&pixelInfSB_.mappedPixelInf));
 	auto handle = pixelInfHeap_->GetCPUDescriptorHandleForHeapStart();
-	auto incrementSize = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-	for (auto& pixelInfCB : pixelInfCBs_)
-	{
-		CreateUploadResource(&dev, pixelInfCB.resource, Uint(bufSize));
-		H_ASSERT(pixelInfCB.resource.buffer->Map(0, nullptr, (void**)&pixelInfCB.mappedPixelInf));
-		CreateConstantBufferView(&dev, pixelInfCB.resource.buffer, handle);
-		handle.ptr += incrementSize;
-	}
+	CreateConstantBufferView(&dev, pixelInfSB_.resource.buffer, handle);
 }
 
 void SpriteDrawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const float exRate, const float angle)
@@ -242,8 +233,8 @@ void SpriteDrawer::End()
 {
 	for (int i = 0; i < drawImages_.size(); i++)
 	{
-		*verticesInfCBs_[i].mappedVertexInf = drawImages_[i].verticesInf;
-		*pixelInfCBs_[i].mappedPixelInf		= drawImages_[i].pixelInf;
+		verticesInfSB_.mappedVertexInf[i] = drawImages_[i].verticesInf;
+		pixelInfSB_.mappedPixelInf[i]		= drawImages_[i].pixelInf;
 	}
 
 	auto& command = dx12_.GetCommand();
@@ -258,9 +249,8 @@ void SpriteDrawer::End()
 	cmdList.IASetVertexBuffers(0, 1, &vbView_);
 	cmdList.IASetIndexBuffer(&ibView_);
 
-	auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
-
 	// テクスチャ配列のセット
+	auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
 	cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
 	cmdList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
 
@@ -272,6 +262,7 @@ void SpriteDrawer::End()
 	cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
 	cmdList.SetGraphicsRootDescriptorTable(2, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
 
+	// 描画
 	cmdList.DrawIndexedInstanced(6, drawImages_.size(), 0, 0, 0);
 
 	drawImages_.clear();
@@ -281,38 +272,14 @@ void SpriteDrawer::End()
 
 bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
 {
-	if (graphHandle == -1) return false;
-
-	auto& texRes = dx12_.GetTexLoader().GetTextureResouse(graphHandle);
-
-	DrawImage drawImage;
-	drawImage.pixelInf.texIndex = graphHandle;
-
-	SetPosTrans(drawImage.verticesInf.posTans, x, y, Uint(texRes.imageInf.width), Uint(texRes.imageInf.height));
-	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
-
-	drawImages_.emplace_back(drawImage);
-
-	return true;
+	Image img = dx12_.GetTexLoader().GetTextureResouse(graphHandle).imageInf;
+	return DrawRectGraph(x, y, 0, 0, img.width, img.height, graphHandle);
 }
 
 bool SpriteDrawer::DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle)
 {
-	if (graphHandle == -1) return false;
-
-	auto& texRes = dx12_.GetTexLoader().GetTextureResouse(graphHandle);
-	Image img = texRes.imageInf;
-
-	DrawImage drawImage;
-	drawImage.pixelInf.texIndex = graphHandle;
-
-	SetPosTrans(drawImage.verticesInf.posTans, x - Int(img.width) / 2, y - Int(img.height) / 2, 
-		Uint(img.width), Uint(img.height), exRate, angle);
-	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
-
-	drawImages_.emplace_back(drawImage);
-
-	return true;
+	Image img = dx12_.GetTexLoader().GetTextureResouse(graphHandle).imageInf;
+	return DrawRotaGraph2(x, y, img.width/2, img.height/2, exRate, angle, graphHandle);
 }
 
 bool SpriteDrawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const UINT centerY, const float exRate, const float angle, const int graphHandle)
@@ -386,4 +353,9 @@ bool SpriteDrawer::DrawRectExtendGraph(const INT left, const INT top, const INT 
 	drawImages_.emplace_back(drawImage);
 
 	return true;
+}
+
+bool SpriteDrawer::DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2, const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag)
+{
+	return false;
 }

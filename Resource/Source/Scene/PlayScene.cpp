@@ -40,15 +40,10 @@ void PlayScene::Draw()
 
 	texLoader.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
-	
-	static float angle = 0.0f;
 
-	angle += 1.0f;
-
-	spriteDrawer.DrawGraph(0, 0, d3dH_);
+	//spriteDrawer.DrawGraph(0, 0, d3dH_);
 	spriteDrawer.DrawGraph(0,0, tnktH_);
-	//spriteDrawer.DrawRotaGraph(1280/2, 720/2, 1.5f, angle * 3.14f / 180.0f, dmdnH_);
-	//spriteDrawer.DrawRectGraph(1280-500, 720-500, 250, 250, 100, 100, tnktH_);
+	//spriteDrawer.DrawExtendGraph(0, 0, 750, 750, tnktH_);
 
 	spriteDrawer.End();
 	dx12.ScreenFlip();

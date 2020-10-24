@@ -21,7 +21,7 @@ public:
 	bool DrawRectGraph(const INT destX, const INT destY, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
 	bool DrawExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const int graphHandle);
 	bool DrawRectExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
-
+	bool DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2,const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag);
 	void End();
 
 private:
@@ -68,10 +68,10 @@ private:
 	ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
 	ComPtr<ID3D12PipelineState> pipelineState_ = nullptr;
 
-	std::vector<VertexResource> verticesInfCBs_;
+	VertexResource verticesInfSB_;
 	ComPtr<ID3D12DescriptorHeap> verticesInfHeap_ = nullptr;
 
-	std::vector<PixelInfResource> pixelInfCBs_;
+	PixelInfResource pixelInfSB_;
 	ComPtr<ID3D12DescriptorHeap> pixelInfHeap_ = nullptr;
 
 	std::vector<DrawImage> drawImages_;
@@ -84,8 +84,8 @@ private:
 	std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト
 	std::shared_ptr<DirectX::SpriteBatch> spriteBatch_ = nullptr;//スプライト表示用オブジェクト
 
-	void CreateVertexCB();
-	void CreatePixelCB();
+	void CreateVertexSB();
+	void CreatePixelSB();
 
 	void CreatePiplineState();
 	void CreateRootSignature();
