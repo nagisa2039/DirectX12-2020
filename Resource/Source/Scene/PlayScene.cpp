@@ -19,6 +19,8 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 
 	auto wsize = Application::Instance().GetWindowSize();
 	d3dH_ = texLoader.GetGraphHandle(D3D_SPACE_SCREEN);
+
+	int tmpH = texLoader.MakeScreen(L"tmp", 1280, 720);
 }
 
 PlayScene::~PlayScene()
@@ -32,22 +34,30 @@ void PlayScene::Update()
 
 void PlayScene::Draw()
 {
-	modelRenderer_->DrawToMyScreen();
+	modelRenderer_->DrawTo3DSpace();
 
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& texLoader = dx12.GetTexLoader();
 	auto& spriteDrawer = dx12.GetSpriteDrawer();
 
-	texLoader.SetDrawScreen(dx12.GetBackScreenHandle());
+	int tmpH = texLoader.LoadGraph(L"tmp");
+	spriteDrawer.SetDrawScreen(tmpH);
 	texLoader.ClsDrawScreen();
 
 	spriteDrawer.SetDrawBright(255, 255, 255);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
-	spriteDrawer.SetDrawBlendMode(BlendMode::alpha, 255);
-	spriteDrawer.DrawGraph(0, 0, tnktH_);
-	spriteDrawer.DrawGraph(100, 100, tnktH_);
+	spriteDrawer.SetDrawBlendMode(BlendMode::add, 255);
+	spriteDrawer.DrawGraph(0, 0, d3dH_);
+
+	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
+	texLoader.ClsDrawScreen();
+	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
+	spriteDrawer.DrawGraph(100, 100, tmpH);
+	spriteDrawer.SetDrawBlendMode(BlendMode::mula, 255);
+	spriteDrawer.DrawGraph(0, 0, tmpH);
 
 	spriteDrawer.End();
+
 	dx12.ScreenFlip();
 }

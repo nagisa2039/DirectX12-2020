@@ -122,7 +122,7 @@ bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const U
 	fill(col.begin(), col.end(), color);
 	resource.state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-	D3D12_CLEAR_VALUE clearValue = { DXGI_FORMAT_R8G8B8A8_UNORM , { 0.0f, 0.0f, 0.0f, 1.0f } };
+	D3D12_CLEAR_VALUE clearValue = { DXGI_FORMAT_R8G8B8A8_UNORM , { 0.0f, 0.0f, 0.0f, 0.0f } };
 	H_ASSERT(dev_.CreateCommittedResource(
 		&heapProp,
 		D3D12_HEAP_FLAG_NONE,//特に指定なし
@@ -424,7 +424,7 @@ void TexLoader::ClsDrawScreen()
 
 	auto& commandList = cmd_.CommandList();
 
-	float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	commandList.ClearRenderTargetView(texResources_[renderTergetHandle_].cpuHandleForRtv, clearColor, 0, nullptr);
 
 	// 深度バッファを初期化
@@ -435,22 +435,19 @@ void TexLoader::ClsDrawScreen()
 
 void TexLoader::SetDrawScreen(const int screenH)
 {
-	if (screenH != renderTergetHandle_)
+	if (renderTergetHandle_ >= 0)
 	{
-		if (renderTergetHandle_ >= 0)
-		{
-			// 今までのレンダーターゲットのステートをPIXEL_SHADER_RESOURCEにする
-			texResources_[renderTergetHandle_].resource.Barrier(cmd_, renderTergetHandle_ >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
-		}
-
-		depthResouerce_.Barrier(cmd_, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		D3D12_CPU_DESCRIPTOR_HANDLE* depthH = &depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
-
-		// セットするレンダーターゲットのステートをRENDER_TARGEにする
-		texResources_[screenH].resource.Barrier(cmd_, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		cmd_.CommandList().OMSetRenderTargets(1, &texResources_[screenH].cpuHandleForRtv, false, depthH);
-		renderTergetHandle_ = screenH;
+		// 今までのレンダーターゲットのステートをPIXEL_SHADER_RESOURCEにする
+		texResources_[renderTergetHandle_].resource.Barrier(cmd_, renderTergetHandle_ >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
 	}
+
+	depthResouerce_.Barrier(cmd_, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	D3D12_CPU_DESCRIPTOR_HANDLE* depthH = &depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
+
+	// セットするレンダーターゲットのステートをRENDER_TARGEにする
+	texResources_[screenH].resource.Barrier(cmd_, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	cmd_.CommandList().OMSetRenderTargets(1, &texResources_[screenH].cpuHandleForRtv, false, depthH);
+	renderTergetHandle_ = screenH;
 }
 
 void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)

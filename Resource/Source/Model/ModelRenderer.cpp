@@ -338,7 +338,7 @@ void ModelRenderer::Draw()
 	dx12_.GetSpriteDrawer().DrawGraph(0,0,screenH_);
 }
 
-void ModelRenderer::DrawToMyScreen()
+void ModelRenderer::DrawTo3DSpace()
 {
 	auto& texLoader = dx12_.GetTexLoader();
 	texLoader.SetDrawScreen(screenH_);

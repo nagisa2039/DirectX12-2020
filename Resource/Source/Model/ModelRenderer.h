@@ -26,7 +26,7 @@ public:
 	// •`‰æ
 	void Draw();
 
-	void DrawToMyScreen();
+	void DrawTo3DSpace();
 
 	// RootSignature‚Ìİ’è
 	void SetModelRS();

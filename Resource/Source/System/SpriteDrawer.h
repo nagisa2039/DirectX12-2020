@@ -37,10 +37,10 @@ public:
 	bool DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2, const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag);
 	void End();
 
-	void ClearDrawData();
-
 	void SetDrawBright(const INT r, const INT g, const INT b);
 	void SetDrawBlendMode(const BlendMode blendMode, const INT value);
+
+	void SetDrawScreen(const int graphHandle);
 
 private:
 	SpriteDrawer(const SpriteDrawer&) = delete;
@@ -129,5 +129,7 @@ private:
 	void AddDrawImage(SpriteDrawer::DrawImage& drawImage);
 
 	void CreateSpriteHeap();
+
+	void ClearDrawData();
 };
 

@@ -119,9 +119,6 @@ private:
 	// 上ベクトル(上)
 	Camera camera_;
 
-	D3D12_VIEWPORT viewport_;
-	D3D12_RECT scissorRect_;
-
 	// カメラのバッファとビューを作成
 	bool CreateCameraConstantBufferAndView();
 

@@ -22,9 +22,6 @@ Dx12Wrapper::Dx12Wrapper(HWND hwnd): hwnd_(hwnd)
 	camera_.target = { 0, 10, 0 };
 	camera_.up = { 0, 1, 0 };
 	mappedCam_ = nullptr;
-
-	viewport_ = {};
-	scissorRect_ = {};
 }
 
 
@@ -125,24 +122,27 @@ void Dx12Wrapper::SetCameraDescriptorHeap(const UINT rootParamIdx)
 
 void Dx12Wrapper::SetDefaultViewAndScissor()
 {
+	D3D12_VIEWPORT viewport = {};
+	D3D12_RECT scissorRect = {};
+
 	unsigned int screenW, screenH;
 	texLoader_->GetScreenSize(screenW, screenH);
 
-	viewport_.TopLeftX = 0;
-	viewport_.TopLeftY = 0;
-	viewport_.Width = Float(screenW);
-	viewport_.Height = Float(screenH);
-	viewport_.MaxDepth = 1.0f;
-	viewport_.MinDepth = 0.0f;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = Float(screenW);
+	viewport.Height = Float(screenH);
+	viewport.MaxDepth = 1.0f;
+	viewport.MinDepth = 0.0f;
 
-	scissorRect_.left = 0;
-	scissorRect_.top = 0;
-	scissorRect_.right = screenW;
-	scissorRect_.bottom = screenH;
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = screenW;
+	scissorRect.bottom = screenH;
 
 	auto& commandList = cmd_->CommandList();
-	commandList.RSSetViewports(1, &viewport_);
-	commandList.RSSetScissorRects(1, &scissorRect_);
+	commandList.RSSetViewports(1, &viewport);
+	commandList.RSSetScissorRects(1, &scissorRect);
 }
 
 bool Dx12Wrapper::CreateCameraConstantBufferAndView()

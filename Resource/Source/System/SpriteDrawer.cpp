@@ -278,6 +278,9 @@ void SpriteDrawer::End()
 	auto& command = dx12_.GetCommand();
 	auto& cmdList = command.CommandList();
 
+	auto& texLoader = dx12_.GetTexLoader();
+	auto& texHeap = texLoader.GetTextureHeap();
+
 	// 描画
 	for (size_t i = 0; const auto & blendGroup : blendGroups_)
 	{
@@ -298,7 +301,6 @@ void SpriteDrawer::End()
 		cmdList.IASetIndexBuffer(&ibView_);
 
 		// テクスチャ配列のセット
-		auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
 		cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
 		cmdList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
 
@@ -313,6 +315,8 @@ void SpriteDrawer::End()
 		cmdList.DrawIndexedInstanced(6, blendGroup.num, 0, 0, 0);
 
 		command.Execute();
+
+		texLoader.SetDrawScreen(texLoader.GetCurrentRenderTarget());
 	}
 	ClearDrawData();
 }
@@ -334,6 +338,15 @@ void SpriteDrawer::SetDrawBlendMode(const BlendMode blendMode, const INT value)
 {
 	blendMode_ = blendMode;
 	blendValue_ = Saturate(blendMode == BlendMode::noblend ? 255.0f : value /255.0f);
+}
+
+void SpriteDrawer::SetDrawScreen(const int graphHandle)
+{
+	if (drawImages_.size() > 0)
+	{
+		End();
+	}
+	dx12_.GetTexLoader().SetDrawScreen(graphHandle);
 }
 
 bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
