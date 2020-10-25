@@ -2,6 +2,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <vector>
+#include <array>
 #include <DirectXMath.h>
 #include<SpriteFont.h>
 #include<ResourceUploadBatch.h>
@@ -9,9 +10,21 @@
 
 class Dx12Wrapper;
 
+enum class BlendMode
+{
+	noblend,	// ノーブレンド
+	alpha,		// αブレンド
+	add,		// 加算ブレンド
+	sub,		// 減算ブレンド
+	mula,		// 乗算ブレンド
+	inv,		// 反転ブレンド
+	max			// 選んではいけない
+};
+
 class SpriteDrawer
 {
 public:
+
 	SpriteDrawer(Dx12Wrapper& dx12);
 	~SpriteDrawer();
 
@@ -21,8 +34,13 @@ public:
 	bool DrawRectGraph(const INT destX, const INT destY, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
 	bool DrawExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const int graphHandle);
 	bool DrawRectExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
-	bool DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2,const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag);
+	bool DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2, const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag);
 	void End();
+
+	void ClearDrawData();
+
+	void SetDrawBright(const INT r, const INT g, const INT b);
+	void SetDrawBlendMode(const BlendMode blendMode, const INT value);
 
 private:
 	SpriteDrawer(const SpriteDrawer&) = delete;
@@ -45,6 +63,8 @@ private:
 	struct PixelInf
 	{
 		unsigned int texIndex = 0;
+		DirectX::XMFLOAT3 bright;
+		float alpha = 1.0f;
 	};
 
 	struct PixelInfResource
@@ -66,7 +86,7 @@ private:
 	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
 	ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
-	ComPtr<ID3D12PipelineState> pipelineState_ = nullptr;
+	std::array<ComPtr<ID3D12PipelineState>, static_cast<size_t>(BlendMode::max)> pipelineStates_;
 
 	VertexResource verticesInfSB_;
 	ComPtr<ID3D12DescriptorHeap> verticesInfHeap_ = nullptr;
@@ -74,6 +94,16 @@ private:
 	PixelInfResource pixelInfSB_;
 	ComPtr<ID3D12DescriptorHeap> pixelInfHeap_ = nullptr;
 
+	BlendMode blendMode_;
+	DirectX::XMFLOAT3 drawBright_;
+	float blendValue_;
+
+	struct BlendGroup
+	{
+		BlendMode blendMode = BlendMode::noblend;
+		int num = 1;
+	};
+	std::vector<BlendGroup> blendGroups_;
 	std::vector<DrawImage> drawImages_;
 
 	ComPtr<ID3DBlob> vertexShader_ = nullptr;
@@ -96,6 +126,7 @@ private:
 	void SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const float exRate = 1.0f, const float angle = 0.0f);
 	void SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const UINT centerX, const UINT centerY, const float exRate = 1.0f, const float angle = 0.0f);
 	void SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img);
+	void AddDrawImage(SpriteDrawer::DrawImage& drawImage);
 
 	void CreateSpriteHeap();
 };

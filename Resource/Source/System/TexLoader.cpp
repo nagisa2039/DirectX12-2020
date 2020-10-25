@@ -162,7 +162,7 @@ bool TexLoader::CreateGradTexture(Resource& resource)
 	};
 
 	unsigned int redWidthUint = static_cast<unsigned int>(resDesc.Width);
-	vector<Color> col(Size_t(redWidthUint) * 256);
+	vector<Color> col(Uint64(redWidthUint) * 256);
 	auto it = col.begin();
 	for (int j = 255; j >= 0; j--)
 	{
@@ -325,7 +325,7 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 	src.PlacedFootprint.Footprint.Width = static_cast<UINT>(metaData.width);
 	src.PlacedFootprint.Footprint.Height = static_cast<UINT>(metaData.height);
 	src.PlacedFootprint.Footprint.Depth = static_cast<UINT>(metaData.depth);
-	src.PlacedFootprint.Footprint.RowPitch = Uint(imgRowPitch);
+	src.PlacedFootprint.Footprint.RowPitch = Uint32(imgRowPitch);
 	src.PlacedFootprint.Footprint.Format = img->format;
 
 
@@ -364,7 +364,7 @@ int TexLoader::LoadGraph(const std::wstring& path)
 	CreateSRV(texRes);
 
 	texResources_.emplace_back(texRes);
-	resouseHandleTable_[path] = Int(texResources_.size() - 1);
+	resouseHandleTable_[path] = Int32(texResources_.size() - 1);
 
 	return resouseHandleTable_[path];
 }
@@ -407,7 +407,7 @@ bool TexLoader::CreateSwapChainBuffer(IDXGISwapChain4& swapChain)
 	for (size_t i = 0; i < swDesc.BufferCount; i++)
 	{
 		TextureResorce texRes;
-		H_ASSERT(swapChain.GetBuffer(Uint(i), IID_PPV_ARGS(texRes.resource.buffer.ReleaseAndGetAddressOf())));
+		H_ASSERT(swapChain.GetBuffer(Uint32(i), IID_PPV_ARGS(texRes.resource.buffer.ReleaseAndGetAddressOf())));
 		texRes.resource.state	= D3D12_RESOURCE_STATE_PRESENT;
 		texRes.imageInf.width	= swDesc.Width;
 		texRes.imageInf.height	= swDesc.Height;
@@ -487,7 +487,7 @@ int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, co
 	CreateSRV(texRes);
 
 	texResources_.emplace_back(texRes);
-	handle = Int(texResources_.size() - 1);
+	handle = Int32(texResources_.size() - 1);
 	
 	resouseHandleTable_[resourceName] = handle;
 
@@ -507,8 +507,8 @@ bool TexLoader::GetGraphSize(const int graphH, unsigned int& width, unsigned int
 		return false;
 	}
 
-	width	= Uint(texResources_[graphH].imageInf.width);
-	height	= Uint(texResources_[graphH].imageInf.height);
+	width	= Uint32(texResources_[graphH].imageInf.width);
+	height	= Uint32(texResources_[graphH].imageInf.height);
 	return true;
 }
 

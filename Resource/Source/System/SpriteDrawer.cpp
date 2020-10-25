@@ -6,12 +6,19 @@
 #include "Utility/dx12Tool.h"
 #include "Command.h"
 #include "System/Dx12Wrapper.h"
+#include "Utility/Cast.h"
 
 using namespace DirectX;
 using namespace std;
 
 SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 {
+	drawBright_ = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	blendValue_ = 1.0f;
+	blendMode_ = BlendMode::noblend;
+
+	ClearDrawData();
+
 	// 頂点の作成
 	CreateVertextBuffer();
 
@@ -79,15 +86,6 @@ void SpriteDrawer::CreatePiplineState()
 	gpsd.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	gpsd.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 
-	// ブレンドステート
-	gpsd.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	gpsd.BlendState.AlphaToCoverageEnable = true;
-	gpsd.BlendState.IndependentBlendEnable = false;
-	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
-	gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-
 	//その他
 	gpsd.NodeMask = 0;
 	gpsd.SampleDesc.Count = 1;
@@ -98,7 +96,53 @@ void SpriteDrawer::CreatePiplineState()
 	gpsd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	gpsd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-	H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(pipelineState_.ReleaseAndGetAddressOf())));
+	// ブレンドステート
+	gpsd.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	gpsd.BlendState.AlphaToCoverageEnable = false;
+	gpsd.BlendState.IndependentBlendEnable = false;
+	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
+	//gpsd.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
+	array<function<void()>, Uint64(BlendMode::max)> blendDescSets_;
+	blendDescSets_[Uint64(BlendMode::alpha)] = [&gpsd = gpsd]()
+	{
+		gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	};
+	blendDescSets_[Uint64(BlendMode::noblend)] = blendDescSets_[Uint64(BlendMode::alpha)];
+
+	blendDescSets_[Uint64(BlendMode::add)] = [&gpsd = gpsd]()
+	{
+		gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	};
+	blendDescSets_[Uint64(BlendMode::sub)] = [&gpsd = gpsd]()
+	{
+		gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_DEST_ALPHA;
+		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_SUBTRACT;
+	};
+	blendDescSets_[Uint64(BlendMode::mula)] = [&gpsd = gpsd]()
+	{
+		gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+		gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	};
+	blendDescSets_[Uint64(BlendMode::inv)] = [&gpsd = gpsd]()
+	{
+		gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+		gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_COLOR;
+		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	};
+	
+	for (int i = 0; auto & pipelineState : pipelineStates_)
+	{
+		blendDescSets_[i]();
+		H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(pipelineState.ReleaseAndGetAddressOf())));
+		i++;
+	}
 }
 
 void SpriteDrawer::CreateRootSignature()
@@ -134,22 +178,22 @@ void SpriteDrawer::CreateVertextBuffer()
 	Map(vertMap, vertResource_, begin(vertices), end(vertices));
 
 	vbView_.BufferLocation = vertResource_.buffer->GetGPUVirtualAddress();
-	vbView_.StrideInBytes = Uint(size / _countof(vertices));
-	vbView_.SizeInBytes = Uint(size);
+	vbView_.StrideInBytes = Uint32(size / _countof(vertices));
+	vbView_.SizeInBytes = Uint32(size);
 
 }
 
 void SpriteDrawer::CreateIndexBuffer()
 {
 	std::vector<uint16_t> indices = { 0, 2, 1, 1, 2, 3 };
-	auto size = Size_t(sizeof(indices[0]) * indices.size());
+	auto size = Uint64(sizeof(indices[0]) * indices.size());
 	CreateUploadResource(&dx12_.GetDevice(), indexResource_, size);
 
 	uint16_t* indexMap = nullptr;
 	Map(indexMap, indexResource_, indices.begin(), indices.end());
 
 	ibView_.BufferLocation = indexResource_.buffer->GetGPUVirtualAddress();
-	ibView_.SizeInBytes = Uint(size);
+	ibView_.SizeInBytes = Uint32(size);
 	ibView_.Format = DXGI_FORMAT_R16_UINT;
 }
 
@@ -159,7 +203,7 @@ void SpriteDrawer::CreateVertexSB()
 	CreateDescriptorHeap(&dev, verticesInfHeap_);
 
 	int imageMax = Application::Instance().GetImageMax();
-	CreateUploadResource(&dev, verticesInfSB_.resource, Size_t(imageMax * sizeof(VerticesInf)), false);
+	CreateUploadResource(&dev, verticesInfSB_.resource, Uint64(imageMax * sizeof(VerticesInf)), false);
 	H_ASSERT(verticesInfSB_.resource.buffer->Map(0, nullptr, (void**)&verticesInfSB_.mappedVertexInf));
 	auto handle = verticesInfHeap_->GetCPUDescriptorHandleForHeapStart();
 	CreateConstantBufferView(&dev, verticesInfSB_.resource.buffer, handle);
@@ -171,7 +215,7 @@ void SpriteDrawer::CreatePixelSB()
 	CreateDescriptorHeap(&dev, pixelInfHeap_);
 
 	int imageMax = Application::Instance().GetImageMax();
-	CreateUploadResource(&dev, pixelInfSB_.resource, Size_t(imageMax * sizeof(PixelInf)), false);
+	CreateUploadResource(&dev, pixelInfSB_.resource, Uint64(imageMax * sizeof(PixelInf)), false);
 	H_ASSERT(pixelInfSB_.resource.buffer->Map(0, nullptr, (void**)&pixelInfSB_.mappedPixelInf));
 	auto handle = pixelInfHeap_->GetCPUDescriptorHandleForHeapStart();
 	CreateConstantBufferView(&dev, pixelInfSB_.resource.buffer, handle);
@@ -231,43 +275,65 @@ void SpriteDrawer::CreateSpriteHeap()
 
 void SpriteDrawer::End()
 {
-	for (int i = 0; i < drawImages_.size(); i++)
-	{
-		verticesInfSB_.mappedVertexInf[i] = drawImages_[i].verticesInf;
-		pixelInfSB_.mappedPixelInf[i]		= drawImages_[i].pixelInf;
-	}
-
 	auto& command = dx12_.GetCommand();
 	auto& cmdList = command.CommandList();
 
-	dx12_.SetDefaultViewAndScissor();
-
-	cmdList.SetPipelineState(pipelineState_.Get());
-	cmdList.SetGraphicsRootSignature(rootSignature_.Get());
-
-	cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	cmdList.IASetVertexBuffers(0, 1, &vbView_);
-	cmdList.IASetIndexBuffer(&ibView_);
-
-	// テクスチャ配列のセット
-	auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
-	cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
-
-	// VS情報配列のセット
-	cmdList.SetDescriptorHeaps(1, verticesInfHeap_.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(1, verticesInfHeap_->GetGPUDescriptorHandleForHeapStart());
-
-	// PS情報配列のセット
-	cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(2, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
-
 	// 描画
-	cmdList.DrawIndexedInstanced(6, drawImages_.size(), 0, 0, 0);
+	for (size_t i = 0; const auto & blendGroup : blendGroups_)
+	{
+		dx12_.SetDefaultViewAndScissor();
 
+		for (int j = 0; j < blendGroup.num; j++)
+		{
+			verticesInfSB_.mappedVertexInf[j] = drawImages_[i + j].verticesInf;
+			pixelInfSB_.mappedPixelInf[j] = drawImages_[i + j].pixelInf;
+		}
+		i += blendGroup.num;
+
+		cmdList.SetPipelineState(pipelineStates_[Uint64(blendGroup.blendMode)].Get());
+		cmdList.SetGraphicsRootSignature(rootSignature_.Get());
+
+		cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		cmdList.IASetVertexBuffers(0, 1, &vbView_);
+		cmdList.IASetIndexBuffer(&ibView_);
+
+		// テクスチャ配列のセット
+		auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
+		cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
+		cmdList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
+
+		// VS情報配列のセット
+		cmdList.SetDescriptorHeaps(1, verticesInfHeap_.GetAddressOf());
+		cmdList.SetGraphicsRootDescriptorTable(1, verticesInfHeap_->GetGPUDescriptorHandleForHeapStart());
+
+		// PS情報配列のセット
+		cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
+		cmdList.SetGraphicsRootDescriptorTable(2, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
+
+		cmdList.DrawIndexedInstanced(6, blendGroup.num, 0, 0, 0);
+
+		command.Execute();
+	}
+	ClearDrawData();
+}
+
+void SpriteDrawer::ClearDrawData()
+{
+	blendGroups_.clear();
 	drawImages_.clear();
+}
 
-	command.Execute();
+void SpriteDrawer::SetDrawBright(const INT r, const INT g, const INT b)
+{
+	drawBright_.x = Saturate(r/255.0f);
+	drawBright_.y = Saturate(g/255.0f);
+	drawBright_.z = Saturate(b/255.0f);
+}
+
+void SpriteDrawer::SetDrawBlendMode(const BlendMode blendMode, const INT value)
+{
+	blendMode_ = blendMode;
+	blendValue_ = Saturate(blendMode == BlendMode::noblend ? 255.0f : value /255.0f);
 }
 
 bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
@@ -292,11 +358,11 @@ bool SpriteDrawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, 
 	DrawImage drawImage;
 	drawImage.pixelInf.texIndex = graphHandle;
 
-	SetPosTrans(drawImage.verticesInf.posTans, x - Int(img.width / 2), y - Int(img.height / 2),
-		Uint(img.width), Uint(img.height), centerX, centerY, exRate, angle);
+	SetPosTrans(drawImage.verticesInf.posTans, x - Int32(img.width / 2), y - Int32(img.height / 2),
+		Uint32(img.width), Uint32(img.height), centerX, centerY, exRate, angle);
 	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
 
-	drawImages_.emplace_back(drawImage);
+	AddDrawImage(drawImage);
 
 	return true;
 }
@@ -314,7 +380,7 @@ bool SpriteDrawer::DrawRectGraph(const INT destX, const INT destY, const UINT sr
 	SetPosTrans(drawImage.verticesInf.posTans, destX, destY, width, height);
 	SetUVTrans(drawImage.verticesInf.uvTrans, srcX, srcY, width, height, img);
 
-	drawImages_.emplace_back(drawImage);
+	AddDrawImage(drawImage);
 
 	return true;
 }
@@ -332,7 +398,7 @@ bool SpriteDrawer::DrawExtendGraph(const INT left, const INT top, const INT righ
 	SetPosTrans(drawImage.verticesInf.posTans, left, top, right - left, buttom - top);
 	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
 
-	drawImages_.emplace_back(drawImage);
+	AddDrawImage(drawImage);
 
 	return true;
 }
@@ -350,9 +416,25 @@ bool SpriteDrawer::DrawRectExtendGraph(const INT left, const INT top, const INT 
 	SetPosTrans(drawImage.verticesInf.posTans, left, top, right - left, buttom - top);
 	SetUVTrans(drawImage.verticesInf.uvTrans, srcX, srcY, width, height, img);
 
-	drawImages_.emplace_back(drawImage);
+	AddDrawImage(drawImage);
 
 	return true;
+}
+
+void SpriteDrawer::AddDrawImage(SpriteDrawer::DrawImage& drawImage)
+{
+	if (blendGroups_.size() > 0 && blendGroups_.rbegin()->blendMode == blendMode_)
+	{
+		blendGroups_.rbegin()->num++;
+	}
+	else
+	{
+		blendGroups_.emplace_back(BlendGroup{ blendMode_, 1 });
+	}
+
+	drawImage.pixelInf.bright = drawBright_;
+	drawImage.pixelInf.alpha = blendValue_;
+	drawImages_.emplace_back(drawImage);
 }
 
 bool SpriteDrawer::DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2, const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag)

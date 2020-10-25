@@ -41,9 +41,12 @@ void PlayScene::Draw()
 	texLoader.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
 
-	//spriteDrawer.DrawGraph(0, 0, d3dH_);
-	spriteDrawer.DrawGraph(0,0, tnktH_);
-	//spriteDrawer.DrawExtendGraph(0, 0, 750, 750, tnktH_);
+	spriteDrawer.SetDrawBright(255, 255, 255);
+	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
+	spriteDrawer.DrawGraph(0, 0, d3dH_);
+	spriteDrawer.SetDrawBlendMode(BlendMode::alpha, 255);
+	spriteDrawer.DrawGraph(0, 0, tnktH_);
+	spriteDrawer.DrawGraph(100, 100, tnktH_);
 
 	spriteDrawer.End();
 	dx12.ScreenFlip();

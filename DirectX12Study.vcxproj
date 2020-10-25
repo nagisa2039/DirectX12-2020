@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\Utility\Cast.h" />
     <ClInclude Include="Resource\Source\Utility\DirectXStruct.h" />
     <ClInclude Include="Resource\Source\Utility\Constant.h" />
     <ClInclude Include="Resource\Source\Model\ModelActor.h" />

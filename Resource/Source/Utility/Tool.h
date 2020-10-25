@@ -4,6 +4,8 @@
 #include <windows.h>
 #include <cassert>
 #include "Utility/Constant.h"
+#include <algorithm>
+#include "Utility/Cast.h"
 
 namespace
 {
@@ -31,7 +33,7 @@ namespace
 	std::string GetExtension(const std::string& path)
 	{
 		int idx = static_cast<int>(path.find_last_of('.'));
-		return path.substr(Size_t(idx) + 1, path.length() - idx - 1);
+		return path.substr(Uint64(idx) + 1, path.length() - idx - 1);
 	}
 
 	// 1ƒoƒCƒgstring‚ðwstring‚É•ÏŠ·‚·‚é
@@ -69,7 +71,13 @@ namespace
 		int pathIndex1 = static_cast<int>(modelPath.rfind('/'));
 		int pathIndex2 = static_cast<int>(modelPath.rfind('\\'));
 		auto pathIndex = max(pathIndex1, pathIndex2);
-		auto folderPath = modelPath.substr(0, Size_t(pathIndex) + 1);
+		auto folderPath = modelPath.substr(0, Uint64(pathIndex) + 1);
 		return folderPath;
+	}
+
+	template<class T>
+	T Saturate(const T value, const T min = 0.0f, const T max = 1.0f)
+	{
+		return std::clamp(value, min, max);
 	}
 }
