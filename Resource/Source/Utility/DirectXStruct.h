@@ -1,9 +1,8 @@
 #pragma once
 #include <d3d12.h>
-#include <wrl.h>
+#include "Utility/ComPtr.h"
 
 class Command;
-using Microsoft::WRL::ComPtr;
 
 struct Resource
 {

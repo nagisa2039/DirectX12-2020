@@ -99,9 +99,9 @@ bool TexLoader::GetTextureResouse(const std::wstring& texPath, TextureResorce& t
 
 int TexLoader::GetGraphHandle(const std::wstring& texPath)const
 {
-	if (resouseHandleTable_.contains(texPath))
+	if (resourceHandleTable_.contains(texPath))
 	{
-		return resouseHandleTable_.at(texPath);
+		return resourceHandleTable_.at(texPath);
 	}
 	return FAILED;
 }
@@ -364,9 +364,9 @@ int TexLoader::LoadGraph(const std::wstring& path)
 	CreateSRV(texRes);
 
 	texResources_.emplace_back(texRes);
-	resouseHandleTable_[path] = Int32(texResources_.size() - 1);
+	resourceHandleTable_[path] = Int32(texResources_.size() - 1);
 
-	return resouseHandleTable_[path];
+	return resourceHandleTable_[path];
 }
 
 void TexLoader::CreateSRV(TextureResorce& texRes)
@@ -486,7 +486,7 @@ int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, co
 	texResources_.emplace_back(texRes);
 	handle = Int32(texResources_.size() - 1);
 	
-	resouseHandleTable_[resourceName] = handle;
+	resourceHandleTable_[resourceName] = handle;
 
 	return handle;
 }

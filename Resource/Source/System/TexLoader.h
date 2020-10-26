@@ -48,7 +48,7 @@ private:
 	std::unordered_map<std::wstring, LoadLambda_t> loadTable_;
 
 	// テクスチャバッファ
-	std::unordered_map<std::wstring, int> resouseHandleTable_;
+	std::unordered_map<std::wstring, int> resourceHandleTable_;
 	DummyTextures dummyTextures_;
 
 	std::vector<TextureResorce> texResources_;

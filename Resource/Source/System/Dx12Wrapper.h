@@ -16,6 +16,7 @@ using Microsoft::WRL::ComPtr;
 class Command;
 class TexLoader;
 class SpriteDrawer;
+class SoundManager;
 
 class Dx12Wrapper
 {
@@ -47,6 +48,11 @@ public:
 	/// テクスチャリソースの管理クラス取得
 	/// </summary>
 	TexLoader& GetTexLoader();
+
+	/// <summary>
+	/// サウンド管理蔵種の取得
+	/// </summary>
+	SoundManager& GetSoundManager();
 
 	/// <summary>
 	/// 2D描画管理クラスの取得
@@ -84,6 +90,7 @@ private:
 	std::shared_ptr<TexLoader> texLoader_;
 	std::shared_ptr<SpriteDrawer> spriteDrawer_;
 	std::shared_ptr<Command> cmd_;
+	std::shared_ptr<SoundManager> soundManager_;
 
 	// カメラ行列用定数バッファ
 	ComPtr<ID3D12Resource> cameraCB_ = nullptr;

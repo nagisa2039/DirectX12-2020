@@ -57,6 +57,30 @@ namespace
 		return wstr;
 	}
 
+	// wstringをstringに変換
+	std::string StringFromWString(const std::wstring& wstr)
+	{
+		// wstring → SJIS
+		int iBufferSize = WideCharToMultiByte(CP_OEMCP, 0, wstr.c_str()
+			, -1, (char*)NULL, 0, NULL, NULL);
+
+		// バッファの取得
+		CHAR* cpMultiByte = new CHAR[iBufferSize];
+
+		// wstring → SJIS
+		WideCharToMultiByte(CP_OEMCP, 0, wstr.c_str(), -1, cpMultiByte
+			, iBufferSize, NULL, NULL);
+
+		// stringの生成
+		std::string oRet(cpMultiByte, cpMultiByte + iBufferSize - 1);
+
+		// バッファの破棄
+		delete[] cpMultiByte;
+
+		// 変換結果を返す
+		return(oRet);
+	}
+
 	UINT64 AlignmentValue(UINT64 size, UINT64 alignment)
 	{
 		if (size%alignment == 0)

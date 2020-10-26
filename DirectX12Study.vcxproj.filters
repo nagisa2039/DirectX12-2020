@@ -108,8 +108,14 @@
     <ClInclude Include="Resource\Source\Utility\DirectXStruct.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\System\SoundManager.h">
+      <Filter>ヘッダー ファイル\System</Filter>
+    </ClInclude>
     <ClInclude Include="Resource\Source\Utility\Cast.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Utility\ComPtr.h">
+      <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +165,9 @@
       <Filter>ソース ファイル\Model</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\System\SpriteDrawer.cpp">
+      <Filter>ソース ファイル\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\System\SoundManager.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
   </ItemGroup>

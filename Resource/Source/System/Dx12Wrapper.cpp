@@ -6,6 +6,7 @@
 #include "TexLoader.h"
 #include "Utility/dx12Tool.h"
 #include "SpriteDrawer.h"
+#include "SoundManager.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -52,6 +53,7 @@ bool Dx12Wrapper::Init()
 	CreateCameraConstantBufferAndView();
 
 	texLoader_ = make_shared<TexLoader>(GetDevice(), GetCommand(), *swapChain_.Get());
+	soundManager_ = make_shared<SoundManager>();
 
 	spriteDrawer_ = make_shared<SpriteDrawer>(*this);
 
@@ -104,6 +106,11 @@ void Dx12Wrapper::CreateSwapChain()
 TexLoader& Dx12Wrapper::GetTexLoader()
 {
 	return *texLoader_;
+}
+
+SoundManager& Dx12Wrapper::GetSoundManager()
+{
+	return *soundManager_;
 }
 
 SpriteDrawer& Dx12Wrapper::GetSpriteDrawer()
