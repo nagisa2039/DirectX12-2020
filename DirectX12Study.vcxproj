@@ -39,6 +39,8 @@
     <ClInclude Include="Resource\Source\System\FPSManager.h" />
     <ClInclude Include="Resource\Source\System\TexLoader.h" />
     <ClInclude Include="Resource\Source\Utility\dx12Tool.h" />
+    <ClInclude Include="Resource\Source\Utility\Geometry.h" />
+    <ClInclude Include="Resource\Source\Utility\Input.h" />
     <ClInclude Include="Resource\Source\Utility\Tool.h" />
     <ClInclude Include="Resource\Source\Utility\TextureStruct.h" />
     <ClInclude Include="Resource\Source\System\SoundManager.h" />
@@ -61,6 +63,8 @@
     <ClCompile Include="Resource\Source\System\main.cpp" />
     <ClCompile Include="Resource\Source\System\TexLoader.cpp" />
     <ClCompile Include="Resource\Source\System\SoundManager.cpp" />
+    <ClCompile Include="Resource\Source\Utility\Geometry.cpp" />
+    <ClCompile Include="Resource\Source\Utility\Input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\2D\2DStanderdPS.hlsl">

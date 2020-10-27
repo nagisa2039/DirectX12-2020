@@ -7,7 +7,6 @@
 #include "Utility/DirectXStruct.h"
 #include <algorithm>
 
-#define H_ASSERT(X) assert(SUCCEEDED(X));
 
 namespace
 {

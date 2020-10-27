@@ -4,6 +4,7 @@
 #include "SpriteDrawer.h"
 #include "FPSManager.h"
 #include "Scene/SceneController.h"
+#include "Utility/Input.h"
 #include <d3d12.h>
 
 using namespace std;
@@ -51,6 +52,11 @@ UINT Application::GetImageMax()
 Dx12Wrapper& Application::GetDx12()
 {
 	return *dx12_;
+}
+
+Input& Application::GetInput()
+{
+	return *input_;
 }
 
 bool Application::Initialize()
@@ -103,6 +109,7 @@ bool Application::Initialize()
 	fpsManager_.reset(new FPSManager(FPS));
 
 	sceneController_ = make_unique<SceneController>();
+	input_ = make_unique<Input>(hwnd_);
 
 	return true;
 }
@@ -113,7 +120,7 @@ void Application::Run()
 	ShowWindow(hwnd_, SW_SHOW);
 
 	MSG msg = {};
-	while (true)
+	while (true && !input_->GetButton(DIK_ESCAPE))
 	{
 		// OS からのメッセージを msg に格納
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -128,6 +135,7 @@ void Application::Run()
 			break;
 		}
 
+		input_->Update();
 		sceneController_->SceneUpdate();
 
 		fpsManager_->Wait();
@@ -140,5 +148,7 @@ void Application::Terminate()
 
 Application::~Application()
 {
+	// 積まれている命令を実行してからにしておく
+	dx12_->GetCommand().Execute();
 	UnregisterClass(wndClass_.lpszClassName, wndClass_.hInstance);
 }

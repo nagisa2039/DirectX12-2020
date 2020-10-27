@@ -52,7 +52,7 @@ public:
 	/// <summary>
 	/// サウンド管理蔵種の取得
 	/// </summary>
-	SoundManager& GetSoundManager();
+	//SoundManager& GetSoundManager();
 
 	/// <summary>
 	/// 2D描画管理クラスの取得
@@ -90,7 +90,7 @@ private:
 	std::shared_ptr<TexLoader> texLoader_;
 	std::shared_ptr<SpriteDrawer> spriteDrawer_;
 	std::shared_ptr<Command> cmd_;
-	std::shared_ptr<SoundManager> soundManager_;
+	//std::shared_ptr<SoundManager> soundManager_;
 
 	// カメラ行列用定数バッファ
 	ComPtr<ID3D12Resource> cameraCB_ = nullptr;

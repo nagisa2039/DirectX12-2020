@@ -5,6 +5,7 @@
 class Dx12Wrapper;
 class FPSManager;
 class SceneController;
+class Input;
 
 class Application
 {
@@ -38,6 +39,12 @@ public:
 	/// </summary>
 	Dx12Wrapper& GetDx12();
 
+	/// <summary>
+	/// 入力管理クラスの取得
+	/// </summary>
+	/// <returns></returns>
+	Input& GetInput();
+
 	// アプリケーションを初期化する
 
 	/// <summary>
@@ -64,6 +71,7 @@ private:
 	std::unique_ptr<Dx12Wrapper> dx12_;
 	std::unique_ptr<FPSManager> fpsManager_;
 	std::unique_ptr<SceneController> sceneController_;
+	std::unique_ptr<Input> input_;
 
 	Application();
 	Application(const Application&) = delete;

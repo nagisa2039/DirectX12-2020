@@ -53,7 +53,7 @@ bool Dx12Wrapper::Init()
 	CreateCameraConstantBufferAndView();
 
 	texLoader_ = make_shared<TexLoader>(GetDevice(), GetCommand(), *swapChain_.Get());
-	soundManager_ = make_shared<SoundManager>();
+	//soundManager_ = make_shared<SoundManager>();
 
 	spriteDrawer_ = make_shared<SpriteDrawer>(*this);
 
@@ -108,10 +108,10 @@ TexLoader& Dx12Wrapper::GetTexLoader()
 	return *texLoader_;
 }
 
-SoundManager& Dx12Wrapper::GetSoundManager()
-{
-	return *soundManager_;
-}
+//SoundManager& Dx12Wrapper::GetSoundManager()
+//{
+//	return *soundManager_;
+//}
 
 SpriteDrawer& Dx12Wrapper::GetSpriteDrawer()
 {

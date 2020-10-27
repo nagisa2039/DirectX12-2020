@@ -24,7 +24,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	int tmpH = texLoader.MakeScreen(L"tmp", 1280, 720);
 
 	auto& dx12 = Application::Instance().GetDx12();
-	auto& soundManager = dx12.GetSoundManager();
+	//auto& soundManager = dx12.GetSoundManager();
 	//int waveH = soundManager.LoadWave(L"Resource/Sound/SE/laser1.wav");
 	//soundManager.PlayWave(waveH);
 }
