@@ -270,7 +270,7 @@ void SpriteDrawer::CreateSpriteHeap()
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	heapDesc.NodeMask = 0;
 	H_ASSERT(dx12_.GetDevice().CreateDescriptorHeap(&heapDesc,
-		IID_PPV_ARGS(spriteFontHeap_.ReleaseAndGetAddressOf())))
+		IID_PPV_ARGS(spriteFontHeap_.ReleaseAndGetAddressOf())));
 }
 
 void SpriteDrawer::End()

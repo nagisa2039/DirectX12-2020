@@ -1,7 +1,6 @@
 #pragma once
 #include <unordered_map>
 #include <vector>
-#include <memory>
 #include <xaudio2.h>
 #include "Utility/ComPtr.h"
 
@@ -11,7 +10,7 @@ public:
 	SoundManager();
 	~SoundManager();
 
-	int LoadWave(const std::wstring& filePath);
+	int LoadWave(const std::wstring& filePath, bool loop = false);
 
 	bool PlayWave(const int handle)const;
 	bool CheckHandleInRange(const int handle) const;
@@ -19,12 +18,13 @@ public:
 
 private:
 	ComPtr<IXAudio2> xaudio2_;
-	std::unique_ptr<IXAudio2MasteringVoice> masteringVoice_;
+	IXAudio2MasteringVoice* masteringVoice_ = nullptr;
 
 	struct SoundData
 	{
-		std::unique_ptr<IXAudio2SourceVoice> sourceVoice;
-		XAUDIO2_BUFFER buffer;
+		IXAudio2SourceVoice* sourceVoice = nullptr;
+		XAUDIO2_BUFFER buffer = {};
+		std::vector<BYTE> byteData;
 	};
 
 	std::unordered_map<std::wstring, int> resourceHandleTable_;

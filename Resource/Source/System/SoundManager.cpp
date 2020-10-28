@@ -2,18 +2,18 @@
 #include <vector>
 #include "Utility/dx12Tool.h"
 #include "Utility/Tool.h"
+#include <Mmsystem.h>
 
-#pragma comment(lib,"Ole32.lib")
+#pragma comment (lib, "winmm.lib")
 
 using namespace std;
 
 SoundManager::SoundManager()
 {
-	H_ASSERT(CoInitializeEx(0, COINITBASE_MULTITHREADED));
-	H_ASSERT(XAudio2Create(xaudio2_.ReleaseAndGetAddressOf()));
-	IXAudio2MasteringVoice* masteringVoice = nullptr;
-	H_ASSERT(xaudio2_->CreateMasteringVoice(&masteringVoice));
-	masteringVoice_.reset(masteringVoice);
+	auto result = XAudio2Create(xaudio2_.ReleaseAndGetAddressOf());
+	H_ASSERT(result);
+	result = xaudio2_->CreateMasteringVoice(&masteringVoice_);
+	H_ASSERT(result);
 
 	resourceHandleTable_.clear();
 	soundDatas_.clear();
@@ -21,8 +21,8 @@ SoundManager::SoundManager()
 
 SoundManager::~SoundManager()
 {
-	CoUninitialize();
 	masteringVoice_->DestroyVoice();
+
 	for (auto& soundData : soundDatas_)
 	{
 		soundData.sourceVoice->Stop();
@@ -30,75 +30,89 @@ SoundManager::~SoundManager()
 	}
 }
 
-int SoundManager::LoadWave(const std::wstring& filePath)
+int SoundManager::LoadWave(const std::wstring& filePath, bool loop)
 {
 	if (resourceHandleTable_.contains(filePath))
 	{
 		return resourceHandleTable_[filePath];
 	}
 
-	FILE* file = nullptr;
-	std::string str = StringFromWString(filePath);
-	fopen_s(&file, str.c_str(), "rb");
+	HMMIO mmio = NULL;
+	MMIOINFO info = {};
+	mmio = mmioOpen(StringFromWString(filePath).data(), &info, MMIO_READ);
 
-	if (!file)
+	if (!mmio)
 	{
-		return -1;
+		assert(false);
+		return FAILED;
 	}
 
-# pragma pack(4)
-	struct Chunk
+	MMRESULT mret;
+	MMCKINFO riff_chunk;
+	riff_chunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
+	mret = mmioDescend(mmio, &riff_chunk, NULL, MMIO_FINDRIFF);
+	if (mret != MMSYSERR_NOERROR)
 	{
-		char id[4];
-		int size;
-	};
-
-	struct RiffHeader
-	{
-		Chunk chunk;
-		char type[4];
-	};
-
-	struct FormatChunk
-	{
-		Chunk chunk;
-		WAVEFORMAT fmt;
-	};
-# pragma pack(8)
-
-	RiffHeader riff = {};
-	fread_s(&riff, sizeof(riff), sizeof(RiffHeader), 1, file);
-
-	FormatChunk format = {};
-	fread_s(&format, sizeof(format), sizeof(FormatChunk), 1, file);
-
-	Chunk data = {};
-	fread_s(&data, sizeof(data), sizeof(Chunk), 1, file);
-
-	std::vector<BYTE> byteData(data.size);
-	fread_s(byteData.data(), byteData.size(), data.size, 1, file);
-
-	fclose(file); 
-
-	WAVEFORMATEX wfex{};
-	// 波形フォーマットの設定
-	memcpy(&wfex, &format.fmt, sizeof(format.fmt));
-	wfex.wBitsPerSample = format.fmt.nBlockAlign * 8 / format.fmt.nChannels;
-
-	// 波形フォーマットを元にSourceVoiceの生成
-	IXAudio2SourceVoice* pSourceVoice = nullptr;
-	if (FAILED(xaudio2_->CreateSourceVoice(&pSourceVoice, &wfex)))
-	{
-		return -1;
+		assert(false);
+		return FAILED;
 	}
+
+	MMCKINFO chunk;
+	chunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
+	mret = mmioDescend(mmio, &chunk, &riff_chunk, MMIO_FINDCHUNK);
+	if (mret != MMSYSERR_NOERROR)
+	{
+		assert(false);
+		return FAILED;
+	}
+
+	WAVEFORMATEX format = {};
+	DWORD size = mmioRead(mmio, (HPSTR)&format, chunk.cksize);
+	if (size != chunk.cksize)
+	{
+		assert(false);
+		return FAILED;
+	}
+
+	chunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
+	mret = mmioDescend(mmio, &chunk, &riff_chunk, MMIO_FINDCHUNK);
+	if (mret != MMSYSERR_NOERROR)
+	{
+		assert(false);
+		return FAILED;
+	}
+
+	IXAudio2SourceVoice* pSourceVoice = nullptr; 
+	auto result = xaudio2_->CreateSourceVoice(&pSourceVoice, &format);
+	H_ASSERT(result);
 
 	// 再生する波形データの設定
 	XAUDIO2_BUFFER buf{};
-	buf.pAudioData = byteData.data();
-	buf.Flags = XAUDIO2_END_OF_STREAM;
-	buf.AudioBytes = data.size;
+	buf.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
+	std::vector<BYTE> byteData(format.nAvgBytesPerSec);
 
-	soundDatas_.emplace_back(SoundData{ unique_ptr<IXAudio2SourceVoice>(pSourceVoice), buf });
+	int byteSize = byteSize = mmioRead(mmio, (HPSTR)(byteData.data()), byteData.size());
+	buf.AudioBytes = byteSize;
+	buf.pAudioData = byteData.data();
+	buf.PlayLength = byteSize / format.nBlockAlign;
+
+	//WAVEFORMATEX wfex{};
+	//// 波形フォーマットの設定
+	//memcpy(&wfex, &format.fmt, sizeof(format.fmt));
+	//wfex.wBitsPerSample = format.fmt.nBlockAlign * 8 / format.fmt.nChannels;
+
+	//// 波形フォーマットを元にSourceVoiceの生成
+	//IXAudio2SourceVoice* pSourceVoice = nullptr;
+	//auto result = xaudio2_->CreateSourceVoice(&pSourceVoice, &wfex);
+	//H_ASSERT(result);
+
+	//// 再生する波形データの設定
+	//XAUDIO2_BUFFER buf{};
+	//buf.pAudioData = byteData.data();
+	//buf.Flags = XAUDIO2_END_OF_STREAM;
+	//buf.AudioBytes = data.size;
+
+	soundDatas_.emplace_back(SoundData{ pSourceVoice, buf, byteData});
 	int handle = soundDatas_.size() - 1;
 	resourceHandleTable_[filePath] = handle;
 	return handle;
@@ -109,8 +123,10 @@ bool SoundManager::PlayWave(const int handle) const
 	if (!CheckHandleInRange(handle))return false;
 
 	auto& soundData = soundDatas_[handle];
-	H_ASSERT(soundData.sourceVoice->SubmitSourceBuffer(&soundData.buffer));
-	H_ASSERT(soundData.sourceVoice->Start());
+	auto result = soundData.sourceVoice->SubmitSourceBuffer(&soundData.buffer);
+	H_ASSERT(result);
+	result = soundData.sourceVoice->Start();
+	H_ASSERT(result);
 
 	return true;
 }
@@ -123,6 +139,10 @@ bool SoundManager::CheckHandleInRange(const int handle) const
 bool SoundManager::StopSound(const int handle) const
 {
 	if (!CheckHandleInRange(handle))return false;
+
+	XAUDIO2_VOICE_STATE state;
+	soundDatas_[handle].sourceVoice->GetState(&state);
+
 	soundDatas_[handle].sourceVoice->Stop();
 	return true;
 }

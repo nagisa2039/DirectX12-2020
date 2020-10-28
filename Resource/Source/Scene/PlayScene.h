@@ -19,4 +19,7 @@ private:
 	int tnktH_;
 	int dmdnH_;
 	int d3dH_;
+
+	int BGMH_;
+	int laserSEH_;
 };

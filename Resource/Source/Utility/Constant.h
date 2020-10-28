@@ -8,4 +8,4 @@ namespace
 	const std::wstring D3D_SPACE_SCREEN = L"3d_space_screen";
 }
 
-#define H_ASSERT(X) assert(SUCCEEDED(X));
+#define H_ASSERT(X) assert(SUCCEEDED(X))

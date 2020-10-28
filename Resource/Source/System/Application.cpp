@@ -150,5 +150,6 @@ Application::~Application()
 {
 	// Ï‚Ü‚ê‚Ä‚¢‚é–½—ß‚ðŽÀs‚µ‚Ä‚©‚ç‚É‚µ‚Ä‚¨‚­
 	dx12_->GetCommand().Execute();
+	CoUninitialize();
 	UnregisterClass(wndClass_.lpszClassName, wndClass_.hInstance);
 }

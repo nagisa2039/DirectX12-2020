@@ -196,16 +196,7 @@ bool TexLoader::CretateLoadLambdaTable()
 		= loadTable_[L"png"] = loadTable_[L"jpg"] = loadTable_[L"jpeg"] =
 		[](const wstring& path, TexMetadata* meta, ScratchImage&img)->HRESULT
 	{
-		if (path == L"Resource/Image/tnkt.png")
-		{
-			int a = 0;
-		}
-		auto result = LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_FORCE_RGB, meta, img);
-		if (meta->format == DXGI_FORMAT_B8G8R8A8_UNORM)
-		{
-			result = LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_DEFAULT_SRGB, meta, img);
-		}
-		return result;
+		return LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_FORCE_RGB, meta, img);
 	};
 	loadTable_[L"tga"] = [](const wstring& path, TexMetadata* meta, ScratchImage& img) -> HRESULT
 	{
