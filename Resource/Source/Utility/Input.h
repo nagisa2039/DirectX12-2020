@@ -69,19 +69,19 @@ public:
 	/// ボタンを押しているかを取得
 	/// </summary>
 	/// <param name="keycode">DxLibのキーコード</param>
-	bool GetButton(const char keycode)const;
+	bool GetButton(const BYTE keycode)const;
 
 	/// <summary>
 	/// ボタンを押したフレームかを取得
 	/// </summary>
 	/// <param name="keycode">DxLibのキーコード</param>
-	bool GetButtonDown(const char keycode)const;
+	bool GetButtonDown(const BYTE keycode)const;
 
 	/// <summary>
 	/// ボタンを離したフレームを取得
 	/// </summary>
 	/// <param name="keycode">DxLibのキーコード</param>
-	bool GetButtonUp(const char keycode)const;
+	bool GetButtonUp(const BYTE keycode)const;
 
 private:
 	// プレイヤー番号と、入力文字列から

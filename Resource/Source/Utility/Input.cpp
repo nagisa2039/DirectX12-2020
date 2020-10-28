@@ -201,18 +201,18 @@ bool Input::CheckCommand(const std::string& cmd) const
 //	return mousePos_;
 //}
 
-bool Input::GetButton(const char keycode)const
+bool Input::GetButton(const BYTE keycode)const
 {
 	return keystate_[currentInputStateIdx_][keycode];
 }
 
-bool Input::GetButtonDown(const char keycode)const
+bool Input::GetButtonDown(const BYTE keycode)const
 {
 	size_t lastIdx = (currentInputStateIdx_ - 1 + INPUT_RECORD_SIZE) % INPUT_RECORD_SIZE;
 	return keystate_[currentInputStateIdx_][keycode] && !keystate_[lastIdx][keycode];
 }
 
-bool Input::GetButtonUp(const char keycode)const
+bool Input::GetButtonUp(const BYTE keycode)const
 {
 	size_t lastIdx = (currentInputStateIdx_ - 1 + INPUT_RECORD_SIZE) % INPUT_RECORD_SIZE;
 	return !keystate_[currentInputStateIdx_][keycode] && keystate_[lastIdx][keycode];

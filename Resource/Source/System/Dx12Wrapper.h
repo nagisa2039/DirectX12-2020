@@ -10,6 +10,7 @@
 #include <DirectXMath.h>
 #include <string>
 #include "Utility/TextureStruct.h"
+#include "Utility/Geometry.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -70,10 +71,37 @@ public:
 	void ScreenFlip();
 
 	/// <summary>
+	/// カメラ行列の更新
+	/// </summary>
+	void UpdateCamera();
+
+	/// <summary>
 	/// カメラのヒープを設定
 	/// </summary>
 	/// <param name="rootParamIdx">rootSignatureインデックス</param>
 	void SetCameraDescriptorHeap(const UINT rootParamIdx);
+
+	/// <summary>
+	/// カメラの座標取得
+	/// </summary>
+	Vector3 GetCameraPosition()const;
+
+	/// <summary>
+	/// カメラのターゲット座標の取得
+	/// </summary>
+	Vector3 GetCameraTarget()const;
+
+	/// <summary>
+	/// カメラの座標設定
+	/// </summary>
+	/// <param name="pos">カメラ座標</param>
+	void SetCameraPosision(const Vector3& pos);
+
+	/// <summary>
+	/// カメラのターゲット座標設定
+	/// </summary>
+	/// <param name="target">ターゲット座標</param>
+	void SetCameraTarget(const Vector3& target);
 
 	/// <summary>
 	/// 全画面にViewportとScissorを設定する
@@ -130,7 +158,5 @@ private:
 	bool CreateCameraConstantBufferAndView();
 
 	void CreateSwapChain();
-
-	void UpdateSceneMatrix();
 };
 

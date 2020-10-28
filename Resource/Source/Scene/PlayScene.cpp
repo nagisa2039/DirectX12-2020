@@ -8,6 +8,7 @@
 #include "System/SpriteDrawer.h"
 #include "Utility/Constant.h"
 #include "System/SoundManager.h"
+#include "Utility/Input.h"
 
 using namespace std;
 
@@ -36,6 +37,28 @@ PlayScene::~PlayScene()
 void PlayScene::Update()
 {
 	modelRenderer_->Update();
+
+	auto& dx12 = Application::Instance().GetDx12();
+	auto& input = Application::Instance().GetInput();
+
+	auto cameraPos = dx12.GetCameraPosition();
+	float moveSpeed = 1.0f;
+	auto cameraMove = [&input = input](const char keycode, float& target, const float speed)
+	{
+		if (input.GetButton(keycode))
+		{
+			target += speed;
+		}
+	};
+
+	cameraMove(DIK_UP, cameraPos.y, moveSpeed);
+	cameraMove(DIK_DOWN, cameraPos.y, -moveSpeed);
+	cameraMove(DIK_RIGHT, cameraPos.x, moveSpeed);
+	cameraMove(DIK_LEFT, cameraPos.x, -moveSpeed);
+	cameraMove(DIK_I, cameraPos.z, moveSpeed);
+	cameraMove(DIK_O, cameraPos.z, -moveSpeed);
+	dx12.SetCameraPosision(cameraPos);
+	dx12.UpdateCamera();
 }
 
 void PlayScene::Draw()
@@ -47,29 +70,14 @@ void PlayScene::Draw()
 	auto& spriteDrawer = dx12.GetSpriteDrawer();
 	auto wsize = Application::Instance().GetWindowSize();
 
-	int tmpH = texLoader.LoadGraph(L"tmp");
-	spriteDrawer.SetDrawScreen(tmpH);
-	texLoader.ClsDrawScreen();
-
-	spriteDrawer.SetDrawBright(255, 255, 0);
-	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	spriteDrawer.DrawGraph(0, 0, d3dH_);
-
-	spriteDrawer.SetDrawBright(255, 255, 255);
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
-
-	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	spriteDrawer.DrawExtendGraph(0,0,wsize.w, wsize.h, dmdnH_);
-	spriteDrawer.DrawGraph(0, 0, tmpH);
-	spriteDrawer.SetDrawBlendMode(BlendMode::add, 255);
-	spriteDrawer.DrawGraph(0, 0, tmpH);
-	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.SetDrawBright(255, 255, 255);
-	spriteDrawer.DrawGraph(0, 0, tnktH_);
-	spriteDrawer.SetDrawBlendMode(BlendMode::add, 255);
-	spriteDrawer.DrawGraph(0, 0, tnktH_);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
+	spriteDrawer.DrawGraph(0, 0, d3dH_);
+	spriteDrawer.DrawRotaGraph(1280/2, 720/2, 0.5f, 0.0f, tnktH_);
+	spriteDrawer.SetDrawBlendMode(BlendMode::add, 255);
+	//spriteDrawer.DrawGraph(100, 100, tnktH_);
 
 	spriteDrawer.End();
 

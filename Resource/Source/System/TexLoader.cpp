@@ -196,7 +196,16 @@ bool TexLoader::CretateLoadLambdaTable()
 		= loadTable_[L"png"] = loadTable_[L"jpg"] = loadTable_[L"jpeg"] =
 		[](const wstring& path, TexMetadata* meta, ScratchImage&img)->HRESULT
 	{
-		return LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_NONE, meta, img);
+		if (path == L"Resource/Image/tnkt.png")
+		{
+			int a = 0;
+		}
+		auto result = LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_FORCE_RGB, meta, img);
+		if (meta->format == DXGI_FORMAT_B8G8R8A8_UNORM)
+		{
+			result = LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_DEFAULT_SRGB, meta, img);
+		}
+		return result;
 	};
 	loadTable_[L"tga"] = [](const wstring& path, TexMetadata* meta, ScratchImage& img) -> HRESULT
 	{
@@ -452,8 +461,14 @@ void TexLoader::SetDrawScreen(const int screenH)
 
 void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 {
-	// swapChainのダブルバッファ以外が指定されていたら例外
-	assert(renderTergetHandle_ < 2);
+	if (renderTergetHandle_ >= 2)
+	{
+#ifdef _DEBUG
+		OutputDebugString("BackScreenがレンダーターゲットに設定されていません\n");
+		assert(false);
+#endif
+		return;
+	}
 
 	// レンダーターゲットをプレゼント用にバリアを張る
 	auto& texRes = GetTextureResouse(renderTergetHandle_);

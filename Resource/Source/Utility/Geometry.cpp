@@ -179,6 +179,11 @@ Vector3 Vector3::Normalized() const
 	return Vector3(this->x / len, this->y / len, this->z / len);
 }
 
+DirectX::XMFLOAT3 Vector3::ToXMFloat3() const
+{
+	return DirectX::XMFLOAT3(x, y, z);
+}
+
 float Dot(const Vector3 & lval, const Vector3 & rval)
 {
 	return lval.x * rval.x + lval.y * rval.y + lval.z * rval.z;

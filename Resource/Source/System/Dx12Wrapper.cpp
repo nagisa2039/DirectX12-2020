@@ -57,7 +57,7 @@ bool Dx12Wrapper::Init()
 
 	spriteDrawer_ = make_shared<SpriteDrawer>(*this);
 
-	UpdateSceneMatrix();
+	UpdateCamera();
 
 	texLoader_->SetDrawScreen(GetBackScreenHandle());
 
@@ -127,6 +127,26 @@ void Dx12Wrapper::SetCameraDescriptorHeap(const UINT rootParamIdx)
 		cameraHeap_->GetGPUDescriptorHandleForHeapStart());
 }
 
+Vector3 Dx12Wrapper::GetCameraPosition() const
+{
+	return Vector3(camera_.eye.x, camera_.eye.y, camera_.eye.z);
+}
+
+Vector3 Dx12Wrapper::GetCameraTarget() const
+{
+	return Vector3(camera_.target.x, camera_.target.y, camera_.target.z);
+}
+
+void Dx12Wrapper::SetCameraPosision(const Vector3& pos)
+{
+	camera_.eye = pos.ToXMFloat3();
+}
+
+void Dx12Wrapper::SetCameraTarget(const Vector3& target)
+{
+	camera_.target = target.ToXMFloat3();
+}
+
 void Dx12Wrapper::SetDefaultViewAndScissor()
 {
 	D3D12_VIEWPORT viewport = {};
@@ -165,7 +185,7 @@ bool Dx12Wrapper::CreateCameraConstantBufferAndView()
 	return true;
 }
 
-void Dx12Wrapper::UpdateSceneMatrix()
+void Dx12Wrapper::UpdateCamera()
 {
 	// ÉJÉÅÉâÇÃçXêV
 	auto wsize = Application::Instance().GetWindowSize();

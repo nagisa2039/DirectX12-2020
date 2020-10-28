@@ -196,6 +196,8 @@ struct Vector3
 
 	Vector3 Normalize();
 	Vector3 Normalized()const;
+
+	DirectX::XMFLOAT3 ToXMFloat3()const;
 };
 
 float Dot(const Vector3 &lval, const Vector3& rval);
