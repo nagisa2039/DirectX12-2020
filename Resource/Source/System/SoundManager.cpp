@@ -2,9 +2,10 @@
 #include <vector>
 #include "Utility/dx12Tool.h"
 #include "Utility/Tool.h"
-#include <Mmsystem.h>
+#include <sstream>
+#include "System/WAVFileReader.h"
 
-#pragma comment (lib, "winmm.lib")
+#pragma comment(lib,"xaudio2.lib")
 
 using namespace std;
 
@@ -36,80 +37,52 @@ int SoundManager::LoadWave(const std::wstring& filePath, bool loop)
 	{
 		return resourceHandleTable_[filePath];
 	}
-
-	HMMIO mmio = NULL;
-	MMIOINFO info = {};
-	mmio = mmioOpen(StringFromWString(filePath).data(), &info, MMIO_READ);
-
-	if (!mmio)
+	soundDatas_.emplace_back(SoundData{});
+	auto& sd = *soundDatas_.rbegin();
+	
+	DirectX::WAVData waveData;
+	if (FAILED(DirectX::LoadWAVAudioFromFileEx(filePath.data(), sd.data, waveData)))
 	{
 		assert(false);
 		return FAILED;
 	}
 
-	MMRESULT mret;
-	MMCKINFO riff_chunk;
-	riff_chunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
-	mret = mmioDescend(mmio, &riff_chunk, NULL, MMIO_FINDRIFF);
-	if (mret != MMSYSERR_NOERROR)
-	{
-		assert(false);
-		return FAILED;
-	}
-
-	MMCKINFO chunk;
-	chunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
-	mret = mmioDescend(mmio, &chunk, &riff_chunk, MMIO_FINDCHUNK);
-	if (mret != MMSYSERR_NOERROR)
-	{
-		assert(false);
-		return FAILED;
-	}
-
-	WAVEFORMATEX format = {};
-	DWORD size = mmioRead(mmio, (HPSTR)&format, chunk.cksize);
-	if (size != chunk.cksize)
-	{
-		assert(false);
-		return FAILED;
-	}
-
-	chunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
-	mret = mmioDescend(mmio, &chunk, &riff_chunk, MMIO_FINDCHUNK);
-	if (mret != MMSYSERR_NOERROR)
-	{
-		assert(false);
-		return FAILED;
-	}
-
-	IXAudio2SourceVoice* pSourceVoice = nullptr; 
-	auto result = xaudio2_->CreateSourceVoice(&pSourceVoice, &format);
+	auto result = xaudio2_->CreateSourceVoice(&sd.sourceVoice, waveData.wfx);
 	H_ASSERT(result);
 
 	// 再生する波形データの設定
-	XAUDIO2_BUFFER buf{};
-	buf.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
-	std::vector<BYTE> byteData(format.nAvgBytesPerSec);
+	sd.buffer = { 0 };
+	sd.buffer.pAudioData = waveData.startAudio;
+	sd.buffer.Flags = XAUDIO2_END_OF_STREAM;
+	sd.buffer.AudioBytes = waveData.audioBytes;
 
-	mmioRead(mmio, (HPSTR)(byteData.data()), byteData.size());
-	buf.AudioBytes = byteData.size();
-	buf.pAudioData = byteData.data();
-	buf.Flags = XAUDIO2_END_OF_STREAM;
 
-	soundDatas_.emplace_back(SoundData{ pSourceVoice, buf, byteData});
+	//result = sd.sourceVoice->SubmitSourceBuffer(&sd.buffer);
+	//H_ASSERT(result);
+	
+
 	int handle = soundDatas_.size() - 1;
 	resourceHandleTable_[filePath] = handle;
+	PlayWave(handle);
 	return handle;
 }
 
-bool SoundManager::PlayWave(const int handle) const
+bool SoundManager::PlayWave(const int handle)
 {
 	if (!CheckHandleInRange(handle))return false;
 
+
 	auto& soundData = soundDatas_[handle];
+	XAUDIO2_VOICE_STATE state;
+	soundData.sourceVoice->GetState(&state);
+	bool isRunning = state.BuffersQueued > 0;
+
+	soundData.sourceVoice->Stop();
+	soundData.sourceVoice->FlushSourceBuffers();
 	auto result = soundData.sourceVoice->SubmitSourceBuffer(&soundData.buffer);
 	H_ASSERT(result);
 	result = soundData.sourceVoice->Start();
+	soundData.isPlaying = true;
 	H_ASSERT(result);
 
 	return true;
@@ -120,7 +93,7 @@ bool SoundManager::CheckHandleInRange(const int handle) const
 	return (0 <= handle && handle < soundDatas_.size());
 }
 
-bool SoundManager::StopSound(const int handle) const
+bool SoundManager::StopSound(const int handle)
 {
 	if (!CheckHandleInRange(handle))return false;
 
@@ -128,5 +101,6 @@ bool SoundManager::StopSound(const int handle) const
 	soundDatas_[handle].sourceVoice->GetState(&state);
 
 	soundDatas_[handle].sourceVoice->Stop();
+	soundDatas_[handle].isPlaying = false;
 	return true;
 }
