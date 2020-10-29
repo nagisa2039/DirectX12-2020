@@ -91,26 +91,10 @@ int SoundManager::LoadWave(const std::wstring& filePath, bool loop)
 	buf.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
 	std::vector<BYTE> byteData(format.nAvgBytesPerSec);
 
-	int byteSize = byteSize = mmioRead(mmio, (HPSTR)(byteData.data()), byteData.size());
-	buf.AudioBytes = byteSize;
+	mmioRead(mmio, (HPSTR)(byteData.data()), byteData.size());
+	buf.AudioBytes = byteData.size();
 	buf.pAudioData = byteData.data();
-	buf.PlayLength = byteSize / format.nBlockAlign;
-
-	//WAVEFORMATEX wfex{};
-	//// 波形フォーマットの設定
-	//memcpy(&wfex, &format.fmt, sizeof(format.fmt));
-	//wfex.wBitsPerSample = format.fmt.nBlockAlign * 8 / format.fmt.nChannels;
-
-	//// 波形フォーマットを元にSourceVoiceの生成
-	//IXAudio2SourceVoice* pSourceVoice = nullptr;
-	//auto result = xaudio2_->CreateSourceVoice(&pSourceVoice, &wfex);
-	//H_ASSERT(result);
-
-	//// 再生する波形データの設定
-	//XAUDIO2_BUFFER buf{};
-	//buf.pAudioData = byteData.data();
-	//buf.Flags = XAUDIO2_END_OF_STREAM;
-	//buf.AudioBytes = data.size;
+	buf.Flags = XAUDIO2_END_OF_STREAM;
 
 	soundDatas_.emplace_back(SoundData{ pSourceVoice, buf, byteData});
 	int handle = soundDatas_.size() - 1;

@@ -1,4 +1,3 @@
-#include <DirectXTex.h>
 #include "SpriteDrawer.h"
 #include "Application.h"
 #include "Command.h"
@@ -33,7 +32,7 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 	CreateVertexSB(); 
 	CreatePixelSB();
 
-	CreateSpriteHeap();
+	//CreateSpriteHeap();
 
 	drawImages_.clear();
 }
@@ -232,12 +231,15 @@ void SpriteDrawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, cons
 	dx12_.GetTexLoader().GetScreenSize(screenW, screenH);
 	
 	XMFLOAT2 wsizeCenter = XMFLOAT2(screenW / 2.0f, screenH / 2.0f);
-	XMFLOAT2 center(Float(left + centerX), Float(top + centerY));
+
+	float exW = width * exRate;
+	float exH = height * exRate;
+	XMFLOAT2 center(Float(left + exW / 2), Float(top + exH /2));
 
 	float moveX = (center.x - wsizeCenter.x) / (screenW / 2.0f);
 	float moveY = (center.y - wsizeCenter.y) / (screenH / 2.0f) * -1.0f;
 
-	auto scaleMat = XMMatrixScaling(width * exRate, height * exRate, 1.0f);
+	auto scaleMat = XMMatrixScaling(exW, exH, 1.0f);
 	auto rotateZMat = XMMatrixRotationZ(angle);
 	auto transMat = XMMatrixTranslation(moveX, moveY, 0.0f);
 
@@ -256,22 +258,23 @@ void SpriteDrawer::SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const
 	XMFLOAT2 rectCenter = XMFLOAT2((srcX + width / 2) / imgSizeF.x, (srcY + height / 2) / imgSizeF.y);
 	XMUINT2	 rectSizs = XMUINT2(width, height);
 
+	uvTrans = XMMatrixIdentity();
 	uvTrans = XMMatrixTransformation2D(
 		XMVectorSet(uvCenter.x, uvCenter.y, 0.0f, 0.0f), 0.0f, XMVectorSet(rectSizs.x / imgSizeF.x, rectSizs.y / imgSizeF.y, 1.0f, 1.0f),	// ägèk
 		XMVectorSet(uvCenter.x, uvCenter.y, 0.0f, 0.0f), 0.0f,	// âÒì]
 		XMVectorSet(rectCenter.x - uvCenter.x, rectCenter.y - uvCenter.y, 0.0f, 1.0f));		// à⁄ìÆ
 }
 
-void SpriteDrawer::CreateSpriteHeap()
-{
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.NumDescriptors = 1;
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	heapDesc.NodeMask = 0;
-	H_ASSERT(dx12_.GetDevice().CreateDescriptorHeap(&heapDesc,
-		IID_PPV_ARGS(spriteFontHeap_.ReleaseAndGetAddressOf())));
-}
+//void SpriteDrawer::CreateSpriteHeap()
+//{
+//	/*D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+//	heapDesc.NumDescriptors = 1;
+//	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+//	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+//	heapDesc.NodeMask = 0;
+//	H_ASSERT(dx12_.GetDevice().CreateDescriptorHeap(&heapDesc,
+//		IID_PPV_ARGS(spriteFontHeap_.ReleaseAndGetAddressOf())));*/
+//}
 
 void SpriteDrawer::End()
 {
@@ -352,7 +355,7 @@ void SpriteDrawer::SetDrawScreen(const int graphHandle)
 bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
 {
 	Image img = dx12_.GetTexLoader().GetTextureResouse(graphHandle).imageInf;
-	return DrawRectGraph(x, y, 0, 0, img.width, img.height, graphHandle);
+	return DrawRectGraph(x, y, 0, 0, Uint32(img.width), Uint32(img.height), graphHandle);
 }
 
 bool SpriteDrawer::DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle)
@@ -363,19 +366,9 @@ bool SpriteDrawer::DrawRotaGraph(const INT x, const INT y, const float exRate, c
 
 bool SpriteDrawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const UINT centerY, const float exRate, const float angle, const int graphHandle)
 {
-	if (graphHandle == -1) return false;
-
 	auto& texRes = dx12_.GetTexLoader().GetTextureResouse(graphHandle);
 	Image img = texRes.imageInf;
-
-	DrawImage drawImage;
-	drawImage.pixelInf.texIndex = graphHandle;
-
-	SetPosTrans(drawImage.verticesInf.posTans, x - Int32(img.width / 2), y - Int32(img.height / 2),
-		Uint32(img.width), Uint32(img.height), centerX, centerY, exRate, angle);
-	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
-
-	AddDrawImage(drawImage);
+	DrawRectRotaGraph2(x, y, 0, 0, img.width, img.height, centerX, centerY, exRate, angle, graphHandle);
 
 	return true;
 }
@@ -391,6 +384,26 @@ bool SpriteDrawer::DrawRectGraph(const INT destX, const INT destY, const UINT sr
 	drawImage.pixelInf.texIndex = graphHandle;
 
 	SetPosTrans(drawImage.verticesInf.posTans, destX, destY, width, height);
+	SetUVTrans(drawImage.verticesInf.uvTrans, srcX, srcY, width, height, img);
+
+	AddDrawImage(drawImage);
+
+	return true;
+}
+
+bool SpriteDrawer::DrawRectRotaGraph2(const INT x, const INT y, const INT srcX, const INT srcY, const INT width, const INT height, const INT cx, const INT cy, const float exRate, const float angle, const int graphHandle)
+{
+	if (graphHandle == -1) return false;
+
+	auto& texRes = dx12_.GetTexLoader().GetTextureResouse(graphHandle);
+	Image img = texRes.imageInf;
+
+	DrawImage drawImage;
+	drawImage.pixelInf.texIndex = graphHandle;
+
+	SetPosTrans(drawImage.verticesInf.posTans, x - cx, y - cy,
+		Uint32(img.width), Uint32(img.height), cx, cy, exRate, angle);
+	drawImage.verticesInf.uvTrans = XMMatrixIdentity();
 	SetUVTrans(drawImage.verticesInf.uvTrans, srcX, srcY, width, height, img);
 
 	AddDrawImage(drawImage);

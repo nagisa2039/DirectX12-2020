@@ -3,6 +3,7 @@
 #include "Scene.h"
 
 class ModelRenderer;
+class Player;
 
 class PlayScene :
 	public Scene
@@ -22,4 +23,8 @@ private:
 
 	int BGMH_;
 	int laserSEH_;
+	int se1_;
+	int se2_;
+
+	std::unique_ptr<Player> player_;
 };

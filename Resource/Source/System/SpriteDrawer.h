@@ -4,9 +4,10 @@
 #include <vector>
 #include <array>
 #include <DirectXMath.h>
-#include<SpriteFont.h>
-#include<ResourceUploadBatch.h>
+//#include<SpriteFont.h>
+//#include<ResourceUploadBatch.h>
 #include "Utility/DirectXStruct.h"
+#include <DirectXTex.h>
 
 class Dx12Wrapper;
 
@@ -32,6 +33,7 @@ public:
 	bool DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle);
 	bool DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const UINT centerY, const float exRate, const float angle, const int graphHandle);
 	bool DrawRectGraph(const INT destX, const INT destY, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
+	bool DrawRectRotaGraph2(const INT x, const INT y, const INT srcX, const INT srcY, const INT width, const INT height, const INT cx, const INT cy, const float exRate, const float angle, const int graphHandle);
 	bool DrawExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const int graphHandle);
 	bool DrawRectExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
 	bool DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2, const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag);
@@ -109,10 +111,10 @@ private:
 	ComPtr<ID3DBlob> vertexShader_ = nullptr;
 	ComPtr<ID3DBlob> pixelShader_ = nullptr;
 
-	ComPtr<ID3D12DescriptorHeap> spriteFontHeap_ = nullptr;
-	std::shared_ptr<DirectX::GraphicsMemory> gmemory_ = nullptr;//グラフィクスメモリオブジェクト
-	std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト
-	std::shared_ptr<DirectX::SpriteBatch> spriteBatch_ = nullptr;//スプライト表示用オブジェクト
+	//ComPtr<ID3D12DescriptorHeap> spriteFontHeap_ = nullptr;
+	//std::shared_ptr<DirectX::GraphicsMemory> gmemory_ = nullptr;//グラフィクスメモリオブジェクト
+	//std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト
+	//std::shared_ptr<DirectX::SpriteBatch> spriteBatch_ = nullptr;//スプライト表示用オブジェクト
 
 	void CreateVertexSB();
 	void CreatePixelSB();
@@ -128,7 +130,7 @@ private:
 	void SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img);
 	void AddDrawImage(SpriteDrawer::DrawImage& drawImage);
 
-	void CreateSpriteHeap();
+	//void CreateSpriteHeap();
 
 	void ClearDrawData();
 };

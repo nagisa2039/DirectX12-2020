@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\Game\Animator.h" />
+    <ClInclude Include="Resource\Source\Game\Player.h" />
     <ClInclude Include="Resource\Source\Utility\ComPtr.h" />
     <ClInclude Include="Resource\Source\Utility\Cast.h" />
     <ClInclude Include="Resource\Source\Utility\DirectXStruct.h" />
@@ -46,6 +48,8 @@
     <ClInclude Include="Resource\Source\System\SoundManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resource\Source\Game\Animator.cpp" />
+    <ClCompile Include="Resource\Source\Game\Player.cpp" />
     <ClCompile Include="Resource\Source\Model\ModelActor.cpp" />
     <ClCompile Include="Resource\Source\Model\ModelData.cpp" />
     <ClCompile Include="Resource\Source\Model\ModelRenderer.cpp" />

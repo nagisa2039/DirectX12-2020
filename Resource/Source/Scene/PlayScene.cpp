@@ -9,6 +9,7 @@
 #include "Utility/Constant.h"
 #include "System/SoundManager.h"
 #include "Utility/Input.h"
+#include "Game/Player.h"
 
 using namespace std;
 
@@ -29,7 +30,10 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 
 	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/–ì—Ç”L‚Í‰F’ˆ‚ð–ÚŽw‚µ‚½.wav", true);
 	laserSEH_ = soundManager.LoadWave(L"Resource/Sound/SE/laser1.wav", false);
+	se1_ = soundManager.LoadWave(L"Resource/Sound/SE/echioto_‚à‚¤ƒC‚Á‚¿‚á‚¤‚Ì.wav", true);
+	se2_ = soundManager.LoadWave(L"Resource/Sound/SE/echioto_‚ç‚ß‚¥.wav", true);
 
+	player_ = make_unique<Player>();
 }
 
 PlayScene::~PlayScene()
@@ -53,10 +57,10 @@ void PlayScene::Update()
 		}
 	};
 
-	cameraMove(DIK_UP, cameraPos.y, moveSpeed);
-	cameraMove(DIK_DOWN, cameraPos.y, -moveSpeed);
-	cameraMove(DIK_RIGHT, cameraPos.x, moveSpeed);
-	cameraMove(DIK_LEFT, cameraPos.x, -moveSpeed);
+	cameraMove(DIK_W, cameraPos.y, moveSpeed);
+	cameraMove(DIK_S, cameraPos.y, -moveSpeed);
+	cameraMove(DIK_D, cameraPos.x, moveSpeed);
+	cameraMove(DIK_A, cameraPos.x, -moveSpeed);
 	cameraMove(DIK_I, cameraPos.z, moveSpeed);
 	cameraMove(DIK_O, cameraPos.z, -moveSpeed);
 	dx12.SetCameraPosision(cameraPos);
@@ -66,8 +70,11 @@ void PlayScene::Update()
 	{
 		auto& soundManager = dx12.GetSoundManager();
    		//soundManager.PlayWave(laserSEH_);
-		soundManager.PlayWave(BGMH_);
+		//soundManager.PlayWave(BGMH_);
+		soundManager.PlayWave(se1_);
 	}
+
+	player_->Update();
 }
 
 void PlayScene::Draw()
@@ -85,8 +92,10 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 	spriteDrawer.DrawRotaGraph(300, 300, 0.5f, 0.0f, tnktH_);
-	spriteDrawer.SetDrawBlendMode(BlendMode::add, 255);
+	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	//spriteDrawer.DrawGraph(100, 100, tnktH_);
+
+	player_->Draw();
 
 	spriteDrawer.End();
 

@@ -46,6 +46,12 @@
     <Filter Include="ヘッダー ファイル\System">
       <UniqueIdentifier>{064731e0-11f7-4b90-b643-6ff5d0546b46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Game">
+      <UniqueIdentifier>{b2a4ae1d-dfa1-4e90-9e33-afc095e247cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Game">
+      <UniqueIdentifier>{da7a3a3d-c328-46a4-9304-30aa5a2f5fdc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource\Source\Utility\Tool.h">
@@ -123,6 +129,12 @@
     <ClInclude Include="Resource\Source\Utility\Geometry.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\Game\Player.h">
+      <Filter>ヘッダー ファイル\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Game\Animator.h">
+      <Filter>ヘッダー ファイル\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -181,6 +193,12 @@
     </ClCompile>
     <ClCompile Include="Resource\Source\Utility\Geometry.cpp">
       <Filter>ソース ファイル\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Game\Player.cpp">
+      <Filter>ソース ファイル\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Game\Animator.cpp">
+      <Filter>ソース ファイル\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
