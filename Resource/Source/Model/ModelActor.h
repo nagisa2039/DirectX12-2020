@@ -104,14 +104,8 @@ private:
 	// 頂点インデックスバッファの作成
 	bool CreateIndexBuffer();
 
-	// マテリアルバッファの作成
-	//bool CreateMaterialBuffer();
-	// マテリアルのテクスチャバッファ作成作成
-	//bool CreateMaterialTextureBuffer();
-	// マテリアルのCBV作成
+	// マテリアルの作成
 	bool CreateMaterial();
-	// マテリアルのテクスチャビューの作成
-	//void CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT64& heapStride, const UINT64& bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
 
 	// ボーン階層の作成
 	bool CreateBoneHierarchy();

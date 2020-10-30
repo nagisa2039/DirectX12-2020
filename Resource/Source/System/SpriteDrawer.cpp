@@ -29,10 +29,15 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 	// パイプラインの作成
 	CreatePiplineState();
 
-	CreateVertexSB(); 
-	CreatePixelSB();
+	auto& dev = dx12.GetDevice();
 
-	//CreateSpriteHeap();
+	const int imageMax = Application::Instance().GetImageMax();
+	const int vertInfStructSize = sizeof(VerticesInf);
+	CreateStructuredBuffer(&dev, verticesInfSB_.mappedVertexInf, 
+		verticesInfSB_.resource.buffer, verticesInfHeap_, vertInfStructSize, imageMax);
+	const int pixelInfStructSize = sizeof(PixelInf);
+	CreateStructuredBuffer(&dev, pixelInfSB_.mappedPixelInf,
+		pixelInfSB_.resource.buffer, pixelInfHeap_, pixelInfStructSize, imageMax);
 
 	drawImages_.clear();
 }
@@ -196,30 +201,6 @@ void SpriteDrawer::CreateIndexBuffer()
 	ibView_.Format = DXGI_FORMAT_R16_UINT;
 }
 
-void SpriteDrawer::CreateVertexSB()
-{
-	auto& dev = dx12_.GetDevice();
-	CreateDescriptorHeap(&dev, verticesInfHeap_);
-
-	int imageMax = Application::Instance().GetImageMax();
-	CreateUploadResource(&dev, verticesInfSB_.resource, Uint64(imageMax * sizeof(VerticesInf)), false);
-	H_ASSERT(verticesInfSB_.resource.buffer->Map(0, nullptr, (void**)&verticesInfSB_.mappedVertexInf));
-	auto handle = verticesInfHeap_->GetCPUDescriptorHandleForHeapStart();
-	CreateConstantBufferView(&dev, verticesInfSB_.resource.buffer, handle);
-}
-
-void SpriteDrawer::CreatePixelSB()
-{
-	auto& dev = dx12_.GetDevice();
-	CreateDescriptorHeap(&dev, pixelInfHeap_);
-
-	int imageMax = Application::Instance().GetImageMax();
-	CreateUploadResource(&dev, pixelInfSB_.resource, Uint64(imageMax * sizeof(PixelInf)), false);
-	H_ASSERT(pixelInfSB_.resource.buffer->Map(0, nullptr, (void**)&pixelInfSB_.mappedPixelInf));
-	auto handle = pixelInfHeap_->GetCPUDescriptorHandleForHeapStart();
-	CreateConstantBufferView(&dev, pixelInfSB_.resource.buffer, handle);
-}
-
 void SpriteDrawer::SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const float exRate, const float angle)
 {
 	SetPosTrans(posTrans, left, top, width, height, width / 2, height / 2, exRate, angle);
@@ -264,17 +245,6 @@ void SpriteDrawer::SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const
 		XMVectorSet(uvCenter.x, uvCenter.y, 0.0f, 0.0f), 0.0f,	// 回転
 		XMVectorSet(rectCenter.x - uvCenter.x, rectCenter.y - uvCenter.y, 0.0f, 1.0f));		// 移動
 }
-
-//void SpriteDrawer::CreateSpriteHeap()
-//{
-//	/*D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-//	heapDesc.NumDescriptors = 1;
-//	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-//	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-//	heapDesc.NodeMask = 0;
-//	H_ASSERT(dx12_.GetDevice().CreateDescriptorHeap(&heapDesc,
-//		IID_PPV_ARGS(spriteFontHeap_.ReleaseAndGetAddressOf())));*/
-//}
 
 void SpriteDrawer::End()
 {

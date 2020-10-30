@@ -439,31 +439,11 @@ bool ModelActor::CreateMaterial()
 		j++;
 	}
 
-	MaterialStruct* mappedMaterial = nullptr;
-	H_ASSERT(materialBuffer_->Map(0, nullptr, (void**)&mappedMaterial));
-	std::copy(mats_.begin(), mats_.end(), mappedMaterial);
-	materialBuffer_->Unmap(0, nullptr);
+	CreateStructuredBuffer(&dev, materialBuffer_, materialHeap_, mats_);
 
-	// デスクリプタヒープの作成
-	CreateDescriptorHeap(&dev, materialHeap_);
-
-	// 定数バッファビューの作成
-	auto handle = materialHeap_->GetCPUDescriptorHandleForHeapStart();
-	CreateShaderResourceBufferView(&dev, materialBuffer_, handle, mats_);
-
-	// マテリアルインデックス---------------------------------------------------------------------------
+	// マテリアルインデックス
 	auto materialIndexData = modelData_->GetMaterialIndexData();
-	CreateUploadBuffer(&dev, materialIndexBuffer_, sizeof(materialIndexData[0]) * materialIndexData.size());
-	MaterialIndex* index = nullptr;
-	H_ASSERT(materialIndexBuffer_->Map(0, nullptr, (void**)&index));
-	std::copy(materialIndexData.begin(), materialIndexData.end(), index);
-	materialIndexBuffer_->Unmap(0, nullptr);
-	// デスクリプタヒープの作成
-	CreateDescriptorHeap(&dev, materialIndexHeap_);
-
-	// 定数バッファビューの作成
-	handle = materialIndexHeap_->GetCPUDescriptorHandleForHeapStart();
-	CreateShaderResourceBufferView(&dev, materialIndexBuffer_, handle, materialIndexData);
+	CreateStructuredBuffer(&dev, materialIndexBuffer_, materialIndexHeap_, materialIndexData);
 
 	return true;
 }

@@ -116,9 +116,6 @@ private:
 	//std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト
 	//std::shared_ptr<DirectX::SpriteBatch> spriteBatch_ = nullptr;//スプライト表示用オブジェクト
 
-	void CreateVertexSB();
-	void CreatePixelSB();
-
 	void CreatePiplineState();
 	void CreateRootSignature();
 	void CreateVertextBuffer();
