@@ -55,6 +55,8 @@ bool PMXData::LoadFromPMX(std::string modelPath)
 	// マテリアルの読み込み
 	LoadMaterial(fp, modelPath);
 
+	SetVertexMaterialIndex();
+
 	// ボーンの読み込み
 	LoadBone(fp);
 
@@ -69,11 +71,11 @@ void PMXData::LoadVertexIndex(FILE * fp)
 	int indexNum = 0;
 	fread(&indexNum, sizeof(int), 1, fp);
 
-	_indexData.resize(indexNum);
+	indexData_.resize(indexNum);
 
 	for (int idx = 0; idx < indexNum; idx++)
 	{
-		fread(&_indexData[idx], info_[2], 1, fp);
+		fread(&indexData_[idx], info_[2], 1, fp);
 	}
 }
 
@@ -83,7 +85,7 @@ void PMXData::LoadVertex(FILE * fp)
 	int vertNum = 0;
 	fread(&vertNum, sizeof(int), 1, fp);
 
-	_vertexData.resize(vertNum);
+	vertexData_.resize(vertNum);
 
 	enum WeightType
 	{
@@ -158,9 +160,9 @@ void PMXData::LoadVertex(FILE * fp)
 
 	for (int j = 0; j < vertNum; j++)
 	{
-		fread(&_vertexData[j].pos, sizeof(_vertexData[j].pos), 1, fp);
-		fread(&_vertexData[j].normal, sizeof(_vertexData[j].normal), 1, fp);
-		fread(&_vertexData[j].uv, sizeof(_vertexData[j].uv), 1, fp);
+		fread(&vertexData_[j].pos, sizeof(vertexData_[j].pos), 1, fp);
+		fread(&vertexData_[j].normal, sizeof(vertexData_[j].normal), 1, fp);
+		fread(&vertexData_[j].uv, sizeof(vertexData_[j].uv), 1, fp);
 
 		std::vector<DirectX::XMFLOAT3> adduv;
 		adduv.resize(info_[1]);
@@ -171,7 +173,7 @@ void PMXData::LoadVertex(FILE * fp)
 
 		uint8_t boneformat = 0;
 		fread(&boneformat, sizeof(boneformat), 1, fp);
-		weightFun[boneformat](fp, info_[5], _vertexData[j]);
+		weightFun[boneformat](fp, info_[5], vertexData_[j]);
 
 		float edge = 0;
 		fread(&edge, sizeof(edge), 1, fp);
@@ -234,7 +236,7 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 	int materialNum = 0;
 	fread(&materialNum, sizeof(int), 1, fp);
 
-	_materials.resize(materialNum);
+	materials_.resize(materialNum);
 	_texPaths.resize(materialNum);
 
 	for (int idx = 0; idx < materialNum; idx++)
@@ -276,7 +278,7 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 		uint32_t indexNum = 0;
 		fread(&indexNum, sizeof(indexNum), 1, fp);
 
-		auto& mat = _materials[idx];
+		auto& mat = materials_[idx];
 		mat.diffuse = tMat.diffuse_color;
 		mat.specular = tMat.specular_color;
 		mat.ambient = tMat.ambient;
@@ -365,7 +367,7 @@ void PMXData::LoadBone(FILE * fp)
 	};
 
 	vector<Bone> bones(boneNum);
-	_bones.resize(boneNum);
+	bones_.resize(boneNum);
 
 	for (int idx = 0; idx < boneNum; idx++)
 	{
@@ -438,9 +440,9 @@ void PMXData::LoadBone(FILE * fp)
 			}
 		}
 
-		_bones[idx].name = bone.boneName;
-		_bones[idx].parentIdx = bone.parentBoneIdx;
-		_bones[idx].startPos = bone.startpos;
-		_bones[idx].endPos = bone.endPos;
+		bones_[idx].name = bone.boneName;
+		bones_[idx].parentIdx = bone.parentBoneIdx;
+		bones_[idx].startPos = bone.startpos;
+		bones_[idx].endPos = bone.endPos;
 	}
 }

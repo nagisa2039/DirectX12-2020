@@ -354,7 +354,7 @@ void ModelRenderer::DrawTo3DSpace()
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	dx12_.SetCameraDescriptorHeap(1);
+	dx12_.SetCameraDescriptorHeap(2);
 
 	for (auto& actor : modelActors_)
 	{

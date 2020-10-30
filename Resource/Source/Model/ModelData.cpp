@@ -1,5 +1,5 @@
 #include "ModelData.h"
-
+#include "Utility/Cast.h"
 
 ModelData::ModelData()
 {
@@ -12,22 +12,48 @@ ModelData::~ModelData()
 
 std::vector<ModelData::Vertex>& ModelData::GetVertexData()
 {
-	return _vertexData;
+	return vertexData_;
 }
 
 std::vector<uint32_t>& ModelData::GetIndexData()
 {
-	return _indexData;
+	return indexData_;
 }
 
 std::vector<ModelData::Material>& ModelData::GetMaterialData()
 {
-	return _materials;
+	return materials_;
+}
+
+std::vector<uint16_t>& ModelData::GetMaterialIndexData()
+{
+	return materialIndexData_;
 }
 
 std::vector<ModelData::Bone>& ModelData::GetBoneData()
 {
-	return _bones;
+	return bones_;
+}
+
+void ModelData::SetVertexMaterialIndex()
+{
+	materialIndexData_.resize(indexData_.size());
+	int indexOffset = 0;
+	for (int matIdx = 0; auto& mat : materials_)
+	{
+		int index = 0;
+		while (true)
+		{
+			materialIndexData_[Uint64(indexOffset) + index] = matIdx;
+			if (++index >= mat.indeicesNum)
+			{
+				indexOffset += mat.indeicesNum;
+				index = 0;
+				matIdx++;
+				break;
+			}
+		}
+	}
 }
 
 std::vector<ModelData::MultiTexturePath>& ModelData::GetTexturePaths()

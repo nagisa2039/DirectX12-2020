@@ -28,12 +28,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& soundManager = dx12.GetSoundManager();
 
-	//BGMH_ = soundManager.LoadWave(L"Resource/Sound/SE/MusicMono.wav", true);
 	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/–ì—Ç”L‚Í‰F’ˆ‚ð–ÚŽw‚µ‚½.wav", true);
-	//laserSEH_ = soundManager.LoadWave(L"Resource/Sound/SE/laser1.wav", false);
-	/*se1_ = soundManager.LoadWave(L"Resource/Sound/SE/echioto_‚à‚¤ƒC‚Á‚¿‚á‚¤‚Ì.wav", true);
-	se2_ = soundManager.LoadWave(L"Resource/Sound/SE/echioto_‚ç‚ß‚¥.wav", true);*/
-
 	player_ = make_unique<Player>();
 }
 
@@ -69,11 +64,8 @@ void PlayScene::Update()
 
 	if (input.GetButtonDown(DIK_SPACE))
 	{
-		auto& soundManager = dx12.GetSoundManager();
-   		//soundManager.StopSound(laserSEH_);
-		soundManager.PlayWave(BGMH_);
-		//soundManager.PlayWave(se1_);
-	}
+		//auto& soundManager = dx12.GetSoundManager();
+		//soundManager.PlayWave(BGMH_);	}
 
 	player_->Update();
 }
