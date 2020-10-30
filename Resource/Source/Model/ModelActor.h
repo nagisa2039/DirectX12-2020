@@ -42,22 +42,23 @@ public:
 	void SetTransform(const Transform& trans);
 
 private:
-
-	struct MultiTexture
-	{
-		TextureResorce texResource;	// 通常テクスチャ
-		TextureResorce sphResource;	// sphテクスチャ
-		TextureResorce spaResource;	// spaテクスチャ
-		TextureResorce subResource;	// サブテクスチャ
-		TextureResorce toonResource;	// toonテクスチャ
-	};
-
 	struct MaterialForBuffer
 	{
 		DirectX::XMFLOAT4 diffuse;//拡散反射
 		DirectX::XMFLOAT4 specular;//鏡面反射
 		DirectX::XMFLOAT4 ambient;//環境光成分
 		float power;	// スペキュラ乗数
+	
+		// テクスチャ
+		uint16_t texIdx;
+		// スフィアマップ	乗算
+		uint16_t sphIdx;
+		// スフィアマップ	加算
+		uint16_t spaIdx;
+		// 追加テクスチャ
+		uint16_t addtexIdx;
+		// toonテクスチャ
+		uint16_t toonIdx;
 	};
 
 	ModelRenderer& renderer_;
@@ -77,13 +78,16 @@ private:
 	// インデックスバッファビュー
 	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
-
-	// テクスチャリソース
-	std::vector<MultiTexture> textures_;
+	// GPUに転送用マテリアル配列
+	std::vector<MaterialForBuffer> mats_;
 
 	// マテリアルバッファ
 	ComPtr<ID3D12Resource> materialBuffer_ = nullptr;
 	ComPtr<ID3D12DescriptorHeap> materialHeap_ = nullptr;
+
+	// マテリアルインデックスバッファ
+	ComPtr<ID3D12Resource> materialIndexBuffer_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> materialIndexHeap_ = nullptr;
 
 	Transform trans_;
 	DirectX::XMMATRIX* mappedTrans_;
@@ -118,13 +122,13 @@ private:
 	bool CreateIndexBuffer();
 
 	// マテリアルバッファの作成
-	bool CreateMaterialBuffer();
+	//bool CreateMaterialBuffer();
 	// マテリアルのテクスチャバッファ作成作成
-	bool CreateMaterialTextureBuffer();
+	//bool CreateMaterialTextureBuffer();
 	// マテリアルのCBV作成
-	bool CreateMaterialCBV();
+	bool CreateMaterial();
 	// マテリアルのテクスチャビューの作成
-	void CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT64& heapStride, const UINT64& bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
+	//void CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, const UINT64& heapStride, const UINT64& bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
 
 	// ボーン階層の作成
 	bool CreateBoneHierarchy();

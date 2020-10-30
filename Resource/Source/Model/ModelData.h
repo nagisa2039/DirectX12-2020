@@ -54,15 +54,24 @@ public :
 	std::vector<MultiTexturePath>& GetTexturePaths();
 	// マテリアル情報の取得
 	std::vector<Material>& GetMaterialData();
+	//マテリアルインデックス
+	std::vector<uint16_t>& GetMaterialIndexData();
 	// ボーン情報の取得
 	std::vector<Bone>& GetBoneData();
 
 protected:
 
-	std::vector<Vertex> _vertexData;	// 頂点データ
-	std::vector<uint32_t> _indexData;	// 頂点インデックスデータ
+	std::vector<Vertex> vertexData_;	// 頂点データ
+	std::vector<uint32_t> indexData_;	// 頂点インデックスデータ
 	std::vector<MultiTexturePath> _texPaths;		//テクスチャのパス(相対)
-	std::vector<Material> _materials;		// マテリアルデータ
-	std::vector<Bone> _bones;
+	std::vector<Material> materials_;		// マテリアルデータ
+	std::vector<Bone> bones_;
+	std::vector<uint16_t> materialIndexData_;	// マテリアルのインデックス 頂点インデックスに対応
+
+	/// <summary>
+	/// マテリアルを読み込んだ後にindecesNumを基に
+	/// VertexのmaterialIdxを設定する
+	/// </summary>
+	void SetVertexMaterialIndex();
 };
 

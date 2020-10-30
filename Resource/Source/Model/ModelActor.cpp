@@ -50,6 +50,8 @@ namespace
 		auto r = 1 - t;
 		return t * t*t + 3 * t*t*r*b.y + 3 * t*r*r*a.y;
 	}
+
+	constexpr uint8_t MATERIAL_MAX = 512;
 }
 
 ModelActor::ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& renderer, VMDMotion& vmd)
@@ -97,20 +99,8 @@ bool ModelActor::Init(std::string modelPath)
 		assert(false);
 	}
 
-	// マテリアルバッファの作成
-	if (!CreateMaterialBuffer())
-	{
-		assert(false);
-	}
-
-	// マテリアルのテクスチャバッファの作成
-	if (!CreateMaterialTextureBuffer())
-	{
-		assert(false);
-	}
-
 	// マテリアルのビュー作成
-	if (!CreateMaterialCBV())
+	if (!CreateMaterial())
 	{
 		assert(false);
 	}
@@ -252,18 +242,21 @@ void ModelActor::Update()
 
 void ModelActor::Draw(bool isShadow)
 {
-	auto handleW = worldHeap_->GetGPUDescriptorHandleForHeapStart();
-
-	// 座標行列用デスクリプタヒープのセット
 	auto& commandList = dx12_.GetCommand().CommandList();
 	auto& dev = dx12_.GetDevice();
 
-	commandList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(2, handleW);
-	handleW.ptr += dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	// テクスチャ配列のセット
+	auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
+	commandList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
+	commandList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
 
 	// マテリアル用デスクリプタヒープの設定
 	commandList.SetDescriptorHeaps(1, materialHeap_.GetAddressOf());
+	commandList.SetGraphicsRootDescriptorTable(1, materialHeap_->GetGPUDescriptorHandleForHeapStart());
+
+	// 座標行列用デスクリプタヒープのセット
+	commandList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
+	commandList.SetGraphicsRootDescriptorTable(3, worldHeap_->GetGPUDescriptorHandleForHeapStart());
 
 	// インデックスバッファのセット
 	commandList.IASetIndexBuffer(&ibView_);
@@ -281,15 +274,7 @@ void ModelActor::Draw(bool isShadow)
 	}
 	else
 	{
-		auto materials = modelData_->GetMaterialData();
-		for (const auto& material : materials)
-		{
-			commandList.SetGraphicsRootDescriptorTable(0, handle);
-			handle.ptr += static_cast<uint64_t>(dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)) * 6;
-			int idxNum = material.indeicesNum;
-			commandList.DrawIndexedInstanced(idxNum, 1, idxOffset, 0, 0);
-			idxOffset += idxNum;
-		}
+		commandList.DrawIndexedInstanced(modelData_->GetIndexData().size(), 1, 0, 0, 0);
 	}
 }
 
@@ -396,155 +381,76 @@ bool ModelActor::CreateIndexBuffer()
 	return true;
 }
 
-bool ModelActor::CreateMaterialTextureBuffer()
+bool ModelActor::CreateMaterial()
 {
-	auto texPaths = modelData_->GetTexturePaths();
-	textures_.resize(texPaths.size());
+	auto& dev = dx12_.GetDevice();
+	auto materials = modelData_->GetMaterialData();
 
-	bool debug = false;
+	auto texPaths = modelData_->GetTexturePaths();
+	mats_.resize(texPaths.size());
+
+	auto size = Uint64(sizeof(mats_[0]) * mats_.size());
+	CreateUploadBuffer(&dev, materialBuffer_, size);
+
+	auto FLOAT4 = [](const XMFLOAT3& float3)
+	{
+		return XMFLOAT4(float3.x, float3.y, float3.z, 0.0f);
+	};
+
+	for (int i = 0; auto & materialBufferInf : mats_)
+	{
+		const auto& mat = materials[i];
+		materialBufferInf = MaterialForBuffer{ mat.diffuse, 
+			FLOAT4(mat.specular), FLOAT4(mat.ambient), mat.power };
+		i++;
+	}
 
 	auto& texLoader = dx12_.GetTexLoader();
-	auto GetTexture = [&texLoader = texLoader](const std::wstring & path, TextureResorce & texRes)
+	auto GetTexture = [&texLoader = texLoader](const std::wstring& path)
 	{
 		if (path != L"")
 		{
-			texLoader.GetTextureResouse(path, texRes);
+			return texLoader.LoadGraph(path);
 		}
+		return -1;
 	};
-
-	for (unsigned int j = 0; j < texPaths.size(); j++)
+	for (unsigned int j = 0; auto & mat : mats_)
 	{
-		GetTexture(texPaths[j].texPath,  textures_[j].texResource);
-		GetTexture(texPaths[j].sphPath,  textures_[j].sphResource);
-		GetTexture(texPaths[j].spaPath,  textures_[j].spaResource);
-		GetTexture(texPaths[j].subPath,	 textures_[j].subResource);
-		GetTexture(texPaths[j].toonPath, textures_[j].toonResource);
-	}
-	return true;
-}
-
-bool ModelActor::CreateMaterialBuffer()
-{
-	auto materials = modelData_->GetMaterialData();
-	// バッファの作成
-	D3D12_HEAP_PROPERTIES heapProp = {};
-	heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
-	heapProp.CreationNodeMask = 0;
-	heapProp.VisibleNodeMask = 0;
-	heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	auto aliSize = AlignmentValue(sizeof(MaterialForBuffer),
-		D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-
-	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(aliSize * materials.size());
-	if (FAILED(dx12_.GetDevice().CreateCommittedResource(
-		&heapProp,
-		D3D12_HEAP_FLAG_NONE,
-		&resDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(materialBuffer_.ReleaseAndGetAddressOf()))))
-	{
-		return false;
+		mat.texIdx = GetTexture(texPaths[j].texPath);
+		mat.sphIdx = GetTexture(texPaths[j].sphPath);
+		mat.spaIdx = GetTexture(texPaths[j].spaPath);
+		mat.addtexIdx = GetTexture(texPaths[j].subPath);
+		mat.toonIdx = GetTexture(texPaths[j].toonPath);
+		j++;
 	}
 
-	// マップでコピー
-	uint8_t* mappedMaterial = nullptr;
-	materialBuffer_->Map(0, nullptr, (void**)&mappedMaterial);
-	for (auto& material : materials)
-	{
-		((MaterialForBuffer*)mappedMaterial)->diffuse = material.diffuse;
-		((MaterialForBuffer*)mappedMaterial)->specular =
-			XMFLOAT4(material.specular.x, material.specular.y, material.specular.z, 1);
-		((MaterialForBuffer*)mappedMaterial)->ambient =
-			XMFLOAT4(material.ambient.x, material.ambient.y, material.ambient.z, 1);
-		((MaterialForBuffer*)mappedMaterial)->power = material.power;
-		mappedMaterial += aliSize;
-	}
+	MaterialForBuffer* mappedMaterial = nullptr;
+	H_ASSERT(materialBuffer_->Map(0, nullptr, (void**)&mappedMaterial));
+	std::copy(mats_.begin(), mats_.end(), mappedMaterial);
 	materialBuffer_->Unmap(0, nullptr);
 
-	return true;
-}
-
-bool ModelActor::CreateMaterialCBV()
-{
-	auto materials = modelData_->GetMaterialData();
-
 	// デスクリプタヒープの作成
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	heapDesc.NodeMask = 0;
-	heapDesc.NumDescriptors = static_cast<UINT>(materials.size() * 6);	// マテリアルとテクスチャとsphとspaとtoon
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-
-	auto& dev = dx12_.GetDevice();
-	if (FAILED(dev.CreateDescriptorHeap(
-		&heapDesc,
-		IID_PPV_ARGS(materialHeap_.ReleaseAndGetAddressOf()))))
-	{
-		assert(false);
-		return false;
-	}
+	CreateDescriptorHeap(&dev, materialHeap_);
 
 	// 定数バッファビューの作成
-	D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = {};
-	viewDesc.BufferLocation = materialBuffer_->GetGPUVirtualAddress();
-	viewDesc.SizeInBytes = static_cast<UINT>(materialBuffer_->GetDesc().Width / materials.size());
 	auto handle = materialHeap_->GetCPUDescriptorHandleForHeapStart();
-	auto heapStride = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	auto bufferStride
-		= AlignmentValue(sizeof(MaterialForBuffer), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+	CreateConstantBufferView(&dev, materialBuffer_, handle);
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;//後述
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
+	// マテリアルインデックス---------------------------------------------------------------------------
+	auto materialIndexData = modelData_->GetMaterialIndexData();
+	CreateUploadBuffer(&dev, materialIndexBuffer_, sizeof(materialIndexData[0]) * materialIndexData.size());
+	uint16_t* index = nullptr;
+	H_ASSERT(materialIndexBuffer_->Map(0, nullptr, (void**)&index));
+	std::copy(materialIndexData.begin(), materialIndexData.end(), index);
+	materialIndexBuffer_->Unmap(0, nullptr);
+	// デスクリプタヒープの作成
+	CreateDescriptorHeap(&dev, materialIndexHeap_);
 
-	CreateMaterialTextureView(viewDesc, handle, heapStride, bufferStride, srvDesc);
+	// 定数バッファビューの作成
+	handle = materialIndexHeap_->GetCPUDescriptorHandleForHeapStart();
+	CreateConstantBufferView(&dev, materialIndexBuffer_, handle);
 
 	return true;
-}
-
-void ModelActor::CreateMaterialTextureView(D3D12_CONSTANT_BUFFER_VIEW_DESC& viewDesc, D3D12_CPU_DESCRIPTOR_HANDLE& handle, 
-	const UINT64& heapStride, const UINT64& bufferStride, D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)
-{
-	auto& dummyTextures = dx12_.GetTexLoader().GetDummyTextures();
-	auto& dev = dx12_.GetDevice();
-
-	auto CreateShaderResourceView = [&dev, &srvDesc, &handle, &dummyTextures, &heapStride](TextureResorce& texRes)
-	{
-		// テクスチャ
-		if (texRes.resource.buffer.Get() != nullptr)
-		{
-			srvDesc.Format = texRes.resource.buffer->GetDesc().Format;
-			dev.CreateShaderResourceView(texRes.resource.buffer.Get(), &srvDesc, handle);
-		}
-		else
-		{
-			srvDesc.Format = dummyTextures.whiteTex.buffer->GetDesc().Format;
-			dev.CreateShaderResourceView(dummyTextures.whiteTex.buffer.Get(), &srvDesc, handle);
-		}
-		handle.ptr += heapStride;
-	};
-
-	for (unsigned int j = 0; j < textures_.size(); j++)
-	{
-		dev.CreateConstantBufferView(&viewDesc, handle);
-		handle.ptr += heapStride;
-		viewDesc.BufferLocation += bufferStride;
-
-		// テクスチャ
-		CreateShaderResourceView(textures_[j].texResource);
-		// スフィアマップ(乗算)
-		CreateShaderResourceView(textures_[j].sphResource);
-		// スフィアマップ(加算)
-		CreateShaderResourceView(textures_[j].spaResource);
-		// 追加テクスチャ
-		CreateShaderResourceView(textures_[j].subResource);
-		// toon
-		CreateShaderResourceView(textures_[j].toonResource);
-	}
 }
 
 void ModelActor::RecursiveMatrixMultiply(BoneNode & node, DirectX::XMMATRIX& inMat)

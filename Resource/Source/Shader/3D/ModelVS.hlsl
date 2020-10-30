@@ -1,7 +1,7 @@
 #include "Model.hlsli"
 
 // 座標変換用スロット
-cbuffer transBuffer : register(b1)
+cbuffer transBuffer : register(b0)
 {
 	matrix view;
 	matrix proj;
@@ -12,13 +12,13 @@ cbuffer transBuffer : register(b1)
 };
 
 // 座標行列用スロット
-cbuffer worldBuffer : register(b2)
+cbuffer worldBuffer : register(b1)
 {
 	matrix world;
 };
 
 // ボーン行列
-cbuffer bones : register(b3)
+cbuffer bones : register(b2)
 {
 	matrix boneMats[512];
 };
@@ -26,7 +26,7 @@ cbuffer bones : register(b3)
 //頂点シェーダ
 [RootSignature(RS)]
 Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
-	int4 boneno : BONENO, float4 weight : WEIGHT, uint instanceID : SV_InstanceID)
+	int4 boneno : BONENO, float4 weight : WEIGHT, uint vetexID : SV_VertexId, uint instanceID : SV_InstanceID)
 {
 	Out o;
 	
@@ -52,6 +52,7 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 
 	o.uv = uv;
 
+	o.vetexID = vetexID;
 	o.instanceID = instanceID;
 
 	return o;
