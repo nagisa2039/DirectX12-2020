@@ -16,7 +16,7 @@ public:
 
 	const ComPtr<ID3D12DescriptorHeap>& GetTextureHeap()const;
 
-	const DummyTextures& GetDummyTextures()const;
+	const DummyTextures& GetDummyTextureHandles()const;
 	TextureResorce& GetTextureResouse(const int handle);
 	bool GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes);
 
@@ -43,6 +43,8 @@ private:
 
 	bool Init();
 
+	bool CreateDummyTextures();
+
 	// 画像ロード用lambda格納マップ
 	using LoadLambda_t = std::function<HRESULT(const std::wstring&, DirectX::TexMetadata*, DirectX::ScratchImage&)>;
 	std::unordered_map<std::wstring, LoadLambda_t> loadTable_;
@@ -67,8 +69,11 @@ private:
 	ComPtr<ID3D12DescriptorHeap> lightDSVHeap_ = nullptr;
 	ComPtr<ID3D12DescriptorHeap> lightSRVHeap_ = nullptr;
 
+	int MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height, const std::vector<uint8_t>& colorData);
+
 	// スクリーン用バッファの生成　作成先バッファ	ｽｸﾘｰﾝの幅と高さ		初期化色
-	bool CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const int color = 0);
+	bool CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const std::vector<uint8_t>& colorData);
+	
 	// グラデーションテクスチャの生成	(tonn が無いときに使う階調)
 	bool CreateGradTexture(Resource& resource);
 

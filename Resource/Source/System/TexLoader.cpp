@@ -2,6 +2,7 @@
 #include "d3dx12.h"
 #include <cassert>
 #include <dxgi1_6.h>
+#include <algorithm>
 #include "Command.h"
 #include "Application.h"
 #include "Utility/dx12Tool.h"
@@ -11,13 +12,18 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace std;
 
+namespace
+{
+	const uint8_t pixelSize = 4;
+}
+
 TexLoader::TexLoader(ID3D12Device& dev, Command& cmd, IDXGISwapChain4& swapChain)
 	: dev_(dev), cmd_(cmd)
 {
 	Init();
 	CreateSwapChainBuffer(swapChain);
+	CreateDummyTextures();
 }
-
 
 TexLoader::~TexLoader()
 {
@@ -25,24 +31,8 @@ TexLoader::~TexLoader()
 
 bool TexLoader::Init()
 {
-	// 白テクスチャの作成
-	if (!CreateScreenBuffer(dummyTextures_.whiteTex, 4, 4 ,255))
-	{
-		assert(false);
-		return false;
-	}
-	// 黒テクスチャの作成
-	if (!CreateScreenBuffer(dummyTextures_.blackTex, 4, 4, 255))
-	{
-		assert(false);
-		return false;
-	}
-	// グラデーションテクスチャの作成
-	if (!CreateGradTexture(dummyTextures_.gradTex))
-	{
-		assert(false);
-		return false;
-	}
+	// テクスチャ用デスクリプタヒープの作成
+	CreateTextureHeap();
 
 	// 画像読込関数テーブルの作成
 	if (!CretateLoadLambdaTable())
@@ -51,12 +41,52 @@ bool TexLoader::Init()
 		return false;
 	}
 
-	// テクスチャ用デスクリプタヒープの作成
-	CreateTextureHeap();
-
 	// 深度バッファの作成
 	CreateDepthBuffer();
 
+	return true;
+}
+
+bool TexLoader::CreateDummyTextures()
+{
+	const UINT width = 4;
+	const UINT height = 4;
+	std::vector<uint8_t> colorData(width * height * pixelSize);
+	std::fill(colorData.begin(), colorData.end(), 255);
+
+	// 白テクスチャの作成
+	dummyTextures_.whiteTexH = MakeScreen(L"whiteTex", width, height, colorData);
+	if (dummyTextures_.whiteTexH == FAILED)
+	{
+		assert(false);
+		return false;
+	}
+
+	// 黒テクスチャの作成
+	std::fill(colorData.begin(), colorData.end(), 0);
+	dummyTextures_.blackTexH = MakeScreen(L"blackTex", width, height, colorData);
+	if (dummyTextures_.blackTexH == FAILED)
+	{
+		assert(false);
+		return false;
+	}
+
+	const int gradHeight = 256;
+	colorData.resize(width * gradHeight * pixelSize);
+	auto it = colorData.begin();
+	const auto strideInBytes = width * pixelSize;
+	for (int j = gradHeight - 1; j >= 0; j--)
+	{
+		uint8_t u8t = Uint8(j);
+		std::fill(it, it + strideInBytes, u8t);
+		it += strideInBytes;
+	}
+	dummyTextures_.gradTexH = MakeScreen(L"gradTex", width, gradHeight, colorData);
+	if (dummyTextures_.gradTexH == FAILED)
+	{
+		assert(false);
+		return false;
+	}
 	return true;
 }
 
@@ -65,7 +95,7 @@ const ComPtr<ID3D12DescriptorHeap>& TexLoader::GetTextureHeap() const
 	return texHeap_;
 }
 
-const DummyTextures & TexLoader::GetDummyTextures()const
+const DummyTextures & TexLoader::GetDummyTextureHandles()const
 {
 	return dummyTextures_;
 }
@@ -106,7 +136,31 @@ int TexLoader::GetGraphHandle(const std::wstring& texPath)const
 	return FAILED;
 }
 
-bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const int color)
+int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height, const std::vector<uint8_t>& colorData)
+{
+	int handle = GetGraphHandle(resourceName);
+	if (handle != FAILED)
+	{
+		return handle;
+	}
+
+	TextureResorce texRes = {};
+	CreateScreenBuffer(texRes.resource, width, height, colorData);
+	texRes.imageInf.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texRes.imageInf.width = width;
+	texRes.imageInf.height = height;
+
+	CreateSRV(texRes);
+
+	texResources_.emplace_back(texRes);
+	handle = Int32(texResources_.size() - 1);
+
+	resourceHandleTable_[resourceName] = handle;
+
+	return handle;
+}
+
+bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const UINT height, const std::vector<uint8_t>& colorData)
 {
 	D3D12_HEAP_PROPERTIES heapProp = {};
 	heapProp.Type = D3D12_HEAP_TYPE_CUSTOM;// テクスチャ用
@@ -117,9 +171,6 @@ bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const U
 	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
 	// ランダムカラー画像の作成
-	const UINT pixelSize = 4;
-	vector<uint8_t> col(static_cast<size_t>(width) * height * pixelSize);
-	fill(col.begin(), col.end(), color);
 	resource.state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
 	D3D12_CLEAR_VALUE clearValue = { DXGI_FORMAT_R8G8B8A8_UNORM , { 0.0f, 0.0f, 0.0f, 0.0f } };
@@ -134,10 +185,10 @@ bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const U
 	// GPUに書き込む
 	H_ASSERT(resource.buffer->WriteToSubresource(0,
 		nullptr,	// 全領域コピー
-		col.data(),	// 元データのアドレス
+		colorData.data(),	// 元データのアドレス
 		width * pixelSize,	// 1ラインのサイズ
-		static_cast<UINT>(col.size()// 1枚のサイズ
-	)));
+		static_cast<UINT>(colorData.size()// 1枚のサイズ
+			)));
 
 	return true;
 }
@@ -357,7 +408,7 @@ int TexLoader::LoadGraph(const std::wstring& path)
 	TextureResorce texRes;
 	if (!GetTextureResouse(path, texRes))
 	{
-		return -1;
+		return FAILED;
 	}
 
 	// ResourceをもとSRVをに作成
@@ -475,26 +526,9 @@ void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 
 int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height)
 {
-	int handle = GetGraphHandle(resourceName);
-	if (handle != FAILED)
-	{
-		return handle;
-	}
-
-	TextureResorce texRes = {};
-	CreateScreenBuffer(texRes.resource, width, height);
-	texRes.imageInf.format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	texRes.imageInf.width = width;
-	texRes.imageInf.height = height;
-
-	CreateSRV(texRes);
-
-	texResources_.emplace_back(texRes);
-	handle = Int32(texResources_.size() - 1);
-	
-	resourceHandleTable_[resourceName] = handle;
-
-	return handle;
+	std::vector<uint8_t> colorData(Uint64(width) * height * pixelSize);
+	std::fill(colorData.begin(), colorData.end(), 0);
+	return MakeScreen(resourceName, width, height, colorData);
 }
 
 int TexLoader::GetCurrentRenderTarget() const

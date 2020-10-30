@@ -414,21 +414,28 @@ bool ModelActor::CreateMaterial()
 	}
 
 	auto& texLoader = dx12_.GetTexLoader();
-	auto GetTexture = [&texLoader = texLoader](const std::wstring& path)
+	auto GetTexture = [&texLoader = texLoader](const std::wstring& path, const int failedIdx)
 	{
 		if (path != L"")
 		{
-			return texLoader.LoadGraph(path);
+			int handle = texLoader.LoadGraph(path);
+			if (handle == FAILED)
+			{
+				return failedIdx;
+			}
+			return handle;
 		}
-		return -1;
+		return failedIdx;
 	};
+
+	auto dummyTexHandles = texLoader.GetDummyTextureHandles();
 	for (unsigned int j = 0; auto & mat : mats_)
 	{
-		mat.texIdx = GetTexture(texPaths[j].texPath);
-		mat.sphIdx = GetTexture(texPaths[j].sphPath);
-		mat.spaIdx = GetTexture(texPaths[j].spaPath);
-		mat.addtexIdx = GetTexture(texPaths[j].subPath);
-		mat.toonIdx = GetTexture(texPaths[j].toonPath);
+		mat.texIdx = GetTexture(texPaths[j].texPath, dummyTexHandles.whiteTexH);
+		mat.sphIdx = GetTexture(texPaths[j].sphPath, dummyTexHandles.whiteTexH);
+		mat.spaIdx = GetTexture(texPaths[j].spaPath, dummyTexHandles.blackTexH);
+		mat.addtexIdx = GetTexture(texPaths[j].subPath, dummyTexHandles.whiteTexH);
+		mat.toonIdx = GetTexture(texPaths[j].toonPath, dummyTexHandles.whiteTexH);
 		j++;
 	}
 

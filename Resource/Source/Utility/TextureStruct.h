@@ -4,9 +4,9 @@
 
 struct DummyTextures
 {
-	Resource whiteTex;
-	Resource blackTex;
-	Resource gradTex;
+	int whiteTexH;
+	int blackTexH;
+	int gradTexH;
 };
 
 struct TextureResorce
