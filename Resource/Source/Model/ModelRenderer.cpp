@@ -25,120 +25,6 @@ ModelRenderer::~ModelRenderer()
 {
 }
 
-bool ModelRenderer::CreateModelRS()
-{
-
-	return true;
-}
-
-void ModelRenderer::CreateRSRootParameter(std::vector<D3D12_ROOT_PARAMETER>& rps, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges)
-{
-	rps.resize(5);
-	// マテリアル + テクスチャ5
-	rps[0] = {};
-	rps[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rps[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rps[0].DescriptorTable.NumDescriptorRanges = 2;
-	rps[0].DescriptorTable.pDescriptorRanges = &ranges[0];
-
-	// カメラ
-	rps[1] = {};
-	rps[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rps[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	rps[1].DescriptorTable.NumDescriptorRanges = 1;
-	rps[1].DescriptorTable.pDescriptorRanges = &ranges[2];
-
-	// 座標+ボーン
-	rps[2] = rps[1];
-	rps[2].DescriptorTable.pDescriptorRanges = &ranges[3];
-
-	// 深度テクスチャ
-	rps[3] = rps[1];
-	rps[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rps[3].DescriptorTable.pDescriptorRanges = &ranges[4];
-
-	// セッティング情報
-	rps[4] = rps[1];
-	rps[4].DescriptorTable.pDescriptorRanges = &ranges[5];
-}
-
-void ModelRenderer::CreateRSDescriptorRange(std::vector<D3D12_DESCRIPTOR_RANGE>& ranges)
-{
-	ranges.resize(6);
-
-	// マテリアル
-	ranges[0] = {};
-	ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;	//b
-	ranges[0].BaseShaderRegister = 0;	//0
-	ranges[0].NumDescriptors = 1;
-	ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-	ranges[0].RegisterSpace = 0;
-
-	// テクスチャ
-	ranges[1] = {};
-	ranges[1].NumDescriptors = 5;
-	ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;	// t
-	ranges[1].BaseShaderRegister = 0;	//0
-	ranges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	// カメラ
-	ranges[2] = {};
-	ranges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;	//b
-	ranges[2].BaseShaderRegister = 1;		//1
-	ranges[2].NumDescriptors = 1;
-	ranges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-	ranges[2].RegisterSpace = 0;
-
-	// レンジ3は座標 + ボーン
-	ranges[3] = {};
-	ranges[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;	//b
-	ranges[3].BaseShaderRegister = 2;		//2, 3
-	ranges[3].NumDescriptors = 2;
-	ranges[3].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-	ranges[3].RegisterSpace = 0;
-
-	// 深度テクスチャ用
-	ranges[4] = ranges[2];
-	ranges[4].NumDescriptors = 1;
-	ranges[4].BaseShaderRegister = 5;
-
-	// セッティング情報
-	ranges[5] = ranges[3];
-	ranges[5].NumDescriptors = 1;
-	ranges[5].BaseShaderRegister = 4;
-}
-
-void ModelRenderer::CreateRSSampler(std::vector<D3D12_STATIC_SAMPLER_DESC>&  samplers)
-{
-	samplers.resize(3);
-	samplers[0] = {};
-	samplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	samplers[0].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
-	samplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-	samplers[0].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-	samplers[0].MaxAnisotropy = 0;
-	samplers[0].MaxLOD = D3D12_FLOAT32_MAX;
-	samplers[0].MinLOD = 0.0f;
-	samplers[0].ShaderRegister = 0;
-	samplers[0].RegisterSpace = 0;
-	samplers[0].MipLODBias = 0.0f;
-
-	samplers[1] = samplers[0];
-	samplers[1].ShaderRegister = 1;
-	samplers[1].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
-	samplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	samplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	samplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-
-	samplers[2] = samplers[1];
-	samplers[2].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-	samplers[2].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-	samplers[2].ShaderRegister = 2;
-}
-
 bool ModelRenderer::CreateModelPL()
 {
 	// ルートシグネチャの作成
@@ -151,7 +37,7 @@ bool ModelRenderer::CreateModelPL()
 	D3D12_INPUT_ELEMENT_DESC inputLayoutDescs[] =
 	{
 		// 座標
-		{// セマンティクスネーム
+		{
 			"POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 		},
@@ -277,13 +163,6 @@ bool ModelRenderer::CreateModelPL()
 
 bool ModelRenderer::Init()
 {
-	// pmxルートシグネチャの生成
-	if (!CreateModelRS())
-	{
-		assert(false);
-		return false;
-	}
-
 	// pmxパイプラインステートの作成
 	if (!CreateModelPL())
 	{

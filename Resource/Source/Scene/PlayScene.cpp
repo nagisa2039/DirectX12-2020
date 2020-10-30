@@ -66,7 +66,7 @@ void PlayScene::Update()
 	{
 		//auto& soundManager = dx12.GetSoundManager();
 		//soundManager.PlayWave(BGMH_);	}
-
+	}
 	player_->Update();
 }
 

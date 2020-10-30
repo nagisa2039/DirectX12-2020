@@ -25,7 +25,7 @@ std::vector<ModelData::Material>& ModelData::GetMaterialData()
 	return materials_;
 }
 
-std::vector<uint16_t>& ModelData::GetMaterialIndexData()
+std::vector<MaterialIndex>& ModelData::GetMaterialIndexData()
 {
 	return materialIndexData_;
 }
@@ -37,15 +37,20 @@ std::vector<ModelData::Bone>& ModelData::GetBoneData()
 
 void ModelData::SetVertexMaterialIndex()
 {
-	materialIndexData_.resize(indexData_.size());
+	const auto indexNum = indexData_.size();
+	const int primitiveVertNum = 3;
+	assert(indexNum % primitiveVertNum == 0);
+	materialIndexData_.resize(indexNum/ primitiveVertNum);
+
 	int indexOffset = 0;
 	for (int matIdx = 0; auto& mat : materials_)
 	{
 		int index = 0;
 		while (true)
 		{
-			materialIndexData_[Uint64(indexOffset) + index] = matIdx;
-			if (++index >= mat.indeicesNum)
+			materialIndexData_[(Uint64(indexOffset) + index) / primitiveVertNum].index = matIdx;
+			index += primitiveVertNum;
+			if (index >= mat.indeicesNum)
 			{
 				indexOffset += mat.indeicesNum;
 				index = 0;

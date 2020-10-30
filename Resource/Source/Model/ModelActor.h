@@ -10,6 +10,7 @@
 #include "ModelData.h"
 #include <memory>
 #include "Utility/TextureStruct.h"
+#include "ModelBufferStruct.h"
 
 class VMDMotion;
 class Dx12Wrapper;
@@ -42,24 +43,6 @@ public:
 	void SetTransform(const Transform& trans);
 
 private:
-	struct MaterialForBuffer
-	{
-		DirectX::XMFLOAT4 diffuse;//拡散反射
-		DirectX::XMFLOAT4 specular;//鏡面反射
-		DirectX::XMFLOAT4 ambient;//環境光成分
-		float power;	// スペキュラ乗数
-	
-		// テクスチャ
-		uint16_t texIdx;
-		// スフィアマップ	乗算
-		uint16_t sphIdx;
-		// スフィアマップ	加算
-		uint16_t spaIdx;
-		// 追加テクスチャ
-		uint16_t addtexIdx;
-		// toonテクスチャ
-		uint16_t toonIdx;
-	};
 
 	ModelRenderer& renderer_;
 	Dx12Wrapper& dx12_;
@@ -79,7 +62,7 @@ private:
 	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
 	// GPUに転送用マテリアル配列
-	std::vector<MaterialForBuffer> mats_;
+	std::vector<MaterialStruct> mats_;
 
 	// マテリアルバッファ
 	ComPtr<ID3D12Resource> materialBuffer_ = nullptr;

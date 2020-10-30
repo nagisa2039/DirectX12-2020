@@ -104,6 +104,24 @@ namespace
 		viewDesc.SizeInBytes = static_cast<UINT>(buff->GetDesc().Width);
 		dev->CreateConstantBufferView(&viewDesc, handle);
 	}
+
+	/// <summary>
+	/// シェーダーリソースビューの作成
+	/// </summary>
+	/// <param name="dev">>I3D12Deviceのポインタ</param>
+	/// <param name="buff">ビューを作りたいバッファ</param>
+	/// <param name="handle">バッファを格納するデスクリプタのハンドル</param>
+	template<class T>
+	void CreateShaderResourceBufferView(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, const D3D12_CPU_DESCRIPTOR_HANDLE& handle, const std::vector<T>& elements)
+	{
+		D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc = {};
+		viewDesc.Buffer.NumElements = elements.size();
+		viewDesc.Buffer.StructureByteStride = sizeof(elements[0]);
+		viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		viewDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		viewDesc.Format = buff->GetDesc().Format;
+		dev->CreateShaderResourceView(buff.Get(), &viewDesc, handle);
+	}
 	
 	/// <summary>
 	/// シェーダーのコンパイルを行う

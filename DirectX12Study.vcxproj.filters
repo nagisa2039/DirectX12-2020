@@ -138,6 +138,9 @@
     <ClInclude Include="Resource\Source\System\WAVFileReader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\Model\ModelBufferStruct.h">
+      <Filter>ヘッダー ファイル\Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">

@@ -26,7 +26,7 @@ cbuffer bones : register(b2)
 //頂点シェーダ
 [RootSignature(RS)]
 Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
-	int4 boneno : BONENO, float4 weight : WEIGHT, uint vetexID : SV_VertexId, uint instanceID : SV_InstanceID)
+	int4 boneno : BONENO, float4 weight : WEIGHT, uint instanceID : SV_InstanceID)
 {
 	Out o;
 	
@@ -51,9 +51,6 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 	o.normal = mul(mixMat, normal);
 
 	o.uv = uv;
-
-	o.vetexID = vetexID;
-	o.instanceID = instanceID;
 
 	return o;
 }

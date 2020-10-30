@@ -254,9 +254,17 @@ void ModelActor::Draw(bool isShadow)
 	commandList.SetDescriptorHeaps(1, materialHeap_.GetAddressOf());
 	commandList.SetGraphicsRootDescriptorTable(1, materialHeap_->GetGPUDescriptorHandleForHeapStart());
 
+	// 2 カメラ
+
 	// 座標行列用デスクリプタヒープのセット
 	commandList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
 	commandList.SetGraphicsRootDescriptorTable(3, worldHeap_->GetGPUDescriptorHandleForHeapStart());
+
+	// 4 設定
+
+	// 5 materialIndex for Primitive
+	commandList.SetDescriptorHeaps(1, materialIndexHeap_.GetAddressOf());
+	commandList.SetGraphicsRootDescriptorTable(5, materialIndexHeap_->GetGPUDescriptorHandleForHeapStart());
 
 	// インデックスバッファのセット
 	commandList.IASetIndexBuffer(&ibView_);
@@ -400,7 +408,7 @@ bool ModelActor::CreateMaterial()
 	for (int i = 0; auto & materialBufferInf : mats_)
 	{
 		const auto& mat = materials[i];
-		materialBufferInf = MaterialForBuffer{ mat.diffuse, 
+		materialBufferInf = MaterialStruct{ mat.diffuse,
 			FLOAT4(mat.specular), FLOAT4(mat.ambient), mat.power };
 		i++;
 	}
@@ -424,7 +432,7 @@ bool ModelActor::CreateMaterial()
 		j++;
 	}
 
-	MaterialForBuffer* mappedMaterial = nullptr;
+	MaterialStruct* mappedMaterial = nullptr;
 	H_ASSERT(materialBuffer_->Map(0, nullptr, (void**)&mappedMaterial));
 	std::copy(mats_.begin(), mats_.end(), mappedMaterial);
 	materialBuffer_->Unmap(0, nullptr);
@@ -434,12 +442,12 @@ bool ModelActor::CreateMaterial()
 
 	// 定数バッファビューの作成
 	auto handle = materialHeap_->GetCPUDescriptorHandleForHeapStart();
-	CreateConstantBufferView(&dev, materialBuffer_, handle);
+	CreateShaderResourceBufferView(&dev, materialBuffer_, handle, mats_);
 
 	// マテリアルインデックス---------------------------------------------------------------------------
 	auto materialIndexData = modelData_->GetMaterialIndexData();
 	CreateUploadBuffer(&dev, materialIndexBuffer_, sizeof(materialIndexData[0]) * materialIndexData.size());
-	uint16_t* index = nullptr;
+	MaterialIndex* index = nullptr;
 	H_ASSERT(materialIndexBuffer_->Map(0, nullptr, (void**)&index));
 	std::copy(materialIndexData.begin(), materialIndexData.end(), index);
 	materialIndexBuffer_->Unmap(0, nullptr);
@@ -448,7 +456,7 @@ bool ModelActor::CreateMaterial()
 
 	// 定数バッファビューの作成
 	handle = materialIndexHeap_->GetCPUDescriptorHandleForHeapStart();
-	CreateConstantBufferView(&dev, materialIndexBuffer_, handle);
+	CreateShaderResourceBufferView(&dev, materialIndexBuffer_, handle, materialIndexData);
 
 	return true;
 }
