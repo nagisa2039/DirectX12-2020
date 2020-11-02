@@ -6,6 +6,7 @@ class Dx12Wrapper;
 class FPSManager;
 class SceneController;
 class Input;
+class ShaderLoader;
 
 class Application
 {
@@ -45,6 +46,11 @@ public:
 	/// <returns></returns>
 	Input& GetInput();
 
+	/// <summary>
+	/// Shader読み込みクラスの取得
+	/// </summary>
+	ShaderLoader& GetShaderLoader();
+
 	// アプリケーションを初期化する
 
 	/// <summary>
@@ -72,6 +78,7 @@ private:
 	std::unique_ptr<FPSManager> fpsManager_;
 	std::unique_ptr<SceneController> sceneController_;
 	std::unique_ptr<Input> input_;
+	std::unique_ptr<ShaderLoader> shaderLoader_;
 
 	Application();
 	Application(const Application&) = delete;

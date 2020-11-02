@@ -48,6 +48,7 @@
     <ClInclude Include="Resource\Source\Utility\Tool.h" />
     <ClInclude Include="Resource\Source\Utility\TextureStruct.h" />
     <ClInclude Include="Resource\Source\System\SoundManager.h" />
+    <ClInclude Include="Resource\Source\System\ShaderLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\Game\Animator.cpp" />
@@ -72,6 +73,7 @@
     <ClCompile Include="Resource\Source\System\WAVFileReader.cpp" />
     <ClCompile Include="Resource\Source\Utility\Geometry.cpp" />
     <ClCompile Include="Resource\Source\Utility\Input.cpp" />
+    <ClCompile Include="Resource\Source\System\ShaderLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\2D\2DStanderdPS.hlsl">

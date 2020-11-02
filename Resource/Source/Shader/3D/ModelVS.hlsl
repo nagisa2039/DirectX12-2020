@@ -54,3 +54,18 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 
 	return o;
 }
+
+// âeópç¿ïWïœä∑
+[RootSignature(RS)]
+float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
+	int4 boneno : BONENO, float4 weight : WEIGHT) : SV_POSITION
+{
+	matrix mixMat = boneMats[boneno.x] * weight.x
+		+ boneMats[boneno.y] * weight.y
+		+ boneMats[boneno.z] * weight.z
+		+ boneMats[boneno.w] * weight.w;
+
+	pos = mul(world, mul(mixMat, pos));
+
+	return mul(lightCamera, pos);
+}

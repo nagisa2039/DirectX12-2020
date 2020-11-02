@@ -23,7 +23,7 @@ void Player::Update()
 	animator_->Update();
 
 	auto& input = Application::Instance().GetInput();
-	auto move = [input = input](const char keycode, float& target, const float speed) 
+	auto move = [input = input](const unsigned char keycode, float& target, const float speed) 
 	{
 		if (input.GetButton(keycode))
 		{

@@ -1,7 +1,6 @@
 #include "ModelRenderer.h"
 #include <cassert>
 #include "d3dx12.h"
-#include <d3dcompiler.h>
 #include "ModelActor.h"
 #include "Utility/Tool.h"
 #include "System/Dx12Wrapper.h"
@@ -12,6 +11,7 @@
 #include "System/SpriteDrawer.h"
 #include "Utility/Constant.h"
 #include "Utility/dx12Tool.h"
+#include "System/ShaderLoader.h"
 
 using namespace std;
 using namespace DirectX;
@@ -28,10 +28,11 @@ ModelRenderer::~ModelRenderer()
 bool ModelRenderer::CreateModelPL()
 {
 	// ルートシグネチャの作成
-	ShaderCompile(L"Resource/Source/Shader/3D/ModelVS.hlsl", "VS", "vs_5_1", vertexShader_);
-	ShaderCompile(L"Resource/Source/Shader/3D/ModelPS.hlsl", "PS", "ps_5_1", pixelShader_);
+	auto& sl = Application::Instance().GetShaderLoader();
+	auto vertexShader	= sl.GetShader(L"Resource/Source/Shader/3D/ModelVS.hlsl", "VS", "vs_5_1");
+	auto pixelShader	= sl.GetShader(L"Resource/Source/Shader/3D/ModelPS.hlsl", "PS", "ps_5_1");
 
-	CreateRootSignatureFromShader(&dx12_.GetDevice(), modelRS_, vertexShader_);
+	CreateRootSignatureFromShader(&dx12_.GetDevice(), modelRS_, vertexShader);
 
 	//頂点レイアウト(仕様)
 	D3D12_INPUT_ELEMENT_DESC inputLayoutDescs[] =
@@ -73,8 +74,8 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.InputLayout.NumElements = _countof(inputLayoutDescs);
 
 	// シェーダ系
-	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader_.Get());
-	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader_.Get());
+	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
+	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
 	// レンダーターゲット
 	gpsd.NumRenderTargets = 1;
@@ -118,45 +119,30 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	gpsd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-	if (FAILED(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(modelPL_.ReleaseAndGetAddressOf()))))
+	auto& dev = dx12_.GetDevice();
+	if (FAILED(dev.CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(modelPL_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
 	}
 
-	//vertexShader = nullptr;
-	//pixelShader = nullptr;
-	//erBlob = nullptr;
-	//if (FAILED(D3DCompileFromFile(L"Resource/Source/Shader/model.hlsl", nullptr, nullptr, "ShadowVS", "vs_5_0",
-	//	D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, vertexShader.ReleaseAndGetAddressOf(), erBlob.ReleaseAndGetAddressOf())))
-	//{
-	//	assert(false);
-	//	return false;
-	//}
+	// シェーダ系
+	vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/ModelVS.hlsl", "ShadowVS", "vs_5_1");
+	pixelShader = sl.GetShader(L"Resource/Source/Shader/3D/ModelPS.hlsl", "ShadowPS", "ps_5_1");
 
-	//if (FAILED(D3DCompileFromFile(L"Resource/Source/Shader/model.hlsl", nullptr, nullptr, "ShadowPS", "ps_5_0",
-	//	D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, pixelShader.ReleaseAndGetAddressOf(), erBlob.ReleaseAndGetAddressOf())))
-	//{
-	//	assert(false);
-	//	return false;
-	//}
+	// レンダーターゲット
+	for (size_t j = 0; j < gpsd.NumRenderTargets; j++)
+	{
+		gpsd.RTVFormats[j] = DXGI_FORMAT_UNKNOWN;
+	}
+	gpsd.NumRenderTargets = 1;
+	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	//// シェーダ系
-	//gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-	//gpsd.PS =CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-
-	//// レンダーターゲット
-	//for (size_t j = 0; j < gpsd.NumRenderTargets; j++)
-	//{
-	//	gpsd.RTVFormats[j] = DXGI_FORMAT_UNKNOWN;
-	//}
-	//gpsd.NumRenderTargets = 1;
-
-	//if (FAILED(_dx12.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(_shadowPL.ReleaseAndGetAddressOf()))))
-	//{
-	//	assert(false);
-	//	return false;
-	//}
+	if (FAILED(dev.CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(shadowPL_.ReleaseAndGetAddressOf()))))
+	{
+		assert(false);
+		return false;
+	}
 
 	return true;
 }
@@ -190,7 +176,8 @@ bool ModelRenderer::Init()
 	}
 
 	auto wsize = Application::Instance().GetWindowSize();
-	screenH_ = dx12_.GetTexLoader().MakeScreen(D3D_SPACE_SCREEN, wsize.w, wsize.h);
+	screenH_ = dx12_.GetTexLoader().MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
+	lightScreenH_ = dx12_.GetTexLoader().MakeScreen(D3D_LIGHT_VIEW_SCREEN, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
 
 	return true;
 }
@@ -223,21 +210,34 @@ void ModelRenderer::Draw()
 void ModelRenderer::DrawTo3DSpace()
 {
 	auto& texLoader = dx12_.GetTexLoader();
-	texLoader.SetDrawScreen(screenH_);
-	texLoader.ClsDrawScreen();
-
-	dx12_.SetDefaultViewAndScissor();
-
 	auto& commandList = dx12_.GetCommand().CommandList();
-	commandList.SetPipelineState(modelPL_.Get());
-	commandList.SetGraphicsRootSignature(modelRS_.Get());
+
 	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+	/*texLoader.SetDrawScreen(lightScreenH_);
+	texLoader.ClsDrawScreen();
+	dx12_.SetDefaultViewAndScissor();
+
+	commandList.SetPipelineState(shadowPL_.Get());
+	commandList.SetGraphicsRootSignature(modelRS_.Get());
 	dx12_.SetCameraDescriptorHeap(2);
 
 	for (auto& actor : modelActors_)
 	{
-		actor->Draw();
+		actor->Draw(true);
+	}*/
+
+	texLoader.SetDrawScreen(screenH_);
+	texLoader.ClsDrawScreen();
+	dx12_.SetDefaultViewAndScissor();
+
+	commandList.SetPipelineState(modelPL_.Get());
+	commandList.SetGraphicsRootSignature(modelRS_.Get());
+	dx12_.SetCameraDescriptorHeap(2);
+
+	for (auto& actor : modelActors_)
+	{
+		actor->Draw(false);
 	}
 }
 

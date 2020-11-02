@@ -141,6 +141,9 @@
     <ClInclude Include="Resource\Source\System\WAVFileReader.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\System\ShaderLoader.h">
+      <Filter>ヘッダー ファイル\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -207,6 +210,9 @@
       <Filter>ソース ファイル\Game</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\System\WAVFileReader.cpp">
+      <Filter>ソース ファイル\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\System\ShaderLoader.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
   </ItemGroup>

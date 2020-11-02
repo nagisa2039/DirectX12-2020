@@ -13,6 +13,8 @@
 #include "VMDMotion.h"
 #include "System/Dx12Wrapper.h"
 #include "System/TexLoader.h"
+#include "System/Application.h"
+#include "Utility/Input.h"
 
 using namespace std;
 using namespace DirectX; 
@@ -50,8 +52,6 @@ namespace
 		auto r = 1 - t;
 		return t * t*t + 3 * t*t*r*b.y + 3 * t*r*r*a.y;
 	}
-
-	constexpr uint8_t MATERIAL_MAX = 512;
 }
 
 ModelActor::ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& renderer, VMDMotion& vmd)
@@ -233,6 +233,23 @@ void ModelActor::Update()
 	}
 	MotionUpdate(motionFrame);
 
+	auto& input = Application::Instance().GetInput();
+	auto Move = [&input = input](const unsigned char keycode, float& target, const float speed)
+	{
+		if (input.GetButton(keycode))
+		{
+			target += speed;
+		}
+	};
+
+	const float speed = 2.0f;
+	Move(DIK_LEFT,	trans_.pos.x, -speed);
+	Move(DIK_RIGHT, trans_.pos.x, +speed);
+	Move(DIK_DOWN,	trans_.pos.y, -speed);
+	Move(DIK_UP,	trans_.pos.y, +speed);
+	Move(DIK_O,		trans_.pos.z, -speed);
+	Move(DIK_I,		trans_.pos.z, +speed);
+
 	// À•WXV
 	const float deg2rad = (XM_PI / 180.0f);
 	*mappedTrans_ =
@@ -282,7 +299,7 @@ void ModelActor::Draw(bool isShadow)
 	}
 	else
 	{
-		commandList.DrawIndexedInstanced(modelData_->GetIndexData().size(), 1, 0, 0, 0);
+		commandList.DrawIndexedInstanced(Uint32(modelData_->GetIndexData().size()), 1, 0, 0, 0);
 	}
 }
 

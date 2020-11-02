@@ -4,33 +4,11 @@ SamplerState smp : register(s0);
 SamplerState toomSmp : register(s1);
 SamplerComparisonState shadowSmp : register(s2);
 
+#include "../../Model/ModelBufferStruct.h"
+
 Texture2D<float4> tex[512] : register(t0, space0);
 
-struct MaterialStruct
-{
-    float4 diffuse; //拡散反射
-    float4 specular; //鏡面反射
-    float4 ambient; //環境光成分
-    float power; // スペキュラ乗数
-
-	// テクスチャ
-    int texIdx;
-	// スフィアマップ	乗算
-    int sphIdx;
-	// スフィアマップ	加算
-    int spaIdx;
-	// 追加テクスチャ
-    int addtexIdx;
-	// toonテクスチャ
-    int toonIdx;
-};
-
 StructuredBuffer<MaterialStruct> matInfs : register(t0, space1);
-
-struct MaterialIndex
-{
-	uint index;
-};
 StructuredBuffer<MaterialIndex> materialIndexs : register(t0, space2);
 
 // マテリアル用スロット
@@ -155,3 +133,9 @@ PixelOutPut PS(Out input, uint primitiveID : SV_PrimitiveID)
 
 	//return po;
 	}
+
+//ピクセルシェーダ
+float4 ShadowPS(float4 pos : SV_POSITION) : SV_TARGET
+{
+	return float4(1, 1, 1, 1);
+}

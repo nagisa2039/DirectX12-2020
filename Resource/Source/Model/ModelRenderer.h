@@ -50,9 +50,7 @@ private:
 	std::map<std::string, std::shared_ptr<VMDMotion>> vmdMotions_;
 
 	int screenH_;
-
-	ComPtr<ID3DBlob> vertexShader_ = nullptr;
-	ComPtr<ID3DBlob> pixelShader_ = nullptr;
+	int lightScreenH_;
 
 	bool CreateModelPL();
 };

@@ -45,7 +45,7 @@ void ModelData::SetVertexMaterialIndex()
 	int indexOffset = 0;
 	for (int matIdx = 0; auto& mat : materials_)
 	{
-		int index = 0;
+		uint32_t index = 0;
 		while (true)
 		{
 			materialIndexData_[(Uint64(indexOffset) + index) / primitiveVertNum].index = matIdx;

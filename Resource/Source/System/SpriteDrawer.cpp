@@ -6,6 +6,7 @@
 #include "Command.h"
 #include "System/Dx12Wrapper.h"
 #include "Utility/Cast.h"
+#include "System/ShaderLoader.h"
 
 using namespace DirectX;
 using namespace std;
@@ -152,8 +153,9 @@ void SpriteDrawer::CreatePiplineState()
 void SpriteDrawer::CreateRootSignature()
 {
 	// シェーダーコンパイル
-	ShaderCompile(L"Resource/Source/Shader/2D/2DStanderdVS.hlsl", "VS", "vs_5_1", vertexShader_);
-	ShaderCompile(L"Resource/Source/Shader/2D/2DStanderdPS.hlsl", "PS", "ps_5_1", pixelShader_);
+	auto sl = Application::Instance().GetShaderLoader();
+	vertexShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdVS.hlsl", "VS", "vs_5_1");
+	pixelShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdPS.hlsl", "PS", "ps_5_1");
 
 	CreateRootSignatureFromShader(&dx12_.GetDevice(), rootSignature_, vertexShader_);
 }
@@ -331,14 +333,14 @@ bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
 bool SpriteDrawer::DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle)
 {
 	Image img = dx12_.GetTexLoader().GetTextureResouse(graphHandle).imageInf;
-	return DrawRotaGraph2(x, y, img.width/2, img.height/2, exRate, angle, graphHandle);
+	return DrawRotaGraph2(x, y, Uint32(img.width/2), Uint32(img.height/2), exRate, angle, graphHandle);
 }
 
 bool SpriteDrawer::DrawRotaGraph2(const INT x, const INT y, const UINT centerX, const UINT centerY, const float exRate, const float angle, const int graphHandle)
 {
 	auto& texRes = dx12_.GetTexLoader().GetTextureResouse(graphHandle);
 	Image img = texRes.imageInf;
-	DrawRectRotaGraph2(x, y, 0, 0, img.width, img.height, centerX, centerY, exRate, angle, graphHandle);
+	DrawRectRotaGraph2(x, y, 0, 0, Uint32(img.width), Uint32(img.height), centerX, centerY, exRate, angle, graphHandle);
 
 	return true;
 }

@@ -6,6 +6,7 @@
 #include "Scene/SceneController.h"
 #include "Utility/Input.h"
 #include <d3d12.h>
+#include "System/ShaderLoader.h"
 
 using namespace std;
 
@@ -59,6 +60,11 @@ Input& Application::GetInput()
 	return *input_;
 }
 
+ShaderLoader& Application::GetShaderLoader()
+{
+	return *shaderLoader_;
+}
+
 bool Application::Initialize()
 {
 	// windowsの機能を使わせてもらう
@@ -102,6 +108,8 @@ bool Application::Initialize()
 
 	// ウィンドウハンドルが取得できなければfalseを返す
 	if (hwnd_ == 0)return false;
+
+	shaderLoader_ = make_unique<ShaderLoader>();
 
 	dx12_ = make_unique<Dx12Wrapper>(hwnd_);
 	dx12_->Init();

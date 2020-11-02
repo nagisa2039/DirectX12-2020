@@ -193,15 +193,27 @@ void Dx12Wrapper::UpdateCamera()
 	XMVECTOR targetPos = XMLoadFloat3(&camera_.target);
 	XMVECTOR upVec = XMLoadFloat3(&camera_.up);
 	//XMVECTOR lightVec = XMLoadFloat3(&_mappedSetting->light_dir);
+	auto lightDir = XMFLOAT3(1.0f, -1.0f, 1.0f);
+	XMVECTOR lightVec = XMLoadFloat3(&lightDir);
+	XMVECTOR lightCamPos = eyePos - lightVec * 100.0f;
 
+	// カメラ用
 	auto view = XMMatrixLookAtLH(eyePos, targetPos, upVec);
 	auto proj = XMMatrixPerspectiveFovLH(
 		camera_.fov,
 		static_cast<float>(wsize.w) / static_cast<float>(wsize.h),
 		0.05f, 1000.0f);
 
+	// ライト用
+	auto lightView = XMMatrixLookAtLH(lightCamPos, targetPos, upVec);
+	auto lightProj = XMMatrixPerspectiveFovLH(
+		camera_.fov,
+		static_cast<float>(SHADOW_RESOLUTION) / static_cast<float>(SHADOW_RESOLUTION),
+		0.05f, 1000.0f);
+
 	mappedCam_->view = view;
 	mappedCam_->proj = proj;
 	mappedCam_->eye = camera_.eye;
 	mappedCam_->invProj = XMMatrixInverse(nullptr, proj);
+	mappedCam_->lightCamera = lightView * lightProj;
 }

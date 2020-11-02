@@ -161,11 +161,11 @@ namespace
 	void CreateStructuredBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const std::vector<T>& elements)
 	{
-		const UINT elementNum = elements.size();
+		const UINT elementNum = Uint32(elements.size());
 		assert(elementNum > 0);
 		const UINT elementSize = sizeof(elements[0]);
 
-		CreateUploadBuffer(dev, buff, elementSize * elementNum);
+		CreateUploadBuffer(dev, buff, Uint64(elementSize) * elementNum, false);
 		T* mapped = nullptr;
 		H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
 		std::copy(elements.begin(), elements.end(), mapped);
@@ -176,26 +176,6 @@ namespace
 		// 定数バッファビューの作成
 		auto handle = heap->GetCPUDescriptorHandleForHeapStart();
 		CreateShaderResourceBufferView(dev, buff, handle, elementSize, elementNum);
-	}
-	
-	/// <summary>
-	/// シェーダーのコンパイルを行う
-	/// </summary>
-	/// <param name="shaderPath">シェーダーファイルのパス</param>
-	/// <param name="entoryPoint">エントリーポイント名</param>
-	/// <param name="shaderModel">シェーダーモデル</param>
-	/// <param name="shaderBlob">コンパイルしたシェーダーを格納するBolb</param>
-	/// <param name="errorBlob">エラー情報を格納するBlob</param>
-	void ShaderCompile(const LPCWSTR& shaderPath, const LPCSTR& entoryPoint, const LPCSTR& shaderModel, ComPtr<ID3DBlob>& shaderBlob)
-	{
-		ComPtr<ID3DBlob> erBlob = nullptr;
-
-		if (FAILED(D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entoryPoint, shaderModel,
-			D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, shaderBlob.ReleaseAndGetAddressOf(), erBlob.ReleaseAndGetAddressOf())))
-		{
-			OutputBolbString(erBlob.Get());
-			assert(false);
-		}
 	}
 
 	/// <summary>

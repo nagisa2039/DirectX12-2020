@@ -61,7 +61,7 @@ int SoundManager::LoadWave(const std::wstring& filePath, bool loop)
 	//H_ASSERT(result);
 	
 
-	int handle = soundDatas_.size() - 1;
+	int handle = Int32(soundDatas_.size()) - 1;
 	resourceHandleTable_[filePath] = handle;
 	PlayWave(handle);
 	return handle;

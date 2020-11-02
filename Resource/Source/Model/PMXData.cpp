@@ -346,23 +346,23 @@ void PMXData::LoadBone(FILE * fp)
 
 	struct Bone
 	{
-		wstring boneName;
-		XMFLOAT3 startpos;
-		XMFLOAT3 endPos;
-		uint32_t endBoneIdx;
-		uint32_t parentBoneIdx;
-		int transformHierarchy;
-		uint16_t bitFlag;
-		uint32_t rotateGrant;	//	回転付与
-		uint32_t moveGrant;	//	移動付与
-		float grandParsent;		// 付与率
-		XMFLOAT3 axisVec;	// 固定軸
-		XMFLOAT3 localAxisX;
-		XMFLOAT3 localAxisY;
-		int key;	// 外部親変形
-		uint32_t ikBoneIdx;
-		int roopCnt;
-		float radLimit;
+		wstring boneName = L"";
+		XMFLOAT3 startpos = {};
+		XMFLOAT3 endPos = {};
+		uint32_t endBoneIdx = 0;
+		uint32_t parentBoneIdx = 0;
+		int transformHierarchy = 0;
+		uint16_t bitFlag = 0;
+		uint32_t rotateGrant = 0;	//	回転付与
+		uint32_t moveGrant = 0;	//	移動付与
+		float grandParsent = 0.0f;		// 付与率
+		XMFLOAT3 axisVec = {};	// 固定軸
+		XMFLOAT3 localAxisX = {};
+		XMFLOAT3 localAxisY = {};
+		int key = 0;	// 外部親変形
+		uint32_t ikBoneIdx = 0;
+		int roopCnt = 0;
+		float radLimit = 0.0f;
 		vector<IKLink> ikLinkVec;
 	};
 
@@ -371,8 +371,7 @@ void PMXData::LoadBone(FILE * fp)
 
 	for (int idx = 0; idx < boneNum; idx++)
 	{
-		auto bone = bones[idx];
-		bone = {};
+		auto& bone = bones[idx];
 		ReadTextBuf(bone.boneName, fp);
 		wstring boneNameEng;
 		ReadTextBuf(boneNameEng, fp);
