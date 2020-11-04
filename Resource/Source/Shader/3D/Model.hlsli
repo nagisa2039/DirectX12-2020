@@ -30,3 +30,14 @@ struct Out
 	float4 normal : NORMAL; // 法線情報
 	float2 uv : TEXCOORD; // UV情報
 };
+
+// 座標変換用スロット
+cbuffer transBuffer : register(b0)
+{
+	matrix view;
+	matrix proj;
+	matrix invProj;
+	matrix lightCamera;
+	matrix shadow;
+	float3 eye; // 視点
+};

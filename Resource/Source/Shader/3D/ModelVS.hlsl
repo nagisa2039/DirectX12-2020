@@ -1,16 +1,5 @@
 #include "Model.hlsli"
 
-// 座標変換用スロット
-cbuffer transBuffer : register(b0)
-{
-	matrix view;
-	matrix proj;
-	matrix invProj;
-	matrix lightCamera;
-	matrix shadow;
-	float3 eye; // 視点
-};
-
 // 座標行列用スロット
 cbuffer worldBuffer : register(b1)
 {
@@ -22,6 +11,7 @@ cbuffer bones : register(b2)
 {
 	matrix boneMats[512];
 };
+
 
 //頂点シェーダ
 [RootSignature(RS)]

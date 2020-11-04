@@ -22,6 +22,9 @@
     <ClInclude Include="Resource\Source\Model\ModelBufferStruct.h" />
     <ClInclude Include="Resource\Source\Game\Animator.h" />
     <ClInclude Include="Resource\Source\Game\Player.h" />
+    <ClInclude Include="Resource\Source\Primitive\PlaneMesh.h" />
+    <ClInclude Include="Resource\Source\Primitive\PrimitiveMesh.h" />
+    <ClInclude Include="Resource\Source\Primitive\PrimitiveMng.h" />
     <ClInclude Include="Resource\Source\System\WAVFileReader.h" />
     <ClInclude Include="Resource\Source\Utility\ComPtr.h" />
     <ClInclude Include="Resource\Source\Utility\Cast.h" />
@@ -59,6 +62,9 @@
     <ClCompile Include="Resource\Source\Model\PMDData.cpp" />
     <ClCompile Include="Resource\Source\Model\PMXData.cpp" />
     <ClCompile Include="Resource\Source\Model\VMDMotion.cpp" />
+    <ClCompile Include="Resource\Source\Primitive\PlaneMesh.cpp" />
+    <ClCompile Include="Resource\Source\Primitive\PrimitiveMesh.cpp" />
+    <ClCompile Include="Resource\Source\Primitive\PrimitiveMng.cpp" />
     <ClCompile Include="Resource\Source\Scene\PlayScene.cpp" />
     <ClCompile Include="Resource\Source\Scene\Scene.cpp" />
     <ClCompile Include="Resource\Source\Scene\SceneController.cpp" />
@@ -123,6 +129,16 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\3D\primitive.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

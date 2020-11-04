@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 using float4 = DirectX::XMFLOAT4;
 using uint = uint32_t;
+using min16uint = uint16_t;
 #endif
 
 struct MaterialStruct

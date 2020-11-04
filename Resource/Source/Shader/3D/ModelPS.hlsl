@@ -11,19 +11,6 @@ Texture2D<float4> tex[512] : register(t0, space0);
 StructuredBuffer<MaterialStruct> matInfs : register(t0, space1);
 StructuredBuffer<MaterialIndex> materialIndexs : register(t0, space2);
 
-// マテリアル用スロット
-
-// 座標変換用スロット
-cbuffer transBuffer : register(b1)
-{
-	matrix view;
-	matrix proj;
-	matrix invProj;
-	matrix lightCamera;
-	matrix shadow;
-	float3 eye; // 視点
-};
-
 // 設定
 cbuffer Setting : register(b3)
 {
@@ -64,8 +51,7 @@ struct PixelOutPut
 PixelOutPut PS(Out input, uint primitiveID : SV_PrimitiveID)
 {
 	PixelOutPut po;
-	
-    uint matIdx = (uint) materialIndexs[primitiveID].index;
+	uint matIdx = (uint)materialIndexs[primitiveID].index;
     MaterialStruct mat = matInfs[matIdx];
 	
 	//return float4(input.normal.xyz,1);

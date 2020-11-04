@@ -52,6 +52,12 @@
     <Filter Include="ヘッダー ファイル\Game">
       <UniqueIdentifier>{da7a3a3d-c328-46a4-9304-30aa5a2f5fdc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Primitive">
+      <UniqueIdentifier>{54103241-6ab7-4709-830a-f1cb650b4249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Primitive">
+      <UniqueIdentifier>{c28ac6e2-6dc0-4cb4-b537-4c5a3eb78db6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource\Source\Utility\Tool.h">
@@ -144,6 +150,15 @@
     <ClInclude Include="Resource\Source\System\ShaderLoader.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\Primitive\PlaneMesh.h">
+      <Filter>ヘッダー ファイル\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Primitive\PrimitiveMesh.h">
+      <Filter>ヘッダー ファイル\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Primitive\PrimitiveMng.h">
+      <Filter>ヘッダー ファイル\Primitive</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -215,6 +230,15 @@
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
+    <ClCompile Include="Resource\Source\Primitive\PlaneMesh.cpp">
+      <Filter>ソース ファイル\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Primitive\PrimitiveMesh.cpp">
+      <Filter>ソース ファイル\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Primitive\PrimitiveMng.cpp">
+      <Filter>ソース ファイル\Primitive</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\2D\2DStanderdPS.hlsl">
@@ -227,6 +251,9 @@
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Source\Shader\3D\ModelVS.hlsl">
+      <Filter>ソース ファイル\Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\3D\primitive.hlsl">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
   </ItemGroup>

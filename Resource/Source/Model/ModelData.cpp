@@ -43,7 +43,7 @@ void ModelData::SetVertexMaterialIndex()
 	materialIndexData_.resize(indexNum/ primitiveVertNum);
 
 	int indexOffset = 0;
-	for (int matIdx = 0; auto& mat : materials_)
+	for (decltype(MaterialIndex::index) matIdx = 0; auto& mat : materials_)
 	{
 		uint32_t index = 0;
 		while (true)
@@ -53,7 +53,6 @@ void ModelData::SetVertexMaterialIndex()
 			if (index >= mat.indeicesNum)
 			{
 				indexOffset += mat.indeicesNum;
-				index = 0;
 				matIdx++;
 				break;
 			}
