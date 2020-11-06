@@ -268,10 +268,10 @@
     <FxCompile Include="Resource\Source\Shader\3D\ModelVS.hlsl">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
-    <FxCompile Include="PrimitiveVS.hlsl">
+    <FxCompile Include="Resource\Source\Shader\3D\PrimitivePS.hlsl">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
-    <FxCompile Include="PrimitivePS.hlsl">
+    <FxCompile Include="Resource\Source\Shader\3D\PrimitiveVS.hlsl">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
   </ItemGroup>
@@ -282,7 +282,7 @@
     <None Include="Resource\Source\Shader\3D\Model.hlsli">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </None>
-    <None Include="Primitive.hlsli">
+    <None Include="Resource\Source\Shader\3D\Primitive.hlsli">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </None>
   </ItemGroup>

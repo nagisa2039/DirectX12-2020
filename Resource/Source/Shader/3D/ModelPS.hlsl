@@ -11,6 +11,8 @@ Texture2D<float4> tex[512] : register(t0, space0);
 StructuredBuffer<MaterialStruct> matInfs : register(t0, space1);
 StructuredBuffer<MaterialIndex> materialIndexs : register(t0, space2);
 
+Texture2D<float> lightDepthTex : register(t0, space3);
+
 // 設定
 cbuffer Setting : register(b3)
 {
@@ -43,8 +45,6 @@ struct PixelOutPut
 	//float4 normal : SV_TARGET1; //法線を出力
 	//float4 bright : SV_TARGET2; // 輝度出力
 };
-//// シャドウマップ用	デプス
-//Texture2D<float> lightDepthTex : register(t0);
 
 //ピクセルシェーダ
 [RootSignature(RS)]
@@ -88,25 +88,25 @@ PixelOutPut PS(Out input, uint primitiveID : SV_PrimitiveID)
     float4 ret = diffuseColor * texColor * toonColor + specColor + ambientColor;
 	
     po.col = ret;
-    return po;
+    //return po;
 
 
-	//float shadowWeight = 1.0f;
-	//float3 posFromLight = input.tpos.xyz / input.tpos.w;
-	//float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
-	//float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z - 0.005f);
-	//if (posFromLight.z > shadowZ + 0.0005f)
-	//{
-	//	shadowWeight = 0.7f;
-	//}
+	float shadowWeight = 1.0f;
+	float3 posFromLight = input.tpos.xyz / input.tpos.w;
+	float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
+	float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z - 0.005f);
+	if (posFromLight.z > shadowZ + 0.0005f)
+	{
+		shadowWeight = 0.7f;
+	}
 
-	//float edge = abs(dot(eyeRay, input.normal.xyz)) < edgeWidth ? 1 - edgePower : 1;
-	//float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
-	//lim = pow(lim, limColor.a);
+	float edge = abs(dot(eyeRay, input.normal.xyz)) < edgeWidth ? 1 - edgePower : 1;
+	float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
+	lim = pow(lim, limColor.a);
 
-	//ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, ret.a);
+	ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, ret.a);
 	
-	//po.col = ret;
+	po.col = ret;
 
 	//po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
 	//po.normal.a = input.normal.a = 1;
@@ -117,11 +117,11 @@ PixelOutPut PS(Out input, uint primitiveID : SV_PrimitiveID)
 	//	po.bright = float4(b, b, b, 1);
 	//}
 
-	//return po;
+	return po;
 	}
 
 //ピクセルシェーダ
 float4 ShadowPS(float4 pos : SV_POSITION) : SV_TARGET
 {
-	return float4(1, 1, 1, 1);
+	return float4(0, 1, 1, 1);
 }

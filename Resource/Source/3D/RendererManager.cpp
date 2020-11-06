@@ -38,7 +38,7 @@ void RendererManager::Draw()
 
 	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	/*texLoader.SetDrawScreen(lightScreenH_);
+	texLoader.SetDrawScreen(lightScreenH_, true);
 	texLoader.ClsDrawScreen();
 
 	dx12_.SetDefaultViewAndScissor();
@@ -46,9 +46,9 @@ void RendererManager::Draw()
 	for (auto& renderer : renderers_)
 	{
 		renderer->DrawShadow();
-	}*/
+	}
 
-	texLoader.SetDrawScreen(cameraScreenH_);
+	texLoader.SetDrawScreen(cameraScreenH_, false);
 	texLoader.ClsDrawScreen();
 
 	dx12_.SetDefaultViewAndScissor();

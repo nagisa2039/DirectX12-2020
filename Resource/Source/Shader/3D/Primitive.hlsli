@@ -15,10 +15,10 @@
 											"addressW = TEXTURE_ADDRESS_CLAMP,"\
 											"comparisonFunc = COMPARISON_LESS_EQUAL)"
 
-// カメラ
-// 座標
-// 深度テクスチャ
-// テクスチャ
+// 0 カメラ
+// 1 座標
+// 2 深度テクスチャ
+// 3 テクスチャ
 
 struct Out
 {

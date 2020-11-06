@@ -195,7 +195,10 @@ void Dx12Wrapper::UpdateCamera()
 	//XMVECTOR lightVec = XMLoadFloat3(&_mappedSetting->light_dir);
 	auto lightDir = XMFLOAT3(1.0f, -1.0f, 1.0f);
 	XMVECTOR lightVec = XMLoadFloat3(&lightDir);
-	XMVECTOR lightCamPos = eyePos - lightVec * 100.0f;
+	lightVec = XMVector3Normalize(lightVec);
+
+	auto cameraArmLength = XMVector3Length(XMVectorSubtract(targetPos, eyePos)).m128_f32[0];
+	XMVECTOR lightCamPos = targetPos - lightVec * cameraArmLength;
 
 	// カメラ用
 	auto view = XMMatrixLookAtLH(eyePos, targetPos, upVec);
@@ -206,10 +209,7 @@ void Dx12Wrapper::UpdateCamera()
 
 	// ライト用
 	auto lightView = XMMatrixLookAtLH(lightCamPos, targetPos, upVec);
-	auto lightProj = XMMatrixPerspectiveFovLH(
-		camera_.fov,
-		static_cast<float>(SHADOW_RESOLUTION) / static_cast<float>(SHADOW_RESOLUTION),
-		0.05f, 1000.0f);
+	auto lightProj = XMMatrixOrthographicLH(80, 80, 0.05f, 1000.0f);
 
 	mappedCam_->view = view;
 	mappedCam_->proj = proj;

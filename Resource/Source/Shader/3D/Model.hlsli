@@ -5,6 +5,7 @@
 						"DescriptorTable(CBV(b1,numDescriptors = 2,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                         "DescriptorTable(CBV(b3,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                         "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 2, flags = DESCRIPTORS_VOLATILE)),"\
+                        "DescriptorTable(SRV(t0,numDescriptors = 1,space = 3, flags = DESCRIPTORS_VOLATILE)),"\
                         "StaticSampler(s0 ,"\
                                             "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                             "addressU = TEXTURE_ADDRESS_WRAP,"\
@@ -21,6 +22,14 @@
                                              "addressV = TEXTURE_ADDRESS_CLAMP,"\
                                              "addressW = TEXTURE_ADDRESS_CLAMP,"\
 											 "comparisonFunc = COMPARISON_LESS_EQUAL)"
+
+// 0 テクスチャ配列
+// 1 マテリアル配列
+// 2 カメラ
+// 3 座標
+// 4 設定
+// 5 マテリアルインデックス配列
+// 6 深度テクスチャ
 
 struct Out
 {

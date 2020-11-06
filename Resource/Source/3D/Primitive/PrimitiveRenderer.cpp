@@ -109,10 +109,12 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
 	// レンダーターゲット
-	gpsd.NumRenderTargets = 0;
-	gpsd.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
-	gpsd.RTVFormats[1] = DXGI_FORMAT_UNKNOWN;
-	gpsd.RTVFormats[2] = DXGI_FORMAT_UNKNOWN;
+	for (int i = 0; i < gpsd.NumRenderTargets; ++i)
+	{
+		gpsd.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
+	}
+	gpsd.NumRenderTargets = 1;
+	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	if (FAILED(_dx12.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(_primShadowPL.ReleaseAndGetAddressOf()))))
 	{
@@ -156,6 +158,7 @@ void PrimitiveRenderer::Draw()
 	cmdList.SetPipelineState(_primPL.Get());
 	cmdList.SetGraphicsRootSignature(_primRS.Get());
 	_dx12.SetCameraDescriptorHeap(0);
+	texLoader.SetLightDepthTexDescriptorHeap(2);
 
 	for (auto& prim : _primitives)
 	{

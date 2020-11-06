@@ -27,5 +27,5 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD)
 float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD)
 :SV_Position
 {
-	return mul(lightCamera, pos);
+	return mul(lightCamera, mul(world, pos));
 }

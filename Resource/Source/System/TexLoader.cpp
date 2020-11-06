@@ -479,21 +479,42 @@ void TexLoader::ClsDrawScreen()
 	commandList.ClearRenderTargetView(texResources_[renderTergetHandle_].cpuHandleForRtv, clearColor, 0, nullptr);
 
 	// 深度バッファを初期化
+	auto depthH = depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
+	depthH.ptr += dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV) * Int32(lightDepthFlag);
 	commandList.ClearDepthStencilView(
-		depthDSVHeap_->GetCPUDescriptorHandleForHeapStart(),
+		depthH,
 		D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
 
-void TexLoader::SetDrawScreen(const int screenH)
+void TexLoader::SetDrawScreen(const int screenH, const bool lightDepth)
 {
 	if (renderTergetHandle_ >= 0)
 	{
 		// 今までのレンダーターゲットのステートをPIXEL_SHADER_RESOURCEにする
 		texResources_[renderTergetHandle_].resource.Barrier(cmd_, renderTergetHandle_ >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
+		
+		if (lightDepthFlag)
+		{
+			lightDepthResource_.Barrier(cmd_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		}
+		else
+		{
+			depthResouerce_.Barrier(cmd_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		}
 	}
 
-	depthResouerce_.Barrier(cmd_, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-	D3D12_CPU_DESCRIPTOR_HANDLE* depthH = &depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
+	if (lightDepth)
+	{
+		lightDepthResource_.Barrier(cmd_, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	}
+	else
+	{
+		depthResouerce_.Barrier(cmd_, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	}
+	auto depthH = &depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
+	depthH ->ptr += dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV) * Int32(lightDepth);
+	lightDepthFlag = lightDepth;
+
 
 	// セットするレンダーターゲットのステートをRENDER_TARGEにする
 	texResources_[screenH].resource.Barrier(cmd_, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -552,6 +573,16 @@ bool TexLoader::GetGraphSize(const int graphH, unsigned int& width, unsigned int
 bool TexLoader::GetScreenSize(unsigned int& width, unsigned int& height) const
 {
 	return GetGraphSize(GetCurrentRenderTarget(), width, height);
+}
+
+void TexLoader::SetLightDepthTexDescriptorHeap(const UINT rootParamIdx)
+{
+	auto& commandList = cmd_.CommandList();
+	commandList.SetDescriptorHeaps(1, depthSRVHeap_.GetAddressOf());
+
+	auto handle = depthSRVHeap_->GetGPUDescriptorHandleForHeapStart();
+	handle.ptr += dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV) * Int32(lightDepthFlag);
+	commandList.SetGraphicsRootDescriptorTable(rootParamIdx,handle);
 }
 
 void TexLoader::CreateTextureHeap()

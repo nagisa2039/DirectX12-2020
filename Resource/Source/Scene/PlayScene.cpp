@@ -79,7 +79,7 @@ void PlayScene::Draw()
 	auto& spriteDrawer = dx12.GetSpriteDrawer();
 	auto wsize = Application::Instance().GetWindowSize();
 
-	//int shadowH = texLoader.Get(D3D_LIGHT_VIEW_SCREEN);
+	int shadowH = texLoader.GetGraphHandle(D3D_LIGHT_VIEW_SCREEN);
 
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
@@ -88,7 +88,8 @@ void PlayScene::Draw()
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 	spriteDrawer.DrawRotaGraph(300, 300, 0.5f, 0.0f, tnktH_);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	//spriteDrawer.DrawExtendGraph(0, 0, 100, 1280 / 720.0f * 100.0f, shadowH);
+	spriteDrawer.DrawExtendGraph(0, 0, 1280 / 720.0f * 100.0f, 100.0f, shadowH);
+	//spriteDrawer.DrawExtendGraph(0, 0, 1280, 720, shadowH);
 
 	player_->Draw();
 

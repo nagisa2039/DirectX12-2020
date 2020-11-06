@@ -12,6 +12,15 @@ cbuffer bones : register(b2)
 	matrix boneMats[512];
 };
 
+matrix GetTransform(const int4 boneno, const float4 weight)
+{
+	matrix mixMat = boneMats[boneno.x] * weight.x
+		+ boneMats[boneno.y] * weight.y
+		+ boneMats[boneno.z] * weight.z
+		+ boneMats[boneno.w] * weight.w;
+	
+	return mixMat = mul(world, mixMat);
+}
 
 //頂点シェーダ
 [RootSignature(RS)]
@@ -20,15 +29,10 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 {
 	Out o;
 	
-	matrix mixMat = boneMats[boneno.x] * weight.x
-				  + boneMats[boneno.y] * weight.y
-				  + boneMats[boneno.z] * weight.z
-				  + boneMats[boneno.w] * weight.w;
+	matrix transform = GetTransform(boneno, weight);
 
-	mixMat = mul(world, mixMat);
-
-    pos = mul(mixMat, pos);
 	pos.z += 5 * instanceID;
+	pos = mul(transform, pos);
 
 	matrix camera = mul(proj, view);
 	o.svpos = mul(camera, pos);
@@ -38,7 +42,7 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 	o.tpos = mul(lightCamera, pos);
 
 	normal.w = 0;
-	o.normal = mul(mixMat, normal);
+	o.normal = mul(transform, normal);
 
 	o.uv = uv;
 
@@ -50,12 +54,6 @@ Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 	int4 boneno : BONENO, float4 weight : WEIGHT) : SV_POSITION
 {
-	matrix mixMat = boneMats[boneno.x] * weight.x
-		+ boneMats[boneno.y] * weight.y
-		+ boneMats[boneno.z] * weight.z
-		+ boneMats[boneno.w] * weight.w;
-
-	pos = mul(world, mul(mixMat, pos));
-
-	return mul(lightCamera, pos);
+	matrix transform = GetTransform(boneno, weight);
+	return mul(lightCamera, mul(transform, pos));
 }

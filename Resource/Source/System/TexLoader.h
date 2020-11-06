@@ -25,7 +25,7 @@ public:
 	int LoadGraph(const std::wstring& path);
 
 	void ClsDrawScreen();
-	void SetDrawScreen(const int screenH);
+	void SetDrawScreen(const int screenH, const bool lightDepth = false);
 	void ScreenFlip(IDXGISwapChain4& swapChain);
 
 	int MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height);
@@ -33,6 +33,10 @@ public:
 	int GetCurrentRenderTarget()const;
 	bool GetGraphSize(const int graphH, unsigned int& width, unsigned int& height)const;
 	bool GetScreenSize(unsigned int& width, unsigned int& height)const;
+
+	//-----------------------------------------------------
+	void SetLightDepthTexDescriptorHeap(const UINT rootParamIdx);
+	//-----------------------------------------------------
 
 private:
 	ID3D12Device& dev_;
@@ -59,6 +63,12 @@ private:
 
 	int renderTergetHandle_;
 
+
+	//仮 SetDrawScreenに糞コード有--------------------------------------------------------------------
+	bool lightDepthFlag = false;
+	//--------------------------------------------------------------------
+
+
 	// 描画用深度バッファ
 	Resource depthResouerce_;
 	// シャドウマップ用深度バッファ
@@ -66,8 +76,6 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap> depthDSVHeap_ = nullptr;
 	ComPtr<ID3D12DescriptorHeap> depthSRVHeap_ = nullptr;
-	ComPtr<ID3D12DescriptorHeap> lightDSVHeap_ = nullptr;
-	ComPtr<ID3D12DescriptorHeap> lightSRVHeap_ = nullptr;
 
 	int MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height, const std::vector<uint8_t>& colorData);
 

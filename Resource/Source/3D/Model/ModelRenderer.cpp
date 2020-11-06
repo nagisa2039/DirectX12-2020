@@ -129,6 +129,8 @@ bool ModelRenderer::CreateModelPL()
 	// シェーダ系
 	vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/ModelVS.hlsl", "ShadowVS", "vs_5_1");
 	pixelShader = sl.GetShader(L"Resource/Source/Shader/3D/ModelPS.hlsl", "ShadowPS", "ps_5_1");
+	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
+	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
 	// レンダーターゲット
 	for (size_t j = 0; j < gpsd.NumRenderTargets; j++)
@@ -207,6 +209,7 @@ void ModelRenderer::Draw()
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
 	dx12_.SetCameraDescriptorHeap(2);
+	texLoader.SetLightDepthTexDescriptorHeap(6);
 
 	for (auto& actor : modelActors_)
 	{
