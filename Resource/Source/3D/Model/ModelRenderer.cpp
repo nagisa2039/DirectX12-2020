@@ -175,10 +175,6 @@ bool ModelRenderer::Init()
 		modelActors_[j]->StartAnimation();
 	}
 
-	auto wsize = Application::Instance().GetWindowSize();
-	screenH_ = dx12_.GetTexLoader().MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
-	lightScreenH_ = dx12_.GetTexLoader().MakeScreen(D3D_LIGHT_VIEW_SCREEN, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
-
 	return true;
 }
 
@@ -204,40 +200,33 @@ void ModelRenderer::Update()
 
 void ModelRenderer::Draw()
 {
-	dx12_.GetSpriteDrawer().DrawGraph(0,0,screenH_);
+	auto& texLoader = dx12_.GetTexLoader();
+	auto& commandList = dx12_.GetCommand().CommandList();
+
+	commandList.SetPipelineState(modelPL_.Get());
+	commandList.SetGraphicsRootSignature(modelRS_.Get());
+
+	dx12_.SetCameraDescriptorHeap(2);
+
+	for (auto& actor : modelActors_)
+	{
+		actor->Draw();
+	}
 }
 
-void ModelRenderer::DrawTo3DSpace()
+void ModelRenderer::DrawShadow()
 {
 	auto& texLoader = dx12_.GetTexLoader();
 	auto& commandList = dx12_.GetCommand().CommandList();
 
-	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	/*texLoader.SetDrawScreen(lightScreenH_);
-	texLoader.ClsDrawScreen();
-	dx12_.SetDefaultViewAndScissor();
-
 	commandList.SetPipelineState(shadowPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
+
 	dx12_.SetCameraDescriptorHeap(2);
 
 	for (auto& actor : modelActors_)
 	{
-		actor->Draw(true);
-	}*/
-
-	texLoader.SetDrawScreen(screenH_);
-	texLoader.ClsDrawScreen();
-	dx12_.SetDefaultViewAndScissor();
-
-	commandList.SetPipelineState(modelPL_.Get());
-	commandList.SetGraphicsRootSignature(modelRS_.Get());
-	dx12_.SetCameraDescriptorHeap(2);
-
-	for (auto& actor : modelActors_)
-	{
-		actor->Draw(false);
+		actor->Draw();
 	}
 }
 
@@ -249,21 +238,6 @@ void ModelRenderer::SetModelRS()
 void ModelRenderer::SetModelPL()
 {
 	dx12_.GetCommand().CommandList().SetPipelineState(modelPL_.Get());
-}
-
-
-void ModelRenderer::DrawFramShadow()
-{
-	// パイプラインステートの設定
-	dx12_.GetCommand().CommandList().SetPipelineState(shadowPL_.Get());
-
-	// トポロジの設定
-	dx12_.GetCommand().CommandList().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	for (auto& actor : modelActors_)
-	{
-		actor->Draw(true);
-	}
 }
 
 VMDMotion & ModelRenderer::GetVMDMotion(std::string motionPath)

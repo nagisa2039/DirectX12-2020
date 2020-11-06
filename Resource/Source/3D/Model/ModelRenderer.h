@@ -6,14 +6,15 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "3D/Renderer.h"
 
 using Microsoft::WRL::ComPtr;
 class ModelActor;
 class Dx12Wrapper;
 class VMDMotion;
 
-
-class ModelRenderer
+class ModelRenderer : 
+	public Renderer
 {
 public:
 	ModelRenderer(Dx12Wrapper& dx12);
@@ -22,18 +23,16 @@ public:
 	// 初期化
 	bool Init();
 	// 更新
-	void Update();
+	void Update()override;
 	// 描画
-	void Draw();
-
-	void DrawTo3DSpace();
+	void Draw()override;
+	// 影描画
+	void DrawShadow()override;
 
 	// RootSignatureの設定
 	void SetModelRS();
 	// PipelineStateの設定
 	void SetModelPL();
-	// 影の描画
-	void DrawFramShadow();
 	// モーション情報の取得(モーションファイルパス)
 	VMDMotion& GetVMDMotion(std::string motionPath);
 
@@ -48,9 +47,6 @@ private:
 
 	std::vector<std::shared_ptr<ModelActor>> modelActors_;
 	std::map<std::string, std::shared_ptr<VMDMotion>> vmdMotions_;
-
-	int screenH_;
-	int lightScreenH_;
 
 	bool CreateModelPL();
 };

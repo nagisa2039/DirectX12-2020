@@ -31,12 +31,6 @@
     <Filter Include="ヘッダー ファイル\Scene">
       <UniqueIdentifier>{0597e2c9-bbd2-4cee-a06f-672e5aab1a37}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Model">
-      <UniqueIdentifier>{9740aae3-9cd3-4dd4-9d5e-c33c4733d3e5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Model">
-      <UniqueIdentifier>{3b006ebb-1c6c-4625-ac2e-fe2fb655b587}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\Shader\2D">
       <UniqueIdentifier>{5d3152ed-7b84-48f5-bd1c-c8e03d806acd}</UniqueIdentifier>
     </Filter>
@@ -52,11 +46,23 @@
     <Filter Include="ヘッダー ファイル\Game">
       <UniqueIdentifier>{da7a3a3d-c328-46a4-9304-30aa5a2f5fdc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Primitive">
+    <Filter Include="ソース ファイル\3D">
+      <UniqueIdentifier>{dfbaf55d-0212-4152-8cc5-803164e8073a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\3D\Primitive">
       <UniqueIdentifier>{54103241-6ab7-4709-830a-f1cb650b4249}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Primitive">
+    <Filter Include="ソース ファイル\3D\Model">
+      <UniqueIdentifier>{9740aae3-9cd3-4dd4-9d5e-c33c4733d3e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\3D">
+      <UniqueIdentifier>{1f6836cd-3747-4649-9874-f82862e75457}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\3D\Primitive">
       <UniqueIdentifier>{c28ac6e2-6dc0-4cb4-b537-4c5a3eb78db6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\3D\Model">
+      <UniqueIdentifier>{3b006ebb-1c6c-4625-ac2e-fe2fb655b587}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -89,24 +95,6 @@
     </ClInclude>
     <ClInclude Include="Resource\Source\Scene\Scene.h">
       <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Model\ModelActor.h">
-      <Filter>ヘッダー ファイル\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Model\ModelData.h">
-      <Filter>ヘッダー ファイル\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Model\ModelRenderer.h">
-      <Filter>ヘッダー ファイル\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Model\PMXData.h">
-      <Filter>ヘッダー ファイル\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Model\PMDData.h">
-      <Filter>ヘッダー ファイル\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Model\VMDMotion.h">
-      <Filter>ヘッダー ファイル\Model</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\System\SpriteDrawer.h">
       <Filter>ヘッダー ファイル\System</Filter>
@@ -141,23 +129,47 @@
     <ClInclude Include="Resource\Source\Game\Animator.h">
       <Filter>ヘッダー ファイル\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Model\ModelBufferStruct.h">
-      <Filter>ヘッダー ファイル\Model</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\System\WAVFileReader.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\System\ShaderLoader.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Primitive\PlaneMesh.h">
-      <Filter>ヘッダー ファイル\Primitive</Filter>
+    <ClInclude Include="Resource\Source\3D\Primitive\PlaneMesh.h">
+      <Filter>ヘッダー ファイル\3D\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Primitive\PrimitiveMesh.h">
-      <Filter>ヘッダー ファイル\Primitive</Filter>
+    <ClInclude Include="Resource\Source\3D\Primitive\PrimitiveMesh.h">
+      <Filter>ヘッダー ファイル\3D\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Primitive\PrimitiveMng.h">
-      <Filter>ヘッダー ファイル\Primitive</Filter>
+    <ClInclude Include="Resource\Source\3D\Primitive\PrimitiveRenderer.h">
+      <Filter>ヘッダー ファイル\3D\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\ModelActor.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\ModelBufferStruct.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\ModelData.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\ModelRenderer.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\PMDData.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\PMXData.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\VMDMotion.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Renderer.h">
+      <Filter>ヘッダー ファイル\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\RendererManager.h">
+      <Filter>ヘッダー ファイル\3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -188,24 +200,6 @@
     <ClCompile Include="Resource\Source\Scene\PlayScene.cpp">
       <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\Model\PMXData.cpp">
-      <Filter>ソース ファイル\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Model\ModelRenderer.cpp">
-      <Filter>ソース ファイル\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Model\ModelData.cpp">
-      <Filter>ソース ファイル\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Model\ModelActor.cpp">
-      <Filter>ソース ファイル\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Model\PMDData.cpp">
-      <Filter>ソース ファイル\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Model\VMDMotion.cpp">
-      <Filter>ソース ファイル\Model</Filter>
-    </ClCompile>
     <ClCompile Include="Resource\Source\System\SpriteDrawer.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
@@ -230,14 +224,35 @@
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\Primitive\PlaneMesh.cpp">
-      <Filter>ソース ファイル\Primitive</Filter>
+    <ClCompile Include="Resource\Source\3D\Primitive\PlaneMesh.cpp">
+      <Filter>ソース ファイル\3D\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\Primitive\PrimitiveMesh.cpp">
-      <Filter>ソース ファイル\Primitive</Filter>
+    <ClCompile Include="Resource\Source\3D\Primitive\PrimitiveMesh.cpp">
+      <Filter>ソース ファイル\3D\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\Primitive\PrimitiveMng.cpp">
-      <Filter>ソース ファイル\Primitive</Filter>
+    <ClCompile Include="Resource\Source\3D\Primitive\PrimitiveRenderer.cpp">
+      <Filter>ソース ファイル\3D\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\ModelActor.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\ModelData.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\ModelRenderer.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\PMDData.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\PMXData.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\VMDMotion.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\RendererManager.cpp">
+      <Filter>ソース ファイル\3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -253,7 +268,10 @@
     <FxCompile Include="Resource\Source\Shader\3D\ModelVS.hlsl">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Source\Shader\3D\primitive.hlsl">
+    <FxCompile Include="PrimitiveVS.hlsl">
+      <Filter>ソース ファイル\Shader\3D</Filter>
+    </FxCompile>
+    <FxCompile Include="PrimitivePS.hlsl">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
   </ItemGroup>
@@ -262,6 +280,9 @@
       <Filter>ソース ファイル\Shader\2D</Filter>
     </None>
     <None Include="Resource\Source\Shader\3D\Model.hlsli">
+      <Filter>ソース ファイル\Shader\3D</Filter>
+    </None>
+    <None Include="Primitive.hlsli">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </None>
   </ItemGroup>

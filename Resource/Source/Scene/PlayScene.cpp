@@ -2,7 +2,7 @@
 #include "PlayScene.h"
 #include "System/Application.h"
 #include "System/Dx12Wrapper.h"
-#include "Model/ModelRenderer.h"
+#include "3D/RendererManager.h"
 #include "System/Dx12Wrapper.h"
 #include "System/TexLoader.h"
 #include "System/SpriteDrawer.h"
@@ -15,7 +15,7 @@ using namespace std;
 
 PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 {
-	modelRenderer_ = std::make_unique<ModelRenderer>(Application::Instance().GetDx12());
+	rendererManager_ = std::make_unique<RendererManager>(Application::Instance().GetDx12());
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
 	tnktH_ = texLoader.LoadGraph(L"Resource/Image/tnkt.png");
 	dmdnH_ = texLoader.LoadGraph(L"Resource/Image/dmdn.jpg");
@@ -38,7 +38,7 @@ PlayScene::~PlayScene()
 
 void PlayScene::Update()
 {
-	modelRenderer_->Update();
+	rendererManager_->Update();
 
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& input = Application::Instance().GetInput();
@@ -72,14 +72,14 @@ void PlayScene::Update()
 
 void PlayScene::Draw()
 {
-	modelRenderer_->DrawTo3DSpace();
+	rendererManager_->Draw();
 
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& texLoader = dx12.GetTexLoader();
 	auto& spriteDrawer = dx12.GetSpriteDrawer();
 	auto wsize = Application::Instance().GetWindowSize();
 
-	int shadowH = texLoader.LoadGraph(D3D_LIGHT_VIEW_SCREEN);
+	//int shadowH = texLoader.Get(D3D_LIGHT_VIEW_SCREEN);
 
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
@@ -88,7 +88,7 @@ void PlayScene::Draw()
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 	spriteDrawer.DrawRotaGraph(300, 300, 0.5f, 0.0f, tnktH_);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	spriteDrawer.DrawExtendGraph(0, 0, 100, 1280 / 720.0f * 100.0f, shadowH);
+	//spriteDrawer.DrawExtendGraph(0, 0, 100, 1280 / 720.0f * 100.0f, shadowH);
 
 	player_->Draw();
 

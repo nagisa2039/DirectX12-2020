@@ -34,7 +34,7 @@ public:
 	// 更新
 	void Update();
 	// 描画(影として描画するか)
-	void Draw(bool isShadow = false);
+	void Draw();
 	// アニメーションを開始する
 	void StartAnimation();
 	// transform取得

@@ -257,7 +257,7 @@ void ModelActor::Update()
 		*XMMatrixTranslation(trans_.pos.x, trans_.pos.y, trans_.pos.z);
 }
 
-void ModelActor::Draw(bool isShadow)
+void ModelActor::Draw()
 {
 	auto& commandList = dx12_.GetCommand().CommandList();
 	auto& dev = dx12_.GetDevice();
@@ -293,14 +293,7 @@ void ModelActor::Draw(bool isShadow)
 	int idxOffset = 0;
 	auto handle = materialHeap_->GetGPUDescriptorHandleForHeapStart();
 
-	if (isShadow)
-	{
-		commandList.DrawIndexedInstanced(static_cast<UINT>(modelData_->GetIndexData().size()), 1, 0, 0, 0);
-	}
-	else
-	{
-		commandList.DrawIndexedInstanced(Uint32(modelData_->GetIndexData().size()), 1, 0, 0, 0);
-	}
+	commandList.DrawIndexedInstanced(Uint32(modelData_->GetIndexData().size()), 1, 0, 0, 0);
 }
 
 void ModelActor::StartAnimation()

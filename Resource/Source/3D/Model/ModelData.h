@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Model/ModelBufferStruct.h"
+#include "ModelBufferStruct.h"
 #include <string>
 
 class ModelData

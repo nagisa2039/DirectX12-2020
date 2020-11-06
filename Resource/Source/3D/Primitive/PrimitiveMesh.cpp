@@ -122,9 +122,9 @@ void PrimitiveMesh::Draw()
 	cmdList.SetDescriptorHeaps(1, _worldHeap.GetAddressOf());
 	cmdList.SetGraphicsRootDescriptorTable(1, _worldHeap->GetGPUDescriptorHandleForHeapStart());
 
-	// テクスチャ
-	cmdList.SetDescriptorHeaps(1, _texHeap.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(3, _texHeap->GetGPUDescriptorHandleForHeapStart());
+	//// テクスチャ
+	//cmdList.SetDescriptorHeaps(1, _texHeap.GetAddressOf());
+	//cmdList.SetGraphicsRootDescriptorTable(3, _texHeap->GetGPUDescriptorHandleForHeapStart());
 
 	// インデックスバッファのセット
 	cmdList.IASetIndexBuffer(&_ibv);

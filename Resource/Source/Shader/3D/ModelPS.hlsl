@@ -4,7 +4,7 @@ SamplerState smp : register(s0);
 SamplerState toomSmp : register(s1);
 SamplerComparisonState shadowSmp : register(s2);
 
-#include "../../Model/ModelBufferStruct.h"
+#include "../../3D/Model/ModelBufferStruct.h"
 
 Texture2D<float4> tex[512] : register(t0, space0);
 

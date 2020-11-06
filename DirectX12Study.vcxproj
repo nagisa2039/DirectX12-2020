@@ -19,23 +19,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resource\Source\Model\ModelBufferStruct.h" />
+    <ClInclude Include="Resource\Source\3D\RendererManager.h" />
+    <ClInclude Include="Resource\Source\3D\Renderer.h" />
+    <ClInclude Include="Resource\Source\3D\Model\ModelBufferStruct.h" />
     <ClInclude Include="Resource\Source\Game\Animator.h" />
     <ClInclude Include="Resource\Source\Game\Player.h" />
-    <ClInclude Include="Resource\Source\Primitive\PlaneMesh.h" />
-    <ClInclude Include="Resource\Source\Primitive\PrimitiveMesh.h" />
-    <ClInclude Include="Resource\Source\Primitive\PrimitiveMng.h" />
+    <ClInclude Include="Resource\Source\3D\Primitive\PlaneMesh.h" />
+    <ClInclude Include="Resource\Source\3D\Primitive\PrimitiveMesh.h" />
+    <ClInclude Include="Resource\Source\3D\Primitive\PrimitiveRenderer.h" />
     <ClInclude Include="Resource\Source\System\WAVFileReader.h" />
     <ClInclude Include="Resource\Source\Utility\ComPtr.h" />
     <ClInclude Include="Resource\Source\Utility\Cast.h" />
     <ClInclude Include="Resource\Source\Utility\DirectXStruct.h" />
     <ClInclude Include="Resource\Source\Utility\Constant.h" />
-    <ClInclude Include="Resource\Source\Model\ModelActor.h" />
-    <ClInclude Include="Resource\Source\Model\ModelData.h" />
-    <ClInclude Include="Resource\Source\Model\ModelRenderer.h" />
-    <ClInclude Include="Resource\Source\Model\PMDData.h" />
-    <ClInclude Include="Resource\Source\Model\PMXData.h" />
-    <ClInclude Include="Resource\Source\Model\VMDMotion.h" />
+    <ClInclude Include="Resource\Source\3D\Model\ModelActor.h" />
+    <ClInclude Include="Resource\Source\3D\Model\ModelData.h" />
+    <ClInclude Include="Resource\Source\3D\Model\ModelRenderer.h" />
+    <ClInclude Include="Resource\Source\3D\Model\PMDData.h" />
+    <ClInclude Include="Resource\Source\3D\Model\PMXData.h" />
+    <ClInclude Include="Resource\Source\3D\Model\VMDMotion.h" />
     <ClInclude Include="Resource\Source\Scene\PlayScene.h" />
     <ClInclude Include="Resource\Source\Scene\Scene.h" />
     <ClInclude Include="Resource\Source\Scene\SceneController.h" />
@@ -54,17 +56,18 @@
     <ClInclude Include="Resource\Source\System\ShaderLoader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resource\Source\3D\RendererManager.cpp" />
     <ClCompile Include="Resource\Source\Game\Animator.cpp" />
     <ClCompile Include="Resource\Source\Game\Player.cpp" />
-    <ClCompile Include="Resource\Source\Model\ModelActor.cpp" />
-    <ClCompile Include="Resource\Source\Model\ModelData.cpp" />
-    <ClCompile Include="Resource\Source\Model\ModelRenderer.cpp" />
-    <ClCompile Include="Resource\Source\Model\PMDData.cpp" />
-    <ClCompile Include="Resource\Source\Model\PMXData.cpp" />
-    <ClCompile Include="Resource\Source\Model\VMDMotion.cpp" />
-    <ClCompile Include="Resource\Source\Primitive\PlaneMesh.cpp" />
-    <ClCompile Include="Resource\Source\Primitive\PrimitiveMesh.cpp" />
-    <ClCompile Include="Resource\Source\Primitive\PrimitiveMng.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\ModelActor.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\ModelData.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\ModelRenderer.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\PMDData.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\PMXData.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\VMDMotion.cpp" />
+    <ClCompile Include="Resource\Source\3D\Primitive\PlaneMesh.cpp" />
+    <ClCompile Include="Resource\Source\3D\Primitive\PrimitiveMesh.cpp" />
+    <ClCompile Include="Resource\Source\3D\Primitive\PrimitiveRenderer.cpp" />
     <ClCompile Include="Resource\Source\Scene\PlayScene.cpp" />
     <ClCompile Include="Resource\Source\Scene\Scene.cpp" />
     <ClCompile Include="Resource\Source\Scene\SceneController.cpp" />
@@ -82,6 +85,26 @@
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="PrimitivePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="PrimitiveVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Resource\Source\Shader\2D\2DStanderdPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -130,18 +153,9 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VS</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.1</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Resource\Source\Shader\3D\primitive.hlsl">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Primitive.hlsli" />
     <None Include="Resource\Source\Shader\2D\2DStanderd.hlsli" />
     <None Include="Resource\Source\Shader\3D\Model.hlsli" />
   </ItemGroup>

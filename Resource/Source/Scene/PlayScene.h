@@ -2,7 +2,7 @@
 #include <memory>
 #include "Scene.h"
 
-class ModelRenderer;
+class RendererManager;
 class Player;
 
 class PlayScene :
@@ -16,7 +16,7 @@ public:
 	void Draw()override;
 
 private:
-	std::unique_ptr<ModelRenderer> modelRenderer_;
+	std::unique_ptr<RendererManager> rendererManager_;
 	int tnktH_;
 	int dmdnH_;
 	int d3dH_;

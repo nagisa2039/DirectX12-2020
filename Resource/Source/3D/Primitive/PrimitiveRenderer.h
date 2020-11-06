@@ -3,12 +3,14 @@
 #include <memory>
 #include <d3d12.h>
 #include <wrl.h>
+#include "3D/Renderer.h"
 
 class PrimitiveMesh;
 class Dx12Wrapper;
 using Microsoft::WRL::ComPtr;
 
-class PrimitiveMng
+class PrimitiveRenderer : 
+	public Renderer
 {
 private:
 	Dx12Wrapper& _dx12;
@@ -20,20 +22,17 @@ private:
 
 	// パイプラインステートの作成
 	bool CreatePipelineState();
-	// ルートシグネチャの作成
-	bool CreateRootSignature();
 
 public:
 	// (dx12管理クラス)
-	PrimitiveMng(Dx12Wrapper& dx12);
-	~PrimitiveMng();
-
-	// RootSignatureとPipelineStateの設定
-	void SetRSAndPL(bool shadow = false);
+	PrimitiveRenderer(Dx12Wrapper& dx12);
+	~PrimitiveRenderer();
 
 	// 更新
-	void Update();
+	void Update()override;
 	// 描画
-	void Draw();
+	void Draw()override;
+	// 影描画
+	void DrawShadow()override;
 };
 
