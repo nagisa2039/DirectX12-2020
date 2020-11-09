@@ -243,8 +243,8 @@ void ModelActor::Update()
 	};
 
 	const float speed = 2.0f;
-	Move(DIK_LEFT,	trans_.pos.x, -speed);
-	Move(DIK_RIGHT, trans_.pos.x, +speed);
+	Move(DIK_LEFT,	trans_.rotate.y, +speed*2.0f);
+	Move(DIK_RIGHT, trans_.rotate.y, -speed*2.0f);
 	Move(DIK_DOWN,	trans_.pos.y, -speed);
 	Move(DIK_UP,	trans_.pos.y, +speed);
 	Move(DIK_O,		trans_.pos.z, -speed);

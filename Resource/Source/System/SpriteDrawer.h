@@ -4,10 +4,9 @@
 #include <vector>
 #include <array>
 #include <DirectXMath.h>
-//#include<SpriteFont.h>
-//#include<ResourceUploadBatch.h>
 #include "Utility/DirectXStruct.h"
 #include <DirectXTex.h>
+#include <unordered_map>
 
 class Dx12Wrapper;
 
@@ -25,9 +24,10 @@ enum class BlendMode
 class SpriteDrawer
 {
 public:
-
 	SpriteDrawer(Dx12Wrapper& dx12);
 	~SpriteDrawer();
+
+	bool SetShader(const std::wstring& shaderPath);
 
 	bool DrawGraph(const INT x, const INT y, const int graphHandle);
 	bool DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle);
@@ -43,6 +43,8 @@ public:
 	void SetDrawBlendMode(const BlendMode blendMode, const INT value);
 
 	void SetDrawScreen(const int graphHandle);
+
+	void DrawMyPSShader();
 
 private:
 	SpriteDrawer(const SpriteDrawer&) = delete;
@@ -111,10 +113,10 @@ private:
 	ComPtr<ID3DBlob> vertexShader_ = nullptr;
 	ComPtr<ID3DBlob> pixelShader_ = nullptr;
 
-	//ComPtr<ID3D12DescriptorHeap> spriteFontHeap_ = nullptr;
-	//std::shared_ptr<DirectX::GraphicsMemory> gmemory_ = nullptr;//グラフィクスメモリオブジェクト
-	//std::shared_ptr<DirectX::SpriteFont> spriteFont_ = nullptr;//フォント表示用オブジェクト
-	//std::shared_ptr<DirectX::SpriteBatch> spriteBatch_ = nullptr;//スプライト表示用オブジェクト
+	/// <summary>
+	/// 自作ピクセルシェーダーごとのパイプラインマップ
+	/// </summary>
+	std::unordered_map<std::wstring, ComPtr<ID3D12PipelineState>> pipelineStateMap_;
 
 	void CreatePiplineState();
 	void CreateRootSignature();
@@ -126,8 +128,6 @@ private:
 	void SetPosTrans(DirectX::XMMATRIX& posTrans, const INT left, const INT top, const UINT width, const UINT height, const UINT centerX, const UINT centerY, const float exRate = 1.0f, const float angle = 0.0f);
 	void SetUVTrans(DirectX::XMMATRIX& uvTrans, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const DirectX::Image& img);
 	void AddDrawImage(SpriteDrawer::DrawImage& drawImage);
-
-	//void CreateSpriteHeap();
 
 	void ClearDrawData();
 };

@@ -54,10 +54,10 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
 	// レンダーターゲット
-	gpsd.NumRenderTargets = 3;
+	gpsd.NumRenderTargets = 1;
 	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	gpsd.RTVFormats[1] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	gpsd.RTVFormats[2] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//gpsd.RTVFormats[1] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//gpsd.RTVFormats[2] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	gpsd.DepthStencilState.DepthEnable = true;
 	gpsd.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
@@ -158,7 +158,8 @@ void PrimitiveRenderer::Draw()
 	cmdList.SetPipelineState(_primPL.Get());
 	cmdList.SetGraphicsRootSignature(_primRS.Get());
 	_dx12.SetCameraDescriptorHeap(0);
-	texLoader.SetLightDepthTexDescriptorHeap(2);
+	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::light);
+	texLoader.SetTextureDescriptorHeap(3);
 
 	for (auto& prim : _primitives)
 	{

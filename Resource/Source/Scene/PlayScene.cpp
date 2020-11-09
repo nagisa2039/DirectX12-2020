@@ -44,6 +44,7 @@ void PlayScene::Update()
 	auto& input = Application::Instance().GetInput();
 
 	auto cameraPos = dx12.GetCameraPosition();
+	auto targetPos = dx12.GetCameraTarget();
 	float moveSpeed = 1.0f;
 	auto cameraMove = [&input = input](const char keycode, float& target, const float speed)
 	{
@@ -59,7 +60,15 @@ void PlayScene::Update()
 	cameraMove(DIK_A, cameraPos.x, -moveSpeed);
 	cameraMove(DIK_E, cameraPos.z, moveSpeed);
 	cameraMove(DIK_Q, cameraPos.z, -moveSpeed);
+
+	cameraMove(DIK_W, targetPos.y, moveSpeed);
+	cameraMove(DIK_S, targetPos.y, -moveSpeed);
+	cameraMove(DIK_D, targetPos.x, moveSpeed);
+	cameraMove(DIK_A, targetPos.x, -moveSpeed);
+	cameraMove(DIK_E, targetPos.z, moveSpeed);
+	cameraMove(DIK_Q, targetPos.z, -moveSpeed);
 	dx12.SetCameraPosision(cameraPos);
+	dx12.SetCameraTarget(targetPos);
 	dx12.UpdateCamera();
 
 	if (input.GetButtonDown(DIK_SPACE))
@@ -87,9 +96,12 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 	spriteDrawer.DrawRotaGraph(300, 300, 0.5f, 0.0f, tnktH_);
+	spriteDrawer.DrawRotaGraph(300, 500, 0.5f, 0.0f, dmdnH_);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.DrawExtendGraph(0, 0, 1280 / 720.0f * 100.0f, 100.0f, shadowH);
 	//spriteDrawer.DrawExtendGraph(0, 0, 1280, 720, shadowH);
+
+	spriteDrawer.DrawMyPSShader();
 
 	player_->Draw();
 

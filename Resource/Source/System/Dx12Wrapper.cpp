@@ -172,6 +172,11 @@ void Dx12Wrapper::SetDefaultViewAndScissor()
 	commandList.RSSetScissorRects(1, &scissorRect);
 }
 
+std::string Dx12Wrapper::GetShaderModel() const
+{
+	return "5_1";
+}
+
 bool Dx12Wrapper::CreateCameraConstantBufferAndView()
 {
 	CreateUploadBuffer(dev_.Get(), cameraCB_, sizeof(*mappedCam_));

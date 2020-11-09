@@ -14,6 +14,13 @@ public:
 	TexLoader(ID3D12Device& dev, Command& cmd, IDXGISwapChain4& swapChain);
 	~TexLoader();
 
+	enum class DepthType
+	{
+		camera,
+		light,
+		max
+	};
+
 	const ComPtr<ID3D12DescriptorHeap>& GetTextureHeap()const;
 
 	const DummyTextures& GetDummyTextureHandles()const;
@@ -25,7 +32,7 @@ public:
 	int LoadGraph(const std::wstring& path);
 
 	void ClsDrawScreen();
-	void SetDrawScreen(const int screenH, const bool lightDepth = false);
+	void SetDrawScreen(const int screenH, const DepthType depth = DepthType::max);
 	void ScreenFlip(IDXGISwapChain4& swapChain);
 
 	int MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height);
@@ -34,9 +41,8 @@ public:
 	bool GetGraphSize(const int graphH, unsigned int& width, unsigned int& height)const;
 	bool GetScreenSize(unsigned int& width, unsigned int& height)const;
 
-	//-----------------------------------------------------
-	void SetLightDepthTexDescriptorHeap(const UINT rootParamIdx);
-	//-----------------------------------------------------
+	void SetDepthTexDescriptorHeap(const UINT rootParamIdx, const DepthType depth);
+	void SetTextureDescriptorHeap(const UINT rootParamIdx);
 
 private:
 	ID3D12Device& dev_;
@@ -63,16 +69,8 @@ private:
 
 	int renderTergetHandle_;
 
-
-	//仮 SetDrawScreenに糞コード有--------------------------------------------------------------------
-	bool lightDepthFlag = false;
-	//--------------------------------------------------------------------
-
-
-	// 描画用深度バッファ
-	Resource depthResouerce_;
-	// シャドウマップ用深度バッファ
-	Resource lightDepthResource_;
+	std::array<TextureResorce, static_cast<size_t>(DepthType::max)> depthTexResources_;
+	DepthType currentDepthType_;
 
 	ComPtr<ID3D12DescriptorHeap> depthDSVHeap_ = nullptr;
 	ComPtr<ID3D12DescriptorHeap> depthSRVHeap_ = nullptr;

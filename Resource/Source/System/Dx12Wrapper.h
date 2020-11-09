@@ -108,6 +108,11 @@ public:
 	/// </summary>
 	void SetDefaultViewAndScissor();
 
+	/// <summary>
+	/// シェーダーモデルの取得
+	/// </summary>
+	std::string GetShaderModel()const;
+
 private:
 	HWND hwnd_;
 

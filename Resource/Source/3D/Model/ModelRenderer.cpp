@@ -209,7 +209,7 @@ void ModelRenderer::Draw()
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
 	dx12_.SetCameraDescriptorHeap(2);
-	texLoader.SetLightDepthTexDescriptorHeap(6);
+	texLoader.SetDepthTexDescriptorHeap(6, TexLoader::DepthType::light);
 
 	for (auto& actor : modelActors_)
 	{
@@ -225,7 +225,8 @@ void ModelRenderer::DrawShadow()
 	commandList.SetPipelineState(shadowPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
-	dx12_.SetCameraDescriptorHeap(2);
+	dx12_.SetCameraDescriptorHeap(2); 
+	texLoader.SetTextureDescriptorHeap(0);
 
 	for (auto& actor : modelActors_)
 	{

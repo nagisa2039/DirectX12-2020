@@ -47,6 +47,11 @@ SpriteDrawer::~SpriteDrawer()
 {
 }
 
+bool SpriteDrawer::SetShader(const std::wstring& shaderPath)
+{
+	return false;
+}
+
 void SpriteDrawer::CreatePiplineState()
 {
 	//頂点レイアウト(仕様)
@@ -81,11 +86,8 @@ void SpriteDrawer::CreatePiplineState()
 	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	// 深度ステンシル
-	gpsd.DepthStencilState.DepthEnable = true;
-	gpsd.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	gpsd.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	gpsd.DepthStencilState.DepthEnable = false;
 	gpsd.DepthStencilState.StencilEnable = false;
-	gpsd.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	// ラスタライザ
 	gpsd.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -154,8 +156,8 @@ void SpriteDrawer::CreateRootSignature()
 {
 	// シェーダーコンパイル
 	auto sl = Application::Instance().GetShaderLoader();
-	vertexShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdVS.hlsl", "VS", "vs_5_1");
-	pixelShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdPS.hlsl", "PS", "ps_5_1");
+	vertexShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdVS.hlsl", "VS", ("vs_" + dx12_.GetShaderModel()).c_str());
+	pixelShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdPS.hlsl", "PS", ("ps_" + dx12_.GetShaderModel()).c_str());
 
 	CreateRootSignatureFromShader(&dx12_.GetDevice(), rootSignature_, vertexShader_);
 }
@@ -287,6 +289,8 @@ void SpriteDrawer::End()
 		cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
 		cmdList.SetGraphicsRootDescriptorTable(2, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
 
+		texLoader.SetDepthTexDescriptorHeap(3, TexLoader::DepthType::camera);
+
 		cmdList.DrawIndexedInstanced(6, blendGroup.num, 0, 0, 0);
 
 		command.Execute();
@@ -322,6 +326,22 @@ void SpriteDrawer::SetDrawScreen(const int graphHandle)
 		End();
 	}
 	dx12_.GetTexLoader().SetDrawScreen(graphHandle);
+}
+
+void SpriteDrawer::DrawMyPSShader()
+{
+	auto currentBright = drawBright_;
+	auto currentBM = blendMode_;
+	auto currentBV = blendValue_;
+
+	SetDrawBright(255, 255, 255);
+	SetDrawBlendMode(BlendMode::noblend, 255);
+
+
+
+	drawBright_ = currentBright;
+	blendMode_ = currentBM;
+	blendValue_ = currentBV;
 }
 
 bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
