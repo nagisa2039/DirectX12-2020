@@ -10,52 +10,52 @@ using namespace std;
 
 void PrimitiveMesh::CreateVertexBufferAndView(std::vector<PrimVertex> vertices)
 {
-	auto& dev = _dx12.GetDevice();
-	CreateUploadBuffer(&dev, _vbuffer, sizeof(vertices[0]) * vertices.size(), true);
+	auto& dev = dx12_.GetDevice();
+	CreateUploadBuffer(&dev, vbuffer_, sizeof(vertices[0]) * vertices.size(), true);
 
 	PrimVertex* verMap = nullptr;
-	H_ASSERT(_vbuffer->Map(0, nullptr, (void**)&verMap));
+	H_ASSERT(vbuffer_->Map(0, nullptr, (void**)&verMap));
 	std::copy(vertices.begin(), vertices.end(), verMap);
-	_vbuffer->Unmap(0, nullptr);
+	vbuffer_->Unmap(0, nullptr);
 
-	_vbv = {};
-	_vbv.SizeInBytes = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
-	_vbv.StrideInBytes = sizeof(vertices[0]);
-	_vbv.BufferLocation = _vbuffer->GetGPUVirtualAddress();
+	vbv_ = {};
+	vbv_.SizeInBytes = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
+	vbv_.StrideInBytes = sizeof(vertices[0]);
+	vbv_.BufferLocation = vbuffer_->GetGPUVirtualAddress();
 }
 
 void PrimitiveMesh::CreateIndexBufferAndView(std::vector<uint16_t> indices)
 {
-	auto& dev = _dx12.GetDevice();
-	CreateUploadBuffer(&dev, _ibuffer, sizeof(indices[0]) * indices.size(), true);
+	auto& dev = dx12_.GetDevice();
+	CreateUploadBuffer(&dev, ibuffer_, sizeof(indices[0]) * indices.size(), true);
 	uint16_t* indMap = nullptr;
-	H_ASSERT(_ibuffer->Map(0, nullptr, (void**)&indMap));
+	H_ASSERT(ibuffer_->Map(0, nullptr, (void**)&indMap));
 	copy(indices.begin(), indices.end(), indMap);
-	_ibuffer->Unmap(0, nullptr);
+	ibuffer_->Unmap(0, nullptr);
 
-	_ibv = {};
-	_ibv.SizeInBytes = static_cast<UINT>(sizeof(indices[0]) * indices.size());
-	_ibv.Format = DXGI_FORMAT_R16_UINT;
-	_ibv.BufferLocation = _ibuffer->GetGPUVirtualAddress();
+	ibv_ = {};
+	ibv_.SizeInBytes = static_cast<UINT>(sizeof(indices[0]) * indices.size());
+	ibv_.Format = DXGI_FORMAT_R16_UINT;
+	ibv_.BufferLocation = ibuffer_->GetGPUVirtualAddress();
 
-	_indexNum = _ibv.SizeInBytes / sizeof(uint16_t);
+	indexNum_ = ibv_.SizeInBytes / sizeof(uint16_t);
 }
 
 void PrimitiveMesh::CreateTransBuffer()
 {
 	// 座標の定数バッファの作成
-	CreateUploadBuffer(&_dx12.GetDevice(), _transCB, sizeof(*_mappedTrans));
-	_transCB->Map(0, nullptr, (void**)&_mappedTrans);
+	CreateUploadBuffer(&dx12_.GetDevice(), transCB_, sizeof(*mappedTrans_));
+	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
 
-	*_mappedTrans =
-		XMMatrixRotationRollPitchYaw(_rotate.x, _rotate.y, _rotate.z)
-		*XMMatrixTranslation(_pos.x, _pos.y, _pos.z);
+	*mappedTrans_ =
+		XMMatrixRotationRollPitchYaw(rotate_.x, rotate_.y, rotate_.z)
+		*XMMatrixTranslation(pos_.x, pos_.y, pos_.z);
 
 	// 座標のヒープ作成
-	CreateDescriptorHeap(&_dx12.GetDevice(), _worldHeap, 1);
+	CreateDescriptorHeap(&dx12_.GetDevice(), worldHeap_, 1);
 
 	// 定数バッファビューの作成
-	CreateConstantBufferView(&_dx12.GetDevice(), _transCB, _worldHeap->GetCPUDescriptorHandleForHeapStart());
+	CreateConstantBufferView(&dx12_.GetDevice(), transCB_, worldHeap_->GetCPUDescriptorHandleForHeapStart());
 }
 
 void PrimitiveMesh::CalNormalVertex(std::vector<PrimVertex>& vertices, const std::vector<uint16_t>& indices)
@@ -97,9 +97,9 @@ void PrimitiveMesh::CalNormalVertex2(std::vector<PrimVertex>& vertices, XMFLOAT3
 	}
 }
 
-PrimitiveMesh::PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):_dx12(dx12), _pos(pos)
+PrimitiveMesh::PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):dx12_(dx12), pos_(pos)
 {
-	_animCnt = 0;
+	animCnt_ = 0;
 }
 
 PrimitiveMesh::~PrimitiveMesh()
@@ -108,28 +108,28 @@ PrimitiveMesh::~PrimitiveMesh()
 
 void PrimitiveMesh::Update()
 {
-	_animCnt++;
+	animCnt_++;
 
-	*_mappedTrans =
-		XMMatrixRotationRollPitchYaw(_rotate.x * XM_PI / 180.0f, _rotate.y * XM_PI / 180.0f, _rotate.z * XM_PI / 180.0f)
-		*XMMatrixTranslation(_pos.x, _pos.y, _pos.z);
+	*mappedTrans_ =
+		XMMatrixRotationRollPitchYaw(rotate_.x * XM_PI / 180.0f, rotate_.y * XM_PI / 180.0f, rotate_.z * XM_PI / 180.0f)
+		*XMMatrixTranslation(pos_.x, pos_.y, pos_.z);
 }
 
 void PrimitiveMesh::Draw()
 {
 	// 座標行列用デスクリプタヒープのセット
-	auto& cmdList = _dx12.GetCommand().CommandList();
-	cmdList.SetDescriptorHeaps(1, _worldHeap.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(1, _worldHeap->GetGPUDescriptorHandleForHeapStart());
+	auto& cmdList = dx12_.GetCommand().CommandList();
+	cmdList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
+	cmdList.SetGraphicsRootDescriptorTable(1, worldHeap_->GetGPUDescriptorHandleForHeapStart());
 
 	//// テクスチャ
 	//cmdList.SetDescriptorHeaps(1, _texHeap.GetAddressOf());
 	//cmdList.SetGraphicsRootDescriptorTable(3, _texHeap->GetGPUDescriptorHandleForHeapStart());
 
 	// インデックスバッファのセット
-	cmdList.IASetIndexBuffer(&_ibv);
+	cmdList.IASetIndexBuffer(&ibv_);
 	// 頂点バッファビューの設定
-	cmdList.IASetVertexBuffers(0, 1, &_vbv);
+	cmdList.IASetVertexBuffers(0, 1, &vbv_);
 
-	cmdList.DrawIndexedInstanced(_indexNum, 1, 0, 0, 0);
+	cmdList.DrawIndexedInstanced(indexNum_, 1, 0, 0, 0);
 }

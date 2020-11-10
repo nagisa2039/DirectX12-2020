@@ -63,7 +63,7 @@ protected:
 
 	std::vector<Vertex> vertexData_;	// 頂点データ
 	std::vector<uint32_t> indexData_;	// 頂点インデックスデータ
-	std::vector<MultiTexturePath> _texPaths;		//テクスチャのパス(相対)
+	std::vector<MultiTexturePath> texPaths_;		//テクスチャのパス(相対)
 	std::vector<Material> materials_;		// マテリアルデータ
 	std::vector<Bone> bones_;
 	std::vector<MaterialIndex> materialIndexData_;	// マテリアルのインデックス 頂点インデックスに対応

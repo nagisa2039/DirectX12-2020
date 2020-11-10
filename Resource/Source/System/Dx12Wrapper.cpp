@@ -7,6 +7,7 @@
 #include "Utility/dx12Tool.h"
 #include "SpriteDrawer.h"
 #include "SoundManager.h"
+#include "3D/Camera.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -19,12 +20,7 @@ using namespace std;
 
 Dx12Wrapper::Dx12Wrapper(HWND hwnd): hwnd_(hwnd)
 {
-	camera_.eye = { 0, 20, -30 };
-	camera_.target = { 0, 10, 0 };
-	camera_.up = { 0, 1, 0 };
-	mappedCam_ = nullptr;
 }
-
 
 Dx12Wrapper::~Dx12Wrapper()
 {
@@ -49,17 +45,14 @@ bool Dx12Wrapper::Init()
 	// スワップチェインの作成
 	CreateSwapChain();
 
-	// カメラの作成
-	CreateCameraConstantBufferAndView();
-
 	texLoader_ = make_shared<TexLoader>(GetDevice(), GetCommand(), *swapChain_.Get());
 	soundManager_ = make_shared<SoundManager>();
 
 	spriteDrawer_ = make_shared<SpriteDrawer>(*this);
 
-	UpdateCamera();
-
 	texLoader_->SetDrawScreen(GetBackScreenHandle());
+
+	camera_ = make_shared<Camera>(*cmd_, *dev_.Get());
 
 	return true;
 }
@@ -118,33 +111,9 @@ SpriteDrawer& Dx12Wrapper::GetSpriteDrawer()
 	return *spriteDrawer_;
 }
 
-void Dx12Wrapper::SetCameraDescriptorHeap(const UINT rootParamIdx)
+Camera& Dx12Wrapper::GetCamera()
 {
-	// カメラ用デスクリプタヒープの設定
-	auto& commandList = cmd_->CommandList();
-	commandList.SetDescriptorHeaps(1, cameraHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(rootParamIdx,
-		cameraHeap_->GetGPUDescriptorHandleForHeapStart());
-}
-
-Vector3 Dx12Wrapper::GetCameraPosition() const
-{
-	return Vector3(camera_.eye.x, camera_.eye.y, camera_.eye.z);
-}
-
-Vector3 Dx12Wrapper::GetCameraTarget() const
-{
-	return Vector3(camera_.target.x, camera_.target.y, camera_.target.z);
-}
-
-void Dx12Wrapper::SetCameraPosision(const Vector3& pos)
-{
-	camera_.eye = pos.ToXMFloat3();
-}
-
-void Dx12Wrapper::SetCameraTarget(const Vector3& target)
-{
-	camera_.target = target.ToXMFloat3();
+	return *camera_;
 }
 
 void Dx12Wrapper::SetDefaultViewAndScissor()
@@ -170,55 +139,4 @@ void Dx12Wrapper::SetDefaultViewAndScissor()
 	auto& commandList = cmd_->CommandList();
 	commandList.RSSetViewports(1, &viewport);
 	commandList.RSSetScissorRects(1, &scissorRect);
-}
-
-std::string Dx12Wrapper::GetShaderModel() const
-{
-	return "5_1";
-}
-
-bool Dx12Wrapper::CreateCameraConstantBufferAndView()
-{
-	CreateUploadBuffer(dev_.Get(), cameraCB_, sizeof(*mappedCam_));
-	cameraCB_->Map(0, nullptr, (void**)&mappedCam_);
-
-	CreateDescriptorHeap(dev_.Get(), cameraHeap_);
-
-	// 定数バッファビューの作成
-	CreateConstantBufferView(dev_.Get(), cameraCB_, cameraHeap_->GetCPUDescriptorHandleForHeapStart());
-
-	return true;
-}
-
-void Dx12Wrapper::UpdateCamera()
-{
-	// カメラの更新
-	auto wsize = Application::Instance().GetWindowSize();
-	XMVECTOR eyePos = XMLoadFloat3(&camera_.eye);
-	XMVECTOR targetPos = XMLoadFloat3(&camera_.target);
-	XMVECTOR upVec = XMLoadFloat3(&camera_.up);
-	//XMVECTOR lightVec = XMLoadFloat3(&_mappedSetting->light_dir);
-	auto lightDir = XMFLOAT3(1.0f, -1.0f, 1.0f);
-	XMVECTOR lightVec = XMLoadFloat3(&lightDir);
-	lightVec = XMVector3Normalize(lightVec);
-
-	auto cameraArmLength = XMVector3Length(XMVectorSubtract(targetPos, eyePos)).m128_f32[0];
-	XMVECTOR lightCamPos = targetPos - lightVec * cameraArmLength;
-
-	// カメラ用
-	auto view = XMMatrixLookAtLH(eyePos, targetPos, upVec);
-	auto proj = XMMatrixPerspectiveFovLH(
-		camera_.fov,
-		static_cast<float>(wsize.w) / static_cast<float>(wsize.h),
-		0.05f, 1000.0f);
-
-	// ライト用
-	auto lightView = XMMatrixLookAtLH(lightCamPos, targetPos, upVec);
-	auto lightProj = XMMatrixOrthographicLH(80, 80, 0.05f, 1000.0f);
-
-	mappedCam_->view = view;
-	mappedCam_->proj = proj;
-	mappedCam_->eye = camera_.eye;
-	mappedCam_->invProj = XMMatrixInverse(nullptr, proj);
-	mappedCam_->lightCamera = lightView * lightProj;
 }

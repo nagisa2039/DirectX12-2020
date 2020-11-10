@@ -171,6 +171,9 @@
     <ClInclude Include="Resource\Source\3D\RendererManager.h">
       <Filter>ヘッダー ファイル\3D</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Camera.h">
+      <Filter>ヘッダー ファイル\3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -252,6 +255,9 @@
       <Filter>ソース ファイル\3D\Model</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\3D\RendererManager.cpp">
+      <Filter>ソース ファイル\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Camera.cpp">
       <Filter>ソース ファイル\3D</Filter>
     </ClCompile>
   </ItemGroup>

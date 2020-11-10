@@ -12,6 +12,7 @@
 #include "Utility/Constant.h"
 #include "Utility/dx12Tool.h"
 #include "System/ShaderLoader.h"
+#include "3D/Camera.h"
 
 using namespace std;
 using namespace DirectX;
@@ -29,8 +30,8 @@ bool ModelRenderer::CreateModelPL()
 {
 	// ルートシグネチャの作成
 	auto& sl = Application::Instance().GetShaderLoader();
-	auto vertexShader	= sl.GetShader(L"Resource/Source/Shader/3D/ModelVS.hlsl", "VS", "vs_5_1");
-	auto pixelShader	= sl.GetShader(L"Resource/Source/Shader/3D/ModelPS.hlsl", "PS", "ps_5_1");
+	auto vertexShader	= sl.GetShader(L"Resource/Source/Shader/3D/ModelVS.hlsl", "VS", ("vs_" + sl.GetShaderModel()).c_str());
+	auto pixelShader	= sl.GetShader(L"Resource/Source/Shader/3D/ModelPS.hlsl", "PS", ("ps_" + sl.GetShaderModel()).c_str());
 
 	CreateRootSignatureFromShader(&dx12_.GetDevice(), modelRS_, vertexShader);
 
@@ -127,8 +128,8 @@ bool ModelRenderer::CreateModelPL()
 	}
 
 	// シェーダ系
-	vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/ModelVS.hlsl", "ShadowVS", "vs_5_1");
-	pixelShader = sl.GetShader(L"Resource/Source/Shader/3D/ModelPS.hlsl", "ShadowPS", "ps_5_1");
+	vertexShader	= sl.GetShader(L"Resource/Source/Shader/3D/ModelVS.hlsl", "ShadowVS", ("vs_" + sl.GetShaderModel()).c_str());
+	pixelShader		= sl.GetShader(L"Resource/Source/Shader/3D/ModelPS.hlsl", "ShadowPS", ("ps_" + sl.GetShaderModel()).c_str());
 	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
 	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
@@ -159,12 +160,12 @@ bool ModelRenderer::Init()
 	}
 	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/安柏/安柏.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
 	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
-	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
+	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/prinzeugen/prinzeugen.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/つみ式ミクさん/つみ式ミクさん(素足).pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式鹿島/ぽんぷ長式鹿島.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/斑鳩/斑鳩.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/葛城/葛城.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
+	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/葛城/葛城.pmd", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
 	
 	for (int j = 0; j < modelActors_.size(); j++)
 	{
@@ -208,7 +209,7 @@ void ModelRenderer::Draw()
 	commandList.SetPipelineState(modelPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
-	dx12_.SetCameraDescriptorHeap(2);
+	dx12_.GetCamera().SetCameraDescriptorHeap(2);
 	texLoader.SetDepthTexDescriptorHeap(6, TexLoader::DepthType::light);
 
 	for (auto& actor : modelActors_)
@@ -225,7 +226,7 @@ void ModelRenderer::DrawShadow()
 	commandList.SetPipelineState(shadowPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
-	dx12_.SetCameraDescriptorHeap(2); 
+	dx12_.GetCamera().SetCameraDescriptorHeap(2); 
 	texLoader.SetTextureDescriptorHeap(0);
 
 	for (auto& actor : modelActors_)

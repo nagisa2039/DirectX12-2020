@@ -32,33 +32,33 @@ public:
 	};
 
 protected:
-	Dx12Wrapper& _dx12;
+	Dx12Wrapper& dx12_;
 
-	ComPtr<ID3D12Resource>_texBuffer;
-	ComPtr<ID3D12DescriptorHeap>_texHeap;
+	ComPtr<ID3D12Resource>texBuffer_;
+	ComPtr<ID3D12DescriptorHeap>texHeap_;
 
-	ComPtr<ID3D12Resource> _vbuffer;
-	D3D12_VERTEX_BUFFER_VIEW _vbv;
+	ComPtr<ID3D12Resource> vbuffer_;
+	D3D12_VERTEX_BUFFER_VIEW vbv_;
 
-	ComPtr<ID3D12Resource> _ibuffer;
-	D3D12_INDEX_BUFFER_VIEW _ibv;
+	ComPtr<ID3D12Resource> ibuffer_;
+	D3D12_INDEX_BUFFER_VIEW ibv_;
 
-	int _indexNum;
+	int indexNum_;
 
 	// 座標
-	DirectX::XMFLOAT3 _pos;
-	DirectX::XMMATRIX* _mappedTrans;
+	DirectX::XMFLOAT3 pos_;
+	DirectX::XMMATRIX* mappedTrans_;
 
 	// 座標行列用定数バッファ
-	ComPtr<ID3D12Resource> _transCB = nullptr;
+	ComPtr<ID3D12Resource> transCB_ = nullptr;
 	// transCBを入れるヒープ
-	ComPtr<ID3D12DescriptorHeap> _worldHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> worldHeap_ = nullptr;
 
 	// 回転
-	DirectX::XMFLOAT3 _rotate;
+	DirectX::XMFLOAT3 rotate_;
 
 	// アニメーションカウント
-	unsigned int _animCnt;
+	unsigned int animCnt_;
 
 	 // 頂点バッファとビューの作成
 	void CreateVertexBufferAndView(std::vector<PrimVertex> vertices);

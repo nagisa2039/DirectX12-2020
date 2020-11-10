@@ -21,6 +21,11 @@ public:
 	/// <param name="shaderModel">シェーダーモデル</param>
 	Microsoft::WRL::ComPtr<ID3DBlob> GetShader(const LPCWSTR& shaderPath, const LPCSTR& entoryPoint, const LPCSTR& shaderModel);
 
+	/// <summary>
+	/// シェーダーモデルの取得
+	/// </summary>
+	std::string GetShaderModel()const;
+
 private:
 	std::unordered_map<std::wstring, ComPtr<ID3DBlob>> shaderMap_;
 };

@@ -47,77 +47,43 @@ SpriteDrawer::~SpriteDrawer()
 {
 }
 
-bool SpriteDrawer::SetShader(const std::wstring& shaderPath)
+bool SpriteDrawer::SetPixelShader(const std::wstring& shaderPath)
 {
-	return false;
+	if (pipelineStateMap_.contains(shaderPath))
+	{
+		pipeLineState_ = pipelineStateMap_[shaderPath];
+		return true;
+	}
+
+	auto& sl = Application::Instance().GetShaderLoader();
+	auto ps = sl.GetShader(shaderPath.c_str(), "PS", ("ps_" + sl.GetShaderModel()).c_str());
+
+	std::vector<D3D12_INPUT_ELEMENT_DESC> iedVec;
+	GetDefaultInputElementDesc(iedVec);
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpsd = {};
+	GetDefaultPipelineStateDesc(iedVec, gpsd);
+	gpsd.PS = CD3DX12_SHADER_BYTECODE(ps.Get());
+
+	H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, 
+		IID_PPV_ARGS(pipelineStateMap_[shaderPath].ReleaseAndGetAddressOf())));
+
+	SetDrawBlendMode(BlendMode::noblend, 255);
+	pipeLineState_ = pipelineStateMap_[shaderPath];
+
+	return true;
 }
 
 void SpriteDrawer::CreatePiplineState()
 {
-	//頂点レイアウト(仕様)
-	D3D12_INPUT_ELEMENT_DESC inputLayoutDescs[] =
-	{
-		// 座標
-		{
-			"POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-		},
-
-		// UV
-		{
-			"TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-		},
-	};
-
 	//ルートシグネチャと頂点レイアウトの設定
+	std::vector<D3D12_INPUT_ELEMENT_DESC> iedVec;
+	GetDefaultInputElementDesc(iedVec);
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpsd = {};
-	gpsd.pRootSignature = rootSignature_.Get();
-	gpsd.InputLayout.pInputElementDescs = inputLayoutDescs;
-	// 配列の要素数を格納
-	gpsd.InputLayout.NumElements = _countof(inputLayoutDescs);
-
-	// シェーダ系
-	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader_.Get());
-	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader_.Get());
-
-	// レンダーターゲット
-	gpsd.NumRenderTargets = 1;
-	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-	// 深度ステンシル
-	gpsd.DepthStencilState.DepthEnable = false;
-	gpsd.DepthStencilState.StencilEnable = false;
-
-	// ラスタライザ
-	gpsd.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	gpsd.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-
-	//その他
-	gpsd.NodeMask = 0;
-	gpsd.SampleDesc.Count = 1;
-	gpsd.SampleDesc.Quality = 0;
-	gpsd.SampleMask = 0xffffffff;
-
-	//三角形
-	gpsd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	gpsd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-
-	// ブレンドステート
-	gpsd.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	gpsd.BlendState.AlphaToCoverageEnable = false;
-	gpsd.BlendState.IndependentBlendEnable = false;
-	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
-	//gpsd.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	GetDefaultPipelineStateDesc(iedVec, gpsd);
 
 	array<function<void()>, Uint64(BlendMode::max)> blendDescSets_;
-	blendDescSets_[Uint64(BlendMode::alpha)] = [&gpsd = gpsd]()
-	{
-		gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	};
-	blendDescSets_[Uint64(BlendMode::noblend)] = blendDescSets_[Uint64(BlendMode::alpha)];
+	blendDescSets_[Uint64(BlendMode::alpha)] = [&gpsd = gpsd](){};
+	blendDescSets_[Uint64(BlendMode::noblend)] = [&gpsd = gpsd]() {};
 
 	blendDescSets_[Uint64(BlendMode::add)] = [&gpsd = gpsd]()
 	{
@@ -144,7 +110,7 @@ void SpriteDrawer::CreatePiplineState()
 		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	};
 	
-	for (int i = 0; auto & pipelineState : pipelineStates_)
+	for (int i = 0; auto & pipelineState : standeredBlendPipelineStates_)
 	{
 		blendDescSets_[i]();
 		H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(pipelineState.ReleaseAndGetAddressOf())));
@@ -156,8 +122,8 @@ void SpriteDrawer::CreateRootSignature()
 {
 	// シェーダーコンパイル
 	auto sl = Application::Instance().GetShaderLoader();
-	vertexShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdVS.hlsl", "VS", ("vs_" + dx12_.GetShaderModel()).c_str());
-	pixelShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdPS.hlsl", "PS", ("ps_" + dx12_.GetShaderModel()).c_str());
+	vertexShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdVS.hlsl", "VS", ("vs_" + sl.GetShaderModel()).c_str());
+	pixelShader_	= sl.GetShader(L"Resource/Source/Shader/2D/2DStanderdPS.hlsl", "PS", ("ps_" + sl.GetShaderModel()).c_str());
 
 	CreateRootSignatureFromShader(&dx12_.GetDevice(), rootSignature_, vertexShader_);
 }
@@ -259,18 +225,18 @@ void SpriteDrawer::End()
 	auto& texHeap = texLoader.GetTextureHeap();
 
 	// 描画
-	for (size_t i = 0; const auto & blendGroup : blendGroups_)
+	for (size_t i = 0; const auto & drawGroup : drawGroups_)
 	{
 		dx12_.SetDefaultViewAndScissor();
 
-		for (int j = 0; j < blendGroup.num; j++)
+		for (int j = 0; j < drawGroup.num; j++)
 		{
 			verticesInfSB_.mappedVertexInf[j] = drawImages_[i + j].verticesInf;
 			pixelInfSB_.mappedPixelInf[j] = drawImages_[i + j].pixelInf;
 		}
-		i += blendGroup.num;
+		i += drawGroup.num;
 
-		cmdList.SetPipelineState(pipelineStates_[Uint64(blendGroup.blendMode)].Get());
+		cmdList.SetPipelineState(drawGroup.pipelineState.Get());
 		cmdList.SetGraphicsRootSignature(rootSignature_.Get());
 
 		cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -291,7 +257,7 @@ void SpriteDrawer::End()
 
 		texLoader.SetDepthTexDescriptorHeap(3, TexLoader::DepthType::camera);
 
-		cmdList.DrawIndexedInstanced(6, blendGroup.num, 0, 0, 0);
+		cmdList.DrawIndexedInstanced(6, drawGroup.num, 0, 0, 0);
 
 		command.Execute();
 
@@ -302,8 +268,73 @@ void SpriteDrawer::End()
 
 void SpriteDrawer::ClearDrawData()
 {
-	blendGroups_.clear();
+	drawGroups_.clear();
 	drawImages_.clear();
+}
+
+void SpriteDrawer::GetDefaultInputElementDesc(std::vector<D3D12_INPUT_ELEMENT_DESC>& ied)
+{
+	//頂点レイアウト(仕様)
+	ied =
+	{
+		// 座標
+		{
+			"POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+		},
+
+		// UV
+		{
+			"TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+		},
+	};
+}
+
+void SpriteDrawer::GetDefaultPipelineStateDesc(const std::vector<D3D12_INPUT_ELEMENT_DESC>& ied, D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpsd)
+{
+	//ルートシグネチャと頂点レイアウトの設定
+	gpsd = {};
+	gpsd.pRootSignature = rootSignature_.Get();
+	gpsd.InputLayout.pInputElementDescs = ied.data();
+	// 配列の要素数を格納
+	gpsd.InputLayout.NumElements = ied.size();
+
+	// シェーダ系
+	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader_.Get());
+	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader_.Get());
+
+	// レンダーターゲット
+	gpsd.NumRenderTargets = 1;
+	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+	// 深度ステンシル
+	gpsd.DepthStencilState.DepthEnable = false;
+	gpsd.DepthStencilState.StencilEnable = false;
+
+	// ラスタライザ
+	gpsd.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	gpsd.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+
+	//その他
+	gpsd.NodeMask = 0;
+	gpsd.SampleDesc.Count = 1;
+	gpsd.SampleDesc.Quality = 0;
+	gpsd.SampleMask = 0xffffffff;
+
+	//三角形
+	gpsd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	gpsd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+	// ブレンドステート
+	gpsd.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	gpsd.BlendState.AlphaToCoverageEnable = false;
+	gpsd.BlendState.IndependentBlendEnable = false;
+	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
+
+	gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 }
 
 void SpriteDrawer::SetDrawBright(const INT r, const INT g, const INT b)
@@ -316,7 +347,15 @@ void SpriteDrawer::SetDrawBright(const INT r, const INT g, const INT b)
 void SpriteDrawer::SetDrawBlendMode(const BlendMode blendMode, const INT value)
 {
 	blendMode_ = blendMode;
-	blendValue_ = Saturate(blendMode == BlendMode::noblend ? 255.0f : value /255.0f);
+	if (blendMode == BlendMode::noblend)
+	{
+		blendValue_ = 1.0f;
+	}
+	else
+	{
+		blendValue_ = Saturate(value / 255.0f);
+	}
+	pipeLineState_ = standeredBlendPipelineStates_[Uint64(blendMode)];
 }
 
 void SpriteDrawer::SetDrawScreen(const int graphHandle)
@@ -336,8 +375,6 @@ void SpriteDrawer::DrawMyPSShader()
 
 	SetDrawBright(255, 255, 255);
 	SetDrawBlendMode(BlendMode::noblend, 255);
-
-
 
 	drawBright_ = currentBright;
 	blendMode_ = currentBM;
@@ -441,21 +478,16 @@ bool SpriteDrawer::DrawRectExtendGraph(const INT left, const INT top, const INT 
 
 void SpriteDrawer::AddDrawImage(SpriteDrawer::DrawImage& drawImage)
 {
-	if (blendGroups_.size() > 0 && blendGroups_.rbegin()->blendMode == blendMode_)
+	if (drawGroups_.size() > 0 && drawGroups_.rbegin()->pipelineState == pipeLineState_)
 	{
-		blendGroups_.rbegin()->num++;
+		drawGroups_.rbegin()->num++;
 	}
 	else
 	{
-		blendGroups_.emplace_back(BlendGroup{ blendMode_, 1 });
+		drawGroups_.emplace_back(DrawGroup{ pipeLineState_, blendMode_, 1 });
 	}
 
 	drawImage.pixelInf.bright = drawBright_;
 	drawImage.pixelInf.alpha = blendValue_;
 	drawImages_.emplace_back(drawImage);
-}
-
-bool SpriteDrawer::DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2, const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag)
-{
-	return false;
 }

@@ -8,6 +8,7 @@
 #include "System/Application.h"
 #include "System/ShaderLoader.h"
 #include "Utility/dx12Tool.h"
+#include "3D/Camera.h"
 
 using namespace std;
 using namespace DirectX;
@@ -15,10 +16,10 @@ using namespace DirectX;
 bool PrimitiveRenderer::CreatePipelineState()
 {
 	auto& sl = Application::Instance().GetShaderLoader();
-	ComPtr<ID3DBlob> vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/PrimitiveVS.hlsl", "VS", "vs_5_1");
-	ComPtr<ID3DBlob> pixelShader = sl.GetShader(L"Resource/Source/Shader/3D/PrimitivePS.hlsl", "PS", "ps_5_1");
+	ComPtr<ID3DBlob> vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/PrimitiveVS.hlsl", "VS",	("vs_" + sl.GetShaderModel()).c_str());
+	ComPtr<ID3DBlob> pixelShader = sl.GetShader(L"Resource/Source/Shader/3D/PrimitivePS.hlsl", "PS",	("ps_" + sl.GetShaderModel()).c_str());
 
-	CreateRootSignatureFromShader(&_dx12.GetDevice(), _primRS, vertexShader);
+	CreateRootSignatureFromShader(&dx12_.GetDevice(), primRS_, vertexShader);
 
 	//頂点レイアウト(仕様)
 	D3D12_INPUT_ELEMENT_DESC inputLayoutDescs[] =
@@ -44,7 +45,7 @@ bool PrimitiveRenderer::CreatePipelineState()
 
 	//ルートシグネチャと頂点レイアウトの設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpsd = {};
-	gpsd.pRootSignature = _primRS.Get();
+	gpsd.pRootSignature = primRS_.Get();
 	gpsd.InputLayout.pInputElementDescs = inputLayoutDescs;
 	// 配列の要素数を格納
 	gpsd.InputLayout.NumElements = _countof(inputLayoutDescs);
@@ -95,14 +96,14 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	gpsd.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-	if (FAILED(_dx12.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(_primPL.ReleaseAndGetAddressOf()))))
+	if (FAILED(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(primPL_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
 	}
 
-	vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/PrimitiveVS.hlsl", "ShadowVS", "vs_5_1");
-	pixelShader  = sl.GetShader(L"Resource/Source/Shader/3D/PrimitivePS.hlsl", "ShadowPS", "ps_5_1");
+	vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/PrimitiveVS.hlsl", "ShadowVS", ("vs_" + sl.GetShaderModel()).c_str());
+	pixelShader  = sl.GetShader(L"Resource/Source/Shader/3D/PrimitivePS.hlsl", "ShadowPS", ("ps_" + sl.GetShaderModel()).c_str());
 
 	// シェーダ系
 	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
@@ -116,7 +117,7 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.NumRenderTargets = 1;
 	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	if (FAILED(_dx12.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(_primShadowPL.ReleaseAndGetAddressOf()))))
+	if (FAILED(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(primShadowPL_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -125,13 +126,13 @@ bool PrimitiveRenderer::CreatePipelineState()
 	return true;
 }
 
-PrimitiveRenderer::PrimitiveRenderer(Dx12Wrapper& dx12):_dx12(dx12)
+PrimitiveRenderer::PrimitiveRenderer(Dx12Wrapper& dx12):dx12_(dx12)
 {
 	if(!CreatePipelineState())
 	{
 		assert(false);
 	}
-	_primitives.emplace_back(make_shared<PlaneMesh>(_dx12, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f/536.0f) * 80.0f, 80.0f, L"image/fiona.png"));
+	primitives_.emplace_back(make_shared<PlaneMesh>(dx12_, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f/536.0f) * 80.0f, 80.0f, L"image/fiona.png"));
 
 	//_primitives.emplace_back(make_shared<ConeMesh>(_dx12, XMFLOAT3(10.0f, 0.0f, -10.0f), 5.0f, 10.0f, L"image/so.png"));
 	//_primitives.emplace_back(make_shared<CylinderMesh>(_dx12, XMFLOAT3(-10.0f, 0.0f, 0.0f), 5.0f, 10.0f, L"image/misaki.png"));
@@ -144,7 +145,7 @@ PrimitiveRenderer::~PrimitiveRenderer()
 
 void PrimitiveRenderer::Update()
 {
-	for (auto& prim : _primitives)
+	for (auto& prim : primitives_)
 	{
 		prim->Update();
 	}
@@ -152,16 +153,16 @@ void PrimitiveRenderer::Update()
 
 void PrimitiveRenderer::Draw()
 {
-	auto& cmdList = _dx12.GetCommand().CommandList();
-	auto& texLoader = _dx12.GetTexLoader();
+	auto& cmdList = dx12_.GetCommand().CommandList();
+	auto& texLoader = dx12_.GetTexLoader();
 
-	cmdList.SetPipelineState(_primPL.Get());
-	cmdList.SetGraphicsRootSignature(_primRS.Get());
-	_dx12.SetCameraDescriptorHeap(0);
+	cmdList.SetPipelineState(primPL_.Get());
+	cmdList.SetGraphicsRootSignature(primRS_.Get());
+	dx12_.GetCamera().SetCameraDescriptorHeap(0);
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::light);
 	texLoader.SetTextureDescriptorHeap(3);
 
-	for (auto& prim : _primitives)
+	for (auto& prim : primitives_)
 	{
 		prim->Draw();
 	}
@@ -169,14 +170,14 @@ void PrimitiveRenderer::Draw()
 
 void PrimitiveRenderer::DrawShadow()
 {
-	auto& cmdList = _dx12.GetCommand().CommandList();
-	auto& texLoader = _dx12.GetTexLoader();
+	auto& cmdList = dx12_.GetCommand().CommandList();
+	auto& texLoader = dx12_.GetTexLoader();
 
-	cmdList.SetPipelineState(_primShadowPL.Get());
-	cmdList.SetGraphicsRootSignature(_primRS.Get());
-	_dx12.SetCameraDescriptorHeap(0);
+	cmdList.SetPipelineState(primShadowPL_.Get());
+	cmdList.SetGraphicsRootSignature(primRS_.Get());
+	dx12_.GetCamera().SetCameraDescriptorHeap(0);
 
-	for (auto& actor : _primitives)
+	for (auto& actor : primitives_)
 	{
 		actor->Draw();
 	}

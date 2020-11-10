@@ -13,12 +13,12 @@ class PrimitiveRenderer :
 	public Renderer
 {
 private:
-	Dx12Wrapper& _dx12;
-	std::vector<std::shared_ptr<PrimitiveMesh>> _primitives;
+	Dx12Wrapper& dx12_;
+	std::vector<std::shared_ptr<PrimitiveMesh>> primitives_;
 
-	ComPtr<ID3D12RootSignature> _primRS = nullptr;
-	ComPtr<ID3D12PipelineState> _primPL = nullptr;
-	ComPtr<ID3D12PipelineState> _primShadowPL = nullptr;
+	ComPtr<ID3D12RootSignature> primRS_ = nullptr;
+	ComPtr<ID3D12PipelineState> primPL_ = nullptr;
+	ComPtr<ID3D12PipelineState> primShadowPL_ = nullptr;
 
 	// パイプラインステートの作成
 	bool CreatePipelineState();

@@ -133,7 +133,7 @@ void PMDData::LoadMaterial(FILE * fp, std::string &modelPath)
 	fread(materials.data(), sizeof(materials[0]) * materialNum, 1, fp);
 
 	materials_.resize(materialNum);
-	_texPaths.resize(materialNum);
+	texPaths_.resize(materialNum);
 	int idx = 0;
 	for (auto& material : materials_)
 	{
@@ -153,15 +153,15 @@ void PMDData::LoadMaterial(FILE * fp, std::string &modelPath)
 				auto ext = GetExtension(name);
 				if (ext == "sph")
 				{
-					_texPaths[idx].sphPath = WStringFromString(GetFolderPath(modelPath + name));
+					texPaths_[idx].sphPath = WStringFromString(GetFolderPath(modelPath + name));
 				}
 				else if (ext == "spa")
 				{
-					_texPaths[idx].spaPath = WStringFromString(GetFolderPath(modelPath) + name);
+					texPaths_[idx].spaPath = WStringFromString(GetFolderPath(modelPath) + name);
 				}
 				else
 				{
-					_texPaths[idx].texPath = WStringFromString(GetFolderPath(modelPath) + name);
+					texPaths_[idx].texPath = WStringFromString(GetFolderPath(modelPath) + name);
 				}
 			}
 		}
@@ -170,7 +170,7 @@ void PMDData::LoadMaterial(FILE * fp, std::string &modelPath)
 		{
 			ostringstream oss;
 			oss << "toon/toon" << setw(2) << setfill('0') << static_cast<int>(materials[idx].toon_index + 1) << ".bmp";
-			_texPaths[idx].toonPath = WStringFromString(oss.str());
+			texPaths_[idx].toonPath = WStringFromString(oss.str());
 		}
 
 		idx++;

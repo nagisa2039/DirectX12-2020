@@ -62,5 +62,5 @@ void ModelData::SetVertexMaterialIndex()
 
 std::vector<ModelData::MultiTexturePath>& ModelData::GetTexturePaths()
 {
-	return _texPaths;
+	return texPaths_;
 }

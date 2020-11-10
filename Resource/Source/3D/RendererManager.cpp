@@ -5,6 +5,7 @@
 #include "System/TexLoader.h"
 #include "Utility/Constant.h"
 #include "System/Application.h"
+#include "3D/Camera.h"
 
 using namespace std;
 
@@ -25,6 +26,7 @@ RendererManager::~RendererManager()
 
 void RendererManager::Update()
 {
+	dx12_.GetCamera().Update();
 	for (auto& renderer : renderers_)
 	{
 		renderer->Update();

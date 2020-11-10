@@ -21,7 +21,7 @@ PixelOutPut PS(Out input)
 {
 	PixelOutPut po;
 
-	float4 texColor = tex[23].Sample(smp, input.uv);
+	//float4 texColor = tex[].Sample(smp, input.uv);
 	float3 light = normalize(float3(1, -1, 1));
 	float3 rLight = reflect(light, input.normal.xyz);
 	float3 eyeRay = normalize(input.pos.xyz - eye);
@@ -46,7 +46,7 @@ PixelOutPut PS(Out input)
 	float4 specColor = saturate(float4(specB, specB, specB, 0));
 	float3 ambient = float3(0.0, 0.0, 0.0);
 
-	float4 ret = float4(saturate(max((difColor.rgb * texColor.rgb) + specColor.rgb, ambient)) * shadowWeight, diffuse.
+	float4 ret = float4(saturate(max((difColor.rgb /** texColor.rgb*/) + specColor.rgb, ambient)) * shadowWeight, diffuse.
 	a);
 	
 	po.col = ret;

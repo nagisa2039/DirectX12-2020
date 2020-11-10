@@ -2,6 +2,7 @@
 
 #include "Utility/Tool.h"
 #include <functional>
+#include <array>
 #include <sstream>	// 文字列ストリーム用
 #include <iomanip>	// 文字列マニピュレータ用(n桁ぞろえやn埋めなど)
 
@@ -237,7 +238,35 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 	fread(&materialNum, sizeof(int), 1, fp);
 
 	materials_.resize(materialNum);
-	_texPaths.resize(materialNum);
+	texPaths_.resize(materialNum);
+
+	enum SpMode
+	{
+		none,
+		sph,
+		spa,
+		sub,
+		max
+	};
+
+	using GetTexPathFunc_t = std::function<void(const int, const int)>;
+	std::array<GetTexPathFunc_t, SpMode::max> GetTexPathFuncs;
+	GetTexPathFuncs[SpMode::none] = [texPaths = texPaths_](const int texPathIdx, const int spIdx) {};
+	GetTexPathFuncs[SpMode::sph] = [&texPaths = texPaths_, &modelPath = modelPath, &texPathTable = texPathTable]
+		(const int texPathIdx, const int spIdx)
+	{
+		texPaths[texPathIdx].sphPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[spIdx];
+	};
+	GetTexPathFuncs[SpMode::spa] = [&texPaths = texPaths_, &modelPath = modelPath, &texPathTable = texPathTable]
+		(const int texPathIdx, const int spIdx)
+	{
+		texPaths[texPathIdx].spaPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[spIdx];
+	};
+	GetTexPathFuncs[SpMode::sub] = [&texPaths = texPaths_, &modelPath = modelPath, &texPathTable = texPathTable]
+		(const int texPathIdx, const int spIdx)
+	{
+		texPaths[texPathIdx].subPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[spIdx];
+	};
 
 	for (int idx = 0; idx < materialNum; idx++)
 	{
@@ -287,29 +316,12 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 
 		if (texPathTable.size() > texIdx)
 		{
-			_texPaths[idx].texPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[texIdx];
+			texPaths_[idx].texPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[texIdx];
 		}
 
 		if (texPathTable.size() > spIdx)
 		{
-			switch (spMode)
-			{
-			case 1:
-				_texPaths[idx].sphPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[spIdx];
-				break;
-
-			case 2:
-				_texPaths[idx].spaPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[spIdx];
-				break;
-
-			case 3:
-				_texPaths[idx].subPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[spIdx];
-				break;
-
-			case 0:
-			default:
-				break;
-			}
+			GetTexPathFuncs[spMode](idx, spIdx);
 		}
 
 		if (shareToomFlag)
@@ -318,14 +330,14 @@ void PMXData::LoadMaterial(FILE * fp, std::string &modelPath)
 			{
 				ostringstream oss;
 				oss << "Resource/Image/toon/toon" << setw(2) << setfill('0') << static_cast<int>(toonIdx + 1) << ".bmp";
-				_texPaths[idx].toonPath = WStringFromString(oss.str());
+				texPaths_[idx].toonPath = WStringFromString(oss.str());
 			}
 		}
 		else
 		{
 			if (texPathTable.size() > toonIdx)
 			{
-				_texPaths[idx].toonPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[toonIdx];
+				texPaths_[idx].toonPath = WStringFromString(GetFolderPath(modelPath)) + texPathTable[toonIdx];
 			}
 		}
 	}

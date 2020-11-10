@@ -37,3 +37,8 @@ Microsoft::WRL::ComPtr<ID3DBlob> ShaderLoader::GetShader(const LPCWSTR& shaderPa
 
 	return shaderBlob;
 }
+
+std::string ShaderLoader::GetShaderModel() const
+{
+	return "5_1";
+}

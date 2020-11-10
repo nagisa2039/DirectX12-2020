@@ -27,7 +27,7 @@ public:
 	SpriteDrawer(Dx12Wrapper& dx12);
 	~SpriteDrawer();
 
-	bool SetShader(const std::wstring& shaderPath);
+	bool SetPixelShader(const std::wstring& shaderPath);
 
 	bool DrawGraph(const INT x, const INT y, const int graphHandle);
 	bool DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle);
@@ -36,7 +36,6 @@ public:
 	bool DrawRectRotaGraph2(const INT x, const INT y, const INT srcX, const INT srcY, const INT width, const INT height, const INT cx, const INT cy, const float exRate, const float angle, const int graphHandle);
 	bool DrawExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const int graphHandle);
 	bool DrawRectExtendGraph(const INT left, const INT top, const INT right, const INT buttom, const UINT srcX, const UINT srcY, const UINT width, const UINT height, const int graphHandle);
-	bool DrawModiGraph(const INT x1, const INT y1, const INT x2, const INT y2, const INT x3, const INT y3, const INT x4, const INT y4, const int GrHandle, const int TransFlag);
 	void End();
 
 	void SetDrawBright(const INT r, const INT g, const INT b);
@@ -90,7 +89,7 @@ private:
 	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
 	ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
-	std::array<ComPtr<ID3D12PipelineState>, static_cast<size_t>(BlendMode::max)> pipelineStates_;
+	std::array<ComPtr<ID3D12PipelineState>, static_cast<size_t>(BlendMode::max)> standeredBlendPipelineStates_;
 
 	VertexResource verticesInfSB_;
 	ComPtr<ID3D12DescriptorHeap> verticesInfHeap_ = nullptr;
@@ -98,16 +97,18 @@ private:
 	PixelInfResource pixelInfSB_;
 	ComPtr<ID3D12DescriptorHeap> pixelInfHeap_ = nullptr;
 
+	ComPtr<ID3D12PipelineState> pipeLineState_;
 	BlendMode blendMode_;
 	DirectX::XMFLOAT3 drawBright_;
 	float blendValue_;
 
-	struct BlendGroup
+	struct DrawGroup
 	{
+		ComPtr<ID3D12PipelineState> pipelineState;
 		BlendMode blendMode = BlendMode::noblend;
 		int num = 1;
 	};
-	std::vector<BlendGroup> blendGroups_;
+	std::vector<DrawGroup> drawGroups_;
 	std::vector<DrawImage> drawImages_;
 
 	ComPtr<ID3DBlob> vertexShader_ = nullptr;
@@ -130,5 +131,8 @@ private:
 	void AddDrawImage(SpriteDrawer::DrawImage& drawImage);
 
 	void ClearDrawData();
+
+	void GetDefaultInputElementDesc(std::vector<D3D12_INPUT_ELEMENT_DESC>& ied);
+	void GetDefaultPipelineStateDesc(const std::vector<D3D12_INPUT_ELEMENT_DESC>& ied, D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpsd);
 };
 

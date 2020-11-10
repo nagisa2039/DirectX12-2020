@@ -6,8 +6,8 @@ class PlaneMesh :
 {
 private:
 
-	float _width;
-	float _depth;
+	float width_;
+	float depth_;
 
 public:
 	// (dx12管理クラス, 座標, 幅, 奥行, テクスチャパス)

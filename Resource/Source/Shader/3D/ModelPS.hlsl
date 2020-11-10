@@ -82,13 +82,12 @@ PixelOutPut PS(Out input, uint primitiveID : SV_PrimitiveID)
     float4 sphColor = tex[mat.sphIdx].Sample(smp, sphUV);
     float4 spaColor = tex[mat.spaIdx].Sample(smp, sphUV);
 
-    float4 diffuseColor = mat.diffuse * float4(sphColor.rgb, 1.0f) + float4(spaColor.rgb, 0);
     float4 specColor = float4((mat.specular * specB).rgb, 0);
     float4 ambientColor = float4((mat.ambient * 0.005f).rgb, 0);
-    float4 ret = diffuseColor * texColor * toonColor + specColor + ambientColor;
+	float4 ret = mat.diffuse * texColor * toonColor * sphColor + specColor + spaColor + ambientColor;
 	
     po.col = ret;
-    //return po;
+    return po;
 
 
 	float shadowWeight = 1.0f;
