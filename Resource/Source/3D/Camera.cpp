@@ -13,6 +13,7 @@ Camera::Camera(Command& cmd, ID3D12Device& dev):cmd_(cmd), dev_(dev)
 	eye_ = { 0, 20, -30 };
 	target_ = { 0, 10, 0 };
 	up_ = { 0, 1, 0 };
+	fov_ = XMConvertToRadians(50.0f);
 	mappedCam_ = nullptr;
 	CreateCameraConstantBufferAndView();
 	UpdateCamera();

@@ -67,7 +67,7 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBright(255, 255, 255);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
-	spriteDrawer.SetPixelShader(L"Resource/Source/Shader/2D/PostEffect.hlsl");
+	//spriteDrawer.SetPixelShader(L"Resource/Source/Shader/2D/PostEffect.hlsl");
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
