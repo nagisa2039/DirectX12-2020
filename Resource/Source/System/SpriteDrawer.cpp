@@ -255,6 +255,7 @@ void SpriteDrawer::End()
 		cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
 		cmdList.SetGraphicsRootDescriptorTable(2, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
 
+		// 深度テクスチャのセット
 		texLoader.SetDepthTexDescriptorHeap(3, TexLoader::DepthType::camera);
 
 		cmdList.DrawIndexedInstanced(6, drawGroup.num, 0, 0, 0);
