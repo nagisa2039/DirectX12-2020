@@ -65,6 +65,7 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
 	spriteDrawer.SetDrawBright(255, 255, 255);
+
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	spriteDrawer.SetPixelShader(L"Resource/Source/Shader/2D/PostEffect.hlsl");
