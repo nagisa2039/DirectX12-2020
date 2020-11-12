@@ -368,20 +368,6 @@ void SpriteDrawer::SetDrawScreen(const int graphHandle)
 	dx12_.GetTexLoader().SetDrawScreen(graphHandle);
 }
 
-void SpriteDrawer::DrawMyPSShader()
-{
-	auto currentBright = drawBright_;
-	auto currentBM = blendMode_;
-	auto currentBV = blendValue_;
-
-	SetDrawBright(255, 255, 255);
-	SetDrawBlendMode(BlendMode::noblend, 255);
-
-	drawBright_ = currentBright;
-	blendMode_ = currentBM;
-	blendValue_ = currentBV;
-}
-
 bool SpriteDrawer::DrawGraph(const INT x, const INT y, const int graphHandle)
 {
 	Image img = dx12_.GetTexLoader().GetTextureResouse(graphHandle).imageInf;

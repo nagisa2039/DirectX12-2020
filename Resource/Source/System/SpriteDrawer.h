@@ -43,8 +43,6 @@ public:
 
 	void SetDrawScreen(const int graphHandle);
 
-	void DrawMyPSShader();
-
 private:
 	SpriteDrawer(const SpriteDrawer&) = delete;
 	SpriteDrawer& operator=(const SpriteDrawer&) = delete;

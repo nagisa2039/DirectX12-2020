@@ -56,7 +56,6 @@ bool PMDData::LoadFromPMD(std::string modelPath)
 	// ƒ{[ƒ“‚Ì“Ç‚İ‚İ
 	LoadBone(fp);
 
-
 	fclose(fp);
 
 	return true;

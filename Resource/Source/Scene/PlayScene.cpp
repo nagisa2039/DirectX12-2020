@@ -75,9 +75,6 @@ void PlayScene::Draw()
 	spriteDrawer.DrawRotaGraph(300, 300, 0.5f, 0.0f, tnktH_);
 	spriteDrawer.DrawRotaGraph(300, 500, 0.5f, 0.0f, dmdnH_);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-
-	spriteDrawer.DrawMyPSShader();
-
 	player_->Draw();
 
 	spriteDrawer.End();

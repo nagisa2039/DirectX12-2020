@@ -1,6 +1,9 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <array>
+#include <d3d12.h>
+#include "Utility/ComPtr.h"
 
 class Renderer;
 class Dx12Wrapper;
@@ -8,6 +11,14 @@ class Dx12Wrapper;
 class RendererManager
 {
 public:
+	enum class RenderTargetType
+	{
+		color,
+		normal,
+		bright,
+		max
+	};
+
 	RendererManager(Dx12Wrapper& dx12);
 	~RendererManager();
 
@@ -20,4 +31,9 @@ private:
 
 	int cameraScreenH_;
 	int lightScreenH_;
+
+	ComPtr<ID3D12DescriptorHeap> renderTargetHeap_;
+	std::array<int, static_cast<uint64_t>(RenderTargetType::max)>rendetTargetHandles_;
+
+	void CreateRenderTargetHeap();
 };

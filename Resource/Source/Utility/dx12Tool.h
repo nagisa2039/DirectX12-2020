@@ -81,12 +81,13 @@ namespace
 	/// <param name="dev">I3D12Deviceのポインタ</param>
 	/// <param name="pHeap">格納するヒープのポインタ</param>
 	/// <param name="numDescriptors">デスクリプタ数</param>
-	void CreateDescriptorHeap(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pHeap, UINT numDescriptors = 1)
+	void CreateDescriptorHeap(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pHeap, 
+		D3D12_DESCRIPTOR_HEAP_TYPE heapType = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, UINT numDescriptors = 1)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 		heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		heapDesc.NumDescriptors = numDescriptors;
-		heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		heapDesc.Type = heapType;
 
 		H_ASSERT(dev->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(pHeap.ReleaseAndGetAddressOf())));
 	}
@@ -139,7 +140,7 @@ namespace
 	{
 		assert(elementSize > 0 && elementNum > 0);
 
-		CreateUploadBuffer(dev, buff, elementSize * elementNum);
+		CreateUploadBuffer(dev, buff, static_cast<uint64_t>(elementSize) * elementNum);
 		H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
 		// デスクリプタヒープの作成
 		CreateDescriptorHeap(dev, heap);

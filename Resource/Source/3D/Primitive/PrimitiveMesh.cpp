@@ -52,7 +52,7 @@ void PrimitiveMesh::CreateTransBuffer()
 		*XMMatrixTranslation(pos_.x, pos_.y, pos_.z);
 
 	// 座標のヒープ作成
-	CreateDescriptorHeap(&dx12_.GetDevice(), worldHeap_, 1);
+	CreateDescriptorHeap(&dx12_.GetDevice(), worldHeap_);
 
 	// 定数バッファビューの作成
 	CreateConstantBufferView(&dx12_.GetDevice(), transCB_, worldHeap_->GetCPUDescriptorHandleForHeapStart());

@@ -9,6 +9,12 @@
                                              "addressV = TEXTURE_ADDRESS_WRAP,"\
                                              "addressW = TEXTURE_ADDRESS_WRAP)"
 
+// テクスチャ配列
+// 頂点情報配列
+// Pixel情報配列
+// カメラ深度
+// ライト深度
+
 struct Output
 {
 	float4 svpos    : SV_POSITION;
@@ -37,5 +43,4 @@ struct PixcelInf
 
 StructuredBuffer<PixcelInf> pixcelInf : register(t0, space2);
 
-Texture2D<float> depthTex      : register(t0, space3);
-Texture2D<float> lightDepthTex : register(t1, space3);
+Texture2D<float> depthTex[2]      : register(t0, space3);

@@ -6,6 +6,7 @@
 #include "Utility/Constant.h"
 #include "System/Application.h"
 #include "3D/Camera.h"
+#include "Utility/dx12Tool.h"
 
 using namespace std;
 
@@ -18,6 +19,8 @@ RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
 	auto& texLoader = dx12_.GetTexLoader();
 	cameraScreenH_	= texLoader.MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
 	lightScreenH_	= texLoader.MakeScreen(D3D_LIGHT_VIEW_SCREEN, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+
+	CreateRenderTargetHeap();
 }
 
 RendererManager::~RendererManager()
@@ -58,5 +61,38 @@ void RendererManager::Draw()
 	for (auto& renderer : renderers_)
 	{
 		renderer->Draw();
+	}
+}
+
+void RendererManager::CreateRenderTargetHeap()
+{
+	auto& dev = dx12_.GetDevice();
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+	heapDesc.NodeMask = 0;
+	heapDesc.NumDescriptors = Uint32(RenderTargetType::max);
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	H_ASSERT(dev.CreateDescriptorHeap(&heapDesc,
+		IID_PPV_ARGS(renderTargetHeap_.ReleaseAndGetAddressOf())));
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
+	auto& texLoader = dx12_.GetTexLoader();
+	wstring multiRenderingNames[] = {D3D_CAMERA_MR_COLOR, D3D_CAMERA_MR_NORMAL, D3D_CAMERA_MR_BRIGHT};
+
+	auto wsize = Application::Instance().GetWindowSize();
+	auto incSize = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	auto cpuHandle = renderTargetHeap_->GetCPUDescriptorHandleForHeapStart();
+	for (int i = 0; auto& name : multiRenderingNames)
+	{
+		rendetTargetHandles_[i] = texLoader.MakeScreen(name, wsize.w, wsize.h);
+		TextureResorce texRes;
+		texLoader.GetTextureResouse(name, texRes);
+		rtvDesc.Format = texRes.resource.buffer->GetDesc().Format;
+		dev.CreateRenderTargetView(texRes.resource.buffer.Get(), &rtvDesc, cpuHandle);
+		cpuHandle.ptr += incSize;
+		i++;
 	}
 }

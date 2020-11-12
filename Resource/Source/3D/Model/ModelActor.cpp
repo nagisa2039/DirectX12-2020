@@ -494,7 +494,7 @@ bool ModelActor::CreateConstanteBuffers()
 	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
 
 	// 座標のヒープ作成
-	CreateDescriptorHeap(&dev, worldHeap_, 2);
+	CreateDescriptorHeap(&dev, worldHeap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
 
 	// 定数バッファビューの作成
 	D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = {};
