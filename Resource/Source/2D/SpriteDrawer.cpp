@@ -309,7 +309,7 @@ void SpriteDrawer::GetDefaultPipelineStateDesc(const std::vector<D3D12_INPUT_ELE
 	gpsd.pRootSignature = rootSignature_.Get();
 	gpsd.InputLayout.pInputElementDescs = ied.data();
 	// ”z—ñ‚Ì—v‘f”‚ðŠi”[
-	gpsd.InputLayout.NumElements = ied.size();
+	gpsd.InputLayout.NumElements = Uint32(ied.size());
 
 	// ƒVƒF[ƒ_Œn
 	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader_.Get());

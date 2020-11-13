@@ -110,7 +110,7 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
 	// レンダーターゲット
-	for (int i = 0; i < gpsd.NumRenderTargets; ++i)
+	for (UINT i = 0; i < gpsd.NumRenderTargets; ++i)
 	{
 		gpsd.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 	}

@@ -41,11 +41,11 @@ namespace
 	{
 		std::wstring wstr;
 		auto wsize = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS, 
-			str.c_str(), str.length(), nullptr, 0);
+			str.c_str(), Uint32(str.length()), nullptr, 0);
 
 		wstr.resize(wsize);
 		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED | MB_ERR_INVALID_CHARS,
-			str.c_str(), str.length(), wstr.data(), wstr.length());
+			str.c_str(), Uint32(str.length()), wstr.data(), Uint32(wstr.length()));
 
 		return wstr;
 	}

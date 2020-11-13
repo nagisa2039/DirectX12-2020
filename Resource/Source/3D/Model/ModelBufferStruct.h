@@ -1,6 +1,5 @@
-#pragma once
-
 #ifdef __cplusplus
+#pragma once
 #include <DirectXMath.h>
 using float4 = DirectX::XMFLOAT4;
 using uint = uint32_t;

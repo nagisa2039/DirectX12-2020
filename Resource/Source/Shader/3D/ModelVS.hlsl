@@ -14,7 +14,12 @@ cbuffer bones : register(b2)
 
 matrix GetTransform(const int4 boneno, const float4 weight)
 {
-	matrix mixMat = boneMats[boneno.x] * weight.x
+	matrix a;
+	matrix b;
+	matrix v = a + b * boneMats[boneno.x];
+	
+	matrix mixMat = 
+		  boneMats[boneno.x] * weight.x
 		+ boneMats[boneno.y] * weight.y
 		+ boneMats[boneno.z] * weight.z
 		+ boneMats[boneno.w] * weight.w;

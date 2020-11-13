@@ -652,6 +652,7 @@ bool TexLoader::CreateDepthBuffer()
 			assert(false);
 			return false;
 		}
+		return true;
 	};
 
 	// 深度バッファの作成

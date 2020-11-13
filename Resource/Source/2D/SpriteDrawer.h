@@ -65,7 +65,7 @@ private:
 	struct PixelInf
 	{
 		unsigned int texIndex = 0;
-		DirectX::XMFLOAT3 bright;
+		DirectX::XMFLOAT3 bright = {};
 		float alpha = 1.0f;
 	};
 
@@ -77,8 +77,8 @@ private:
 
 	struct DrawImage
 	{
-		VerticesInf verticesInf;
-		PixelInf pixelInf;
+		VerticesInf verticesInf = {};
+		PixelInf pixelInf = {};
 	};
 
 	Resource vertResource_;

@@ -55,7 +55,11 @@ float4 PS(Output input):SV_TARGET
     float w, h, level;
     tex[pinf.texIndex].GetDimensions(0, w, h, level);
 	
-    float divide = 1.0f;
+	float time = utility[0].time;
+    
+	float max = 6.0f;
+	float min = 1.0f;
+	float divide = 3.0f;
     float2 uv = fmod(input.uv, 1.0f / divide) * divide;
     float4 texColor = tex[pinf.texIndex].Sample(smp, uv);
     
@@ -63,7 +67,7 @@ float4 PS(Output input):SV_TARGET
     float2 debugTexUV = input.uv * (1.0f / scale);
     if (input.uv.x < scale && input.uv.y < scale)
     {
-        float d = 1.0f - depthTex[0].Sample(smp, debugTexUV);
+		float d = 1.0f - pow(depthTex[0].Sample(smp, debugTexUV), 100.0f);
         return float4(d, d, d, 1.0f);
     }
     if (input.uv.x < scale && input.uv.y < scale * 2.0f)
@@ -74,7 +78,6 @@ float4 PS(Output input):SV_TARGET
     
     if (texColor.a <= 0.0)
 	{
-		float time = utility[0].time;
 		float move = time * 10.0f;
 		float cMove = 10.0f * time * 3.1415926535f / 180.0f;
 		float2 offset = float2(cos(cMove), sin(cMove));
@@ -113,7 +116,7 @@ float4 PS(Output input):SV_TARGET
         }
         
 		float b = 1.0f - saturate(length(uvpos - offset) / 2.0f);
-        return float4(b, b, b, 1);
+        return float4(b/3.0f, b*2.0f/3.0f, b, 1);
     }
 	
     return float4(texColor.rgb * pinf.bright, texColor.a * pinf.alpha);
