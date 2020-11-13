@@ -44,7 +44,7 @@
     <ClInclude Include="Resource\Source\Scene\SceneController.h" />
     <ClInclude Include="Resource\Source\System\Application.h" />
     <ClInclude Include="Resource\Source\System\Command.h" />
-    <ClInclude Include="Resource\Source\System\SpriteDrawer.h" />
+    <ClInclude Include="Resource\Source\2D\SpriteDrawer.h" />
     <ClInclude Include="Resource\Source\System\Dx12Wrapper.h" />
     <ClInclude Include="Resource\Source\System\FPSManager.h" />
     <ClInclude Include="Resource\Source\System\TexLoader.h" />
@@ -55,6 +55,7 @@
     <ClInclude Include="Resource\Source\Utility\TextureStruct.h" />
     <ClInclude Include="Resource\Source\System\SoundManager.h" />
     <ClInclude Include="Resource\Source\System\ShaderLoader.h" />
+    <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\3D\Camera.cpp" />
@@ -75,7 +76,7 @@
     <ClCompile Include="Resource\Source\Scene\SceneController.cpp" />
     <ClCompile Include="Resource\Source\System\Application.cpp" />
     <ClCompile Include="Resource\Source\System\Command.cpp" />
-    <ClCompile Include="Resource\Source\System\SpriteDrawer.cpp" />
+    <ClCompile Include="Resource\Source\2D\SpriteDrawer.cpp" />
     <ClCompile Include="Resource\Source\System\Dx12Wrapper.cpp" />
     <ClCompile Include="Resource\Source\System\FPSManager.cpp" />
     <ClCompile Include="Resource\Source\System\main.cpp" />

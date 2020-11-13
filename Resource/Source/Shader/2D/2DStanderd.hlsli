@@ -1,19 +1,22 @@
+#include "../../Utility/UtilityShaderStruct.h"
+
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 1, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 2, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = 2,space = 3, flags = DESCRIPTORS_VOLATILE)),"\
+                          "DescriptorTable(SRV(t0,numDescriptors = 1,space = 4, flags = DESCRIPTORS_VOLATILE)),"\
                           "StaticSampler(s0 ,"\
                                              "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                              "addressU = TEXTURE_ADDRESS_WRAP,"\
                                              "addressV = TEXTURE_ADDRESS_WRAP,"\
                                              "addressW = TEXTURE_ADDRESS_WRAP)"
 
-// テクスチャ配列
-// 頂点情報配列
-// Pixel情報配列
-// カメラ深度
-// ライト深度
+// 0,テクスチャ配列
+// 1,頂点情報配列
+// 2,Pixel情報配列
+// 3,深度
+// 4,utility定数
 
 struct Output
 {
@@ -44,3 +47,5 @@ struct PixcelInf
 StructuredBuffer<PixcelInf> pixcelInf : register(t0, space2);
 
 Texture2D<float> depthTex[2]      : register(t0, space3);
+
+StructuredBuffer<Utility> utility : register(t0, space4);

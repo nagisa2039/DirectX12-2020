@@ -8,7 +8,7 @@
 #include "VMDMotion.h"
 #include "System/Application.h"
 #include "System/TexLoader.h"
-#include "System/SpriteDrawer.h"
+#include "2D/SpriteDrawer.h"
 #include "Utility/Constant.h"
 #include "Utility/dx12Tool.h"
 #include "System/ShaderLoader.h"

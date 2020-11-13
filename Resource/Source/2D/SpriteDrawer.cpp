@@ -1,9 +1,9 @@
 #include "SpriteDrawer.h"
-#include "Application.h"
-#include "Command.h"
-#include "TexLoader.h"
+#include "System/Application.h"
+#include "System/Command.h"
+#include "System/TexLoader.h"
 #include "Utility/dx12Tool.h"
-#include "Command.h"
+#include "System/Command.h"
 #include "System/Dx12Wrapper.h"
 #include "Utility/Cast.h"
 #include "System/ShaderLoader.h"
@@ -39,6 +39,9 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 	const int pixelInfStructSize = sizeof(PixelInf);
 	CreateStructuredBuffer(&dev, pixelInfSB_.mappedPixelInf,
 		pixelInfSB_.resource.buffer, pixelInfHeap_, pixelInfStructSize, imageMax);
+
+	CreateStructuredBuffer(&dev, utility_.mapped, 
+		utility_.resource.buffer, utilityHeap_, sizeof(*utility_.mapped), 1);
 
 	drawImages_.clear();
 }
@@ -149,7 +152,7 @@ void SpriteDrawer::CreateVertextBuffer()
 	CreateUploadResource(&dx12_.GetDevice(), vertResource_, size);
 
 	Vertex_t* vertMap = nullptr;
-	Map(vertMap, vertResource_, begin(vertices), end(vertices));
+	MapAndCopy(vertMap, vertResource_, begin(vertices), end(vertices));
 
 	vbView_.BufferLocation = vertResource_.buffer->GetGPUVirtualAddress();
 	vbView_.StrideInBytes = Uint32(size / _countof(vertices));
@@ -164,7 +167,7 @@ void SpriteDrawer::CreateIndexBuffer()
 	CreateUploadResource(&dx12_.GetDevice(), indexResource_, size);
 
 	uint16_t* indexMap = nullptr;
-	Map(indexMap, indexResource_, indices.begin(), indices.end());
+	MapAndCopy(indexMap, indexResource_, indices.begin(), indices.end());
 
 	ibView_.BufferLocation = indexResource_.buffer->GetGPUVirtualAddress();
 	ibView_.SizeInBytes = Uint32(size);
@@ -224,6 +227,9 @@ void SpriteDrawer::End()
 	auto& texLoader = dx12_.GetTexLoader();
 	auto& texHeap = texLoader.GetTextureHeap();
 
+	// 時間定数の更新
+	utility_.mapped->time = GetTickCount64() / 1000.0f;
+
 	// 描画
 	for (size_t i = 0; const auto & drawGroup : drawGroups_)
 	{
@@ -257,6 +263,10 @@ void SpriteDrawer::End()
 
 		// 深度テクスチャのセット
 		texLoader.SetDepthTexDescriptorHeap(3, TexLoader::DepthType::camera);
+
+		// 定数
+		cmdList.SetDescriptorHeaps(1, utilityHeap_.GetAddressOf());
+		cmdList.SetGraphicsRootDescriptorTable(4, utilityHeap_->GetGPUDescriptorHandleForHeapStart());
 
 		cmdList.DrawIndexedInstanced(6, drawGroup.num, 0, 0, 0);
 

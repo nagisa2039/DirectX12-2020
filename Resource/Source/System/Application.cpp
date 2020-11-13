@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "Dx12Wrapper.h"
 #include "TexLoader.h"
-#include "SpriteDrawer.h"
+#include "2D/SpriteDrawer.h"
 #include "FPSManager.h"
 #include "Scene/SceneController.h"
 #include "Utility/Input.h"

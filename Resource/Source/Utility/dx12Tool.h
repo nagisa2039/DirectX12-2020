@@ -58,14 +58,28 @@ namespace
 	/// リソースのマップを行う
 	/// </summary>
 	/// <typeparam name="T">マップを行う型</typeparam>
+	/// <param name="mapped"></param>
+	/// <param name="resource"></param>
+	template<typename T>
+	void Map(T* mapped, Resource& resource)
+	{
+		H_ASSERT(resource.buffer->Map(0, nullptr, (void**)&mapped));
+	}
+
+	/// <summary>
+	/// リソースのマップとコピーを行う
+	/// </summary>
+	/// <typeparam name="T">マップを行う型</typeparam>
 	/// <typeparam name="InputIterator">コピー範囲のIterator</typeparam>
+	/// <param name="mapped">マップの対象</param>
 	/// <param name="resource">マップするリソース</param>
 	/// <param name="begin">コピー範囲の最初</param>
 	/// <param name="end">コピー範囲の最後</param>
 	/// <param name="ummap">終了時にummapを行うか</param>
 	template<typename T, typename InputIterator>
-	void Map(T* mapped, Resource& resource, InputIterator begin, InputIterator end, bool ummap = true)
+	void MapAndCopy(T* mapped, Resource& resource, InputIterator begin, InputIterator end, bool ummap = true)
 	{
+		Map(mapped, resource);
 		H_ASSERT(resource.buffer->Map(0, nullptr, (void**)&mapped));
 		std::copy(begin, end, mapped);
 
@@ -74,6 +88,7 @@ namespace
 			resource.buffer->Unmap(0, nullptr);
 		}
 	}
+
 
 	/// <summary>
 	/// DescriptorHeapの作成

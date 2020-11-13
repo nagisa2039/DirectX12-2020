@@ -1,7 +1,7 @@
 #include "Animator.h"
 #include "Utility/Cast.h"
 #include "System/Application.h"
-#include "System/SpriteDrawer.h"
+#include "2D/SpriteDrawer.h"
 #include "System/Dx12Wrapper.h"
 #include "System/TexLoader.h"
 #include <sstream>

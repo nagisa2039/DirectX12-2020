@@ -7,6 +7,7 @@
 #include "Utility/DirectXStruct.h"
 #include <DirectXTex.h>
 #include <unordered_map>
+#include "Utility/UtilityShaderStruct.h"
 
 class Dx12Wrapper;
 
@@ -116,6 +117,16 @@ private:
 	/// 自作ピクセルシェーダーごとのパイプラインマップ
 	/// </summary>
 	std::unordered_map<std::wstring, ComPtr<ID3D12PipelineState>> pipelineStateMap_;
+
+	struct UtilityResource
+	{
+		Resource resource;
+		Utility* mapped = nullptr;
+	};
+
+	// シェーダーに送る定数
+	UtilityResource utility_;
+	ComPtr<ID3D12DescriptorHeap> utilityHeap_ = nullptr;
 
 	void CreatePiplineState();
 	void CreateRootSignature();

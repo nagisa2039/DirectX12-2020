@@ -5,7 +5,7 @@
 #include "3D/RendererManager.h"
 #include "System/Dx12Wrapper.h"
 #include "System/TexLoader.h"
-#include "System/SpriteDrawer.h"
+#include "2D/SpriteDrawer.h"
 #include "Utility/Constant.h"
 #include "System/SoundManager.h"
 #include "Utility/Input.h"
