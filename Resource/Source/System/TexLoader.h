@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <map>
 #include <array>
+#include <list>
 #include "Utility/TextureStruct.h"
 
 struct IDXGISwapChain4;
@@ -33,11 +34,21 @@ public:
 
 	void ClsDrawScreen();
 	void SetDrawScreen(const int screenH, const DepthType depth = DepthType::max);
+	void SetDrawScreen(const std::list<int>& screenHList, const DepthType depth = DepthType::max);
 	void ScreenFlip(IDXGISwapChain4& swapChain);
 
 	int MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height);
 
+	/// <summary>
+	/// 現在設定されているレンダーターゲットの一つ目のハンドルを返す
+	/// </summary>
 	int GetCurrentRenderTarget()const;
+
+	/// <summary>
+	/// 現在設定されているレンダーターゲットの配列取得
+	/// </summary>
+	std::list<int> GetCurrentRendetTargeAll()const;
+
 	bool GetGraphSize(const int graphH, unsigned int& width, unsigned int& height)const;
 	bool GetScreenSize(unsigned int& width, unsigned int& height)const;
 
@@ -67,7 +78,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> texHeap_ = nullptr;
 	ComPtr<ID3D12DescriptorHeap> rtvHeap_ = nullptr;
 
-	int renderTergetHandle_;
+	std::list<int> renderTergetHandleList_;
 
 	std::array<TextureResorce, static_cast<size_t>(DepthType::max)> depthTexResources_;
 	DepthType currentDepthType_;

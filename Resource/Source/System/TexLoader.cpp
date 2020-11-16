@@ -3,6 +3,7 @@
 #include <cassert>
 #include <dxgi1_6.h>
 #include <algorithm>
+#include <vector>
 #include "Command.h"
 #include "Application.h"
 #include "Utility/dx12Tool.h"
@@ -20,6 +21,9 @@ namespace
 TexLoader::TexLoader(ID3D12Device& dev, Command& cmd, IDXGISwapChain4& swapChain)
 	: dev_(dev), cmd_(cmd)
 {
+	renderTergetHandleList_.clear();
+	currentDepthType_ = DepthType::max;
+
 	Init();
 	CreateSwapChainBuffer(swapChain);
 	CreateDummyTextures();
@@ -471,12 +475,14 @@ bool TexLoader::CreateSwapChainBuffer(IDXGISwapChain4& swapChain)
 
 void TexLoader::ClsDrawScreen()
 {
-	assert(renderTergetHandle_ >= 0 && renderTergetHandle_ < texResources_.size());
-
 	auto& commandList = cmd_.CommandList();
-
 	float clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	commandList.ClearRenderTargetView(texResources_[renderTergetHandle_].cpuHandleForRtv, clearColor, 0, nullptr);
+
+	for (const auto handle : renderTergetHandleList_)
+	{
+		assert(handle >= 0 && handle < texResources_.size());
+		commandList.ClearRenderTargetView(texResources_[handle].cpuHandleForRtv, clearColor, 0, nullptr);
+	}
 
 	// 深度バッファを初期化
 	if (currentDepthType_ != DepthType::max)
@@ -489,19 +495,29 @@ void TexLoader::ClsDrawScreen()
 
 void TexLoader::SetDrawScreen(const int screenH, const DepthType depth)
 {
-	if (renderTergetHandle_ >= 0)
+	std::list<int> renderTargetList;
+	renderTargetList.emplace_back(screenH);
+	SetDrawScreen(renderTargetList, depth);
+}
+
+void TexLoader::SetDrawScreen(const std::list<int>& screenHList, const DepthType depth)
+{
+	for (const auto& oldHandle : renderTergetHandleList_)
 	{
-		// 今までのレンダーターゲットのステートをPIXEL_SHADER_RESOURCEにする
-		texResources_[renderTergetHandle_].resource.
-			Barrier(cmd_, renderTergetHandle_ >= 2 ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
-		
-		if (currentDepthType_ != DepthType::max)
+		if (oldHandle >= 0)
 		{
-			depthTexResources_[Uint64(currentDepthType_)].resource.
-				Barrier(cmd_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			// 今までのレンダーターゲットのステートをPIXEL_SHADER_RESOURCEにする
+			texResources_[oldHandle].resource.
+				Barrier(cmd_, oldHandle >= 2 ?
+					D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_PRESENT);
 		}
 	}
 
+	if (currentDepthType_ != DepthType::max)
+	{
+		depthTexResources_[Uint64(currentDepthType_)].resource.
+			Barrier(cmd_, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
 	D3D12_CPU_DESCRIPTOR_HANDLE* depthH = nullptr;
 	if (depth != DepthType::max)
 	{
@@ -512,14 +528,20 @@ void TexLoader::SetDrawScreen(const int screenH, const DepthType depth)
 	currentDepthType_ = depth;
 
 	// セットするレンダーターゲットのステートをRENDER_TARGEにする
-	texResources_[screenH].resource.Barrier(cmd_, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	cmd_.CommandList().OMSetRenderTargets(1, &texResources_[screenH].cpuHandleForRtv, false, depthH);
-	renderTergetHandle_ = screenH;
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rendetTargetCPUHandles(screenHList.size());
+	for (int i = 0; const auto& handle : screenHList)
+	{
+		texResources_[handle].resource.Barrier(cmd_, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		rendetTargetCPUHandles[i] = texResources_[handle].cpuHandleForRtv;
+		i++;
+	}
+	cmd_.CommandList().OMSetRenderTargets(screenHList.size(), rendetTargetCPUHandles.data(), false, depthH);
+	renderTergetHandleList_ = screenHList;
 }
 
 void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 {
-	if (renderTergetHandle_ >= 2)
+	if (renderTergetHandleList_.size() != 1 || renderTergetHandleList_.front() >= 2)
 	{
 #ifdef _DEBUG
 		OutputDebugString("BackScreenがレンダーターゲットに設定されていません\n");
@@ -529,7 +551,7 @@ void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 	}
 
 	// レンダーターゲットをプレゼント用にバリアを張る
-	auto& texRes = GetTextureResouse(renderTergetHandle_);
+	auto& texRes = GetTextureResouse(renderTergetHandleList_.front());
 	assert(texRes.resource.state == D3D12_RESOURCE_STATE_RENDER_TARGET);
 	texRes.resource.Barrier(cmd_, D3D12_RESOURCE_STATE_PRESENT);
 
@@ -537,7 +559,6 @@ void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 
 	// 裏画面と表画面の切り替え
 	swapChain.Present(1, 0);
-
 }
 
 int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height)
@@ -549,7 +570,12 @@ int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, co
 
 int TexLoader::GetCurrentRenderTarget() const
 {
-	return renderTergetHandle_;
+	return renderTergetHandleList_.front();
+}
+
+std::list<int> TexLoader::GetCurrentRendetTargeAll() const
+{
+	return renderTergetHandleList_;
 }
 
 bool TexLoader::GetGraphSize(const int graphH, unsigned int& width, unsigned int& height)const

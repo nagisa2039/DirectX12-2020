@@ -8,9 +8,9 @@
                           "DescriptorTable(SRV(t0,numDescriptors = 1,space = 4, flags = DESCRIPTORS_VOLATILE)),"\
                           "StaticSampler(s0 ,"\
                                              "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
-                                             "addressU = TEXTURE_ADDRESS_WRAP,"\
-                                             "addressV = TEXTURE_ADDRESS_WRAP,"\
-                                             "addressW = TEXTURE_ADDRESS_WRAP)"
+                                             "addressU = TEXTURE_ADDRESS_CLAMP,"\
+                                             "addressV = TEXTURE_ADDRESS_CLAMP,"\
+                                             "addressW = TEXTURE_ADDRESS_CLAMP)"
 
 // 0,テクスチャ配列
 // 1,頂点情報配列
