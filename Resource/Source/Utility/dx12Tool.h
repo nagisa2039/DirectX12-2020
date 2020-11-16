@@ -175,17 +175,19 @@ namespace
 	/// <param name="elements">送る構造体配列</param>
 	template<class T>
 	void CreateStructuredBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const std::vector<T>& elements)
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const std::vector<T>& elements, T* mapped, const bool unmap)
 	{
+		mapped = nullptr;
 		const UINT elementNum = Uint32(elements.size());
 		assert(elementNum > 0);
 		const UINT elementSize = sizeof(elements[0]);
-
 		CreateUploadBuffer(dev, buff, Uint64(elementSize) * elementNum, false);
-		T* mapped = nullptr;
 		H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
 		std::copy(elements.begin(), elements.end(), mapped);
-		buff->Unmap(0, nullptr);
+		if (unmap)
+		{
+			buff->Unmap(0, nullptr);
+		}
 		// デスクリプタヒープの作成
 		CreateDescriptorHeap(dev, heap);
 

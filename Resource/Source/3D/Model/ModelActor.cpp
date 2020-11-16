@@ -449,11 +449,13 @@ bool ModelActor::CreateMaterial()
 		j++;
 	}
 
-	CreateStructuredBuffer(&dev, materialBuffer_, materialHeap_, mats_);
+	MaterialStruct* ms = nullptr;
+	CreateStructuredBuffer(&dev, materialBuffer_, materialHeap_, mats_, ms, true);
 
 	// マテリアルインデックス
 	auto& materialIndexData = modelData_->GetMaterialIndexData();
-	CreateStructuredBuffer(&dev, materialIndexBuffer_, materialIndexHeap_, materialIndexData);
+	MaterialIndex* mi = nullptr;
+	CreateStructuredBuffer(&dev, materialIndexBuffer_, materialIndexHeap_, materialIndexData, mi, true);
 
 	return true;
 }

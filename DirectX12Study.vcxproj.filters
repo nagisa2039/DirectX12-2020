@@ -183,6 +183,12 @@
     <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\2D\ModelEndRendering.h">
+      <Filter>ヘッダー ファイル\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\2D\Material.h">
+      <Filter>ヘッダー ファイル\2D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -267,6 +273,12 @@
       <Filter>ソース ファイル\3D</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\2D\SpriteDrawer.cpp">
+      <Filter>ソース ファイル\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\2D\ModelEndRendering.cpp">
+      <Filter>ソース ファイル\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\2D\Material.cpp">
       <Filter>ソース ファイル\2D</Filter>
     </ClCompile>
   </ItemGroup>

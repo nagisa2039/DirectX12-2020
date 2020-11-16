@@ -55,16 +55,30 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
 	// レンダーターゲット
-	gpsd.NumRenderTargets = 1;
+	gpsd.NumRenderTargets = 3;
+	// レンダーターゲット数
 	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//gpsd.RTVFormats[1] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//gpsd.RTVFormats[2] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
+	gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	gpsd.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	gpsd.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	gpsd.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+	gpsd.BlendState.RenderTarget[0].LogicOpEnable = false;
+	gpsd.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	gpsd.DepthStencilState.DepthEnable = true;
 	gpsd.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	gpsd.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	gpsd.DepthStencilState.StencilEnable = false;
 	gpsd.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+
+	for (int i = 1; i < gpsd.NumRenderTargets; ++i)
+	{
+		gpsd.RTVFormats[i] = gpsd.RTVFormats[0];
+		gpsd.BlendState.RenderTarget[i] = gpsd.BlendState.RenderTarget[0];
+	}
 
 	// ラスタライザ
 	gpsd.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -75,16 +89,6 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.BlendState.AlphaToCoverageEnable = false;
 	gpsd.BlendState.IndependentBlendEnable = false;
 
-	// レンダーターゲット数
-	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
-	gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	gpsd.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	gpsd.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	gpsd.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	gpsd.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	gpsd.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
-	gpsd.BlendState.RenderTarget[0].LogicOpEnable = false;
-	gpsd.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	//その他
 	gpsd.NodeMask = 0;

@@ -39,57 +39,46 @@ cbuffer Setting : register(b3)
 	uint debug;
 };
 
-struct PixelOutPut
-{
-	float4 col : SV_TARGET; //カラー値を出力
-	//float4 normal : SV_TARGET1; //法線を出力
-	//float4 bright : SV_TARGET2; // 輝度出力
-};
-
 //ピクセルシェーダ
 [RootSignature(RS)]
-PixelOutPut PS(Out input, uint primitiveID : SV_PrimitiveID)
+PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 {
-	PixelOutPut po;
-	uint matIdx = (uint)materialIndexs[primitiveID].index;
-    MaterialStruct mat = matInfs[matIdx];
+	PixelOut po;
+	uint matIdx = (uint) materialIndexs[primitiveID].index;
+	MaterialStruct mat = matInfs[matIdx];
 	
 	//return float4(input.normal.xyz,1);
 	// 光源ベクトルの反射ベクトル
-    float3 lightDirNormal = normalize( /*light_dir*/float3(1.0f, -1.0f, 1.0f));
-    float3 rLight = reflect(lightDirNormal, input.normal.rgb);
+	float3 lightDirNormal = normalize( /*light_dir*/float3(1.0f, -1.0f, 1.0f));
+	float3 rLight = reflect(lightDirNormal, input.normal.rgb);
 
 	// 視線ベクトル
-    float3 eyeRay = normalize(input.pos.rgb - eye);
+	float3 eyeRay = normalize(input.pos.rgb - eye);
 	// 光源ベクトルの反射ベクトル
-    float3 rEye = reflect(eyeRay, input.normal.xyz);
+	float3 rEye = reflect(eyeRay, input.normal.xyz);
 
-    float2 sphUV = (input.normal.xy * float2(1.0f, -1.0f) + float2(1.0f, 1.0f)) / 2.0f;
-    float2 normalUV = (input.normal.xy + float2(1, -1)) * float2(0.5, -0.5);
+	float2 sphUV = (input.normal.xy * float2(1.0f, -1.0f) + float2(1.0f, 1.0f)) / 2.0f;
+	float2 normalUV = (input.normal.xy + float2(1, -1)) * float2(0.5, -0.5);
 
 	// スペキュラ
-    float specB = saturate(dot(rLight, -eyeRay));
-    if (specB > 0 && mat.power > 0)
-    {
-        specB = pow(specB, mat.power);
-    }
+	float specB = saturate(dot(rLight, -eyeRay));
+	if (specB > 0 && mat.power > 0)
+	{
+		specB = pow(specB, mat.power);
+	}
 
-    float bright = saturate(dot(input.normal.xyz, -lightDirNormal));
-    float4 toonColor = float4(tex[mat.toonIdx].Sample(toomSmp, float2(0, 1.0 - bright)).rgb, 1.0f);
+	float bright = saturate(dot(input.normal.xyz, -lightDirNormal));
+	float4 toonColor = float4(tex[mat.toonIdx].Sample(toomSmp, float2(0, 1.0 - bright)).rgb, 1.0f);
 
-    float4 texColor = tex[mat.texIdx].Sample(smp, input.uv);
+	float4 texColor = tex[mat.texIdx].Sample(smp, input.uv);
 	
-    float4 sphColor = tex[mat.sphIdx].Sample(smp, sphUV);
-    float4 spaColor = tex[mat.spaIdx].Sample(smp, sphUV);
+	float4 sphColor = tex[mat.sphIdx].Sample(smp, sphUV);
+	float4 spaColor = tex[mat.spaIdx].Sample(smp, sphUV);
 
-    float4 specColor = float4((mat.specular * specB).rgb, 0);
-    float4 ambientColor = float4((mat.ambient * 0.005f).rgb, 0);
+	float4 specColor = float4((mat.specular * specB).rgb, 0);
+	float4 ambientColor = float4((mat.ambient * 0.005f).rgb, 0);
 	float4 ret = mat.diffuse * texColor * toonColor * sphColor + specColor + spaColor + ambientColor;
 	
-    po.col = ret;
-    return po;
-
-
 	float shadowWeight = 1.0f;
 	float3 posFromLight = input.tpos.xyz / input.tpos.w;
 	float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
@@ -105,19 +94,19 @@ PixelOutPut PS(Out input, uint primitiveID : SV_PrimitiveID)
 
 	ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, ret.a);
 	
-	po.col = ret;
+	po.color = ret;
 
-	//po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
-	//po.normal.a = input.normal.a = 1;
+	po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
+	po.normal.a = input.normal.a = 1;
 
-	//po.bright = float4(0, 0, 0, 1);
-	//float b = dot(po.col.rgb, float3(0.3f, 0.6, 0.1f)) > 0.9f ? 1.0f : 0.0f;
-	//{
-	//	po.bright = float4(b, b, b, 1);
-	//}
+	po.bright = float4(0, 0, 0, 1);
+	float b = step(dot(po.color.rgb, float3(0.3f, 0.4f, 0.3f)), 0.9f);
+	{
+		po.bright = float4(b, b, b, 1);
+	}
 
 	return po;
-	}
+}
 
 //ピクセルシェーダ
 float4 ShadowPS(float4 pos : SV_POSITION) : SV_TARGET

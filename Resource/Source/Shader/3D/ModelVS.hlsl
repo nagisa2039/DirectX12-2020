@@ -29,10 +29,10 @@ matrix GetTransform(const int4 boneno, const float4 weight)
 
 //頂点シェーダ
 [RootSignature(RS)]
-Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
+VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
 	int4 boneno : BONENO, float4 weight : WEIGHT, uint instanceID : SV_InstanceID)
 {
-	Out o;
+	VertexOut o;
 	
 	matrix transform = GetTransform(boneno, weight);
 

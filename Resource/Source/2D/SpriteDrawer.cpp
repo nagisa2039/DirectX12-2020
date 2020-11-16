@@ -44,6 +44,8 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 		utility_.resource.buffer, utilityHeap_, sizeof(*utility_.mapped), 1);
 
 	drawImages_.clear();
+
+	SetDrawBlendMode(BlendMode::noblend, 255);
 }
 
 SpriteDrawer::~SpriteDrawer()

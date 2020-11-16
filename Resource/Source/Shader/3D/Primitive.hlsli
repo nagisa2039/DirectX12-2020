@@ -20,7 +20,7 @@
 // 2 深度テクスチャ
 // 3 テクスチャ
 
-struct Out
+struct VertexOut
 {
 	float4 svpos : SV_POSITION; // Pipelineに投げるためにはSV_POSITIONが必要	カメラからの座標
 	float4 pos : POSITION; // ワールド座標
@@ -37,4 +37,12 @@ cbuffer transBuffer : register(b0)
 	matrix lightCamera;
 	matrix shadow;
 	float3 eye; // 視点
+};
+
+// Pixel出力
+struct PixelOut
+{
+	float4 color : SV_Target0; //カラー値を出力
+	float4 normal : SV_Target1; //法線を出力
+	float4 bright : SV_Target2; // 輝度出力
 };

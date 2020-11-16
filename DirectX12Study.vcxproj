@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\2D\ModelEndRendering.h" />
     <ClInclude Include="Resource\Source\3D\Camera.h" />
     <ClInclude Include="Resource\Source\3D\RendererManager.h" />
     <ClInclude Include="Resource\Source\3D\Renderer.h" />
@@ -56,8 +57,10 @@
     <ClInclude Include="Resource\Source\System\SoundManager.h" />
     <ClInclude Include="Resource\Source\System\ShaderLoader.h" />
     <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h" />
+    <ClInclude Include="Resource\Source\2D\Material.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resource\Source\2D\ModelEndRendering.cpp" />
     <ClCompile Include="Resource\Source\3D\Camera.cpp" />
     <ClCompile Include="Resource\Source\3D\RendererManager.cpp" />
     <ClCompile Include="Resource\Source\Game\Animator.cpp" />
@@ -86,6 +89,7 @@
     <ClCompile Include="Resource\Source\Utility\Geometry.cpp" />
     <ClCompile Include="Resource\Source\Utility\Input.cpp" />
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp" />
+    <ClCompile Include="Resource\Source\2D\Material.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\2D\PostEffect.hlsl">

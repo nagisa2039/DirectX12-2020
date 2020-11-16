@@ -78,9 +78,6 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
 	gpsd.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 
-	// レンダーターゲット
-	gpsd.NumRenderTargets = 1;
-	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	gpsd.DepthStencilState.DepthEnable = true;
 	gpsd.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
@@ -97,7 +94,9 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.BlendState.AlphaToCoverageEnable = false;
 	gpsd.BlendState.IndependentBlendEnable = false;
 
-	// レンダーターゲット数
+	// レンダーターゲット
+	gpsd.NumRenderTargets = 3;
+	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	gpsd.BlendState.RenderTarget[0].BlendEnable = true;
 	gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	gpsd.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -107,8 +106,12 @@ bool ModelRenderer::CreateModelPL()
 	gpsd.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
 	gpsd.BlendState.RenderTarget[0].LogicOpEnable = false;
 	gpsd.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	//gpsd.BlendState.RenderTarget[1] = gpsd.BlendState.RenderTarget[0];
-	//gpsd.BlendState.RenderTarget[2] = gpsd.BlendState.RenderTarget[0];
+
+	for (int i = 1; i < gpsd.NumRenderTargets; ++i)
+	{
+		gpsd.RTVFormats[i] = gpsd.RTVFormats[0];
+		gpsd.BlendState.RenderTarget[i] = gpsd.BlendState.RenderTarget[0];
+	}
 
 	//その他
 	gpsd.NodeMask = 0;

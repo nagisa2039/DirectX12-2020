@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include <d3d12.h>
+#include <list>
 #include "Utility/ComPtr.h"
 
 class Renderer;
@@ -33,7 +34,7 @@ private:
 	int lightScreenH_;
 
 	ComPtr<ID3D12DescriptorHeap> renderTargetHeap_;
-	std::array<int, static_cast<uint64_t>(RenderTargetType::max)>rendetTargetHandles_;
+	std::array<int, static_cast<uint64_t>(RenderTargetType::max)> rendetTargetHandles_;
 
 	void CreateRenderTargetHeap();
 };

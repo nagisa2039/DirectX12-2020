@@ -6,9 +6,9 @@ cbuffer worldBuffer : register(b1)
 };
 
 [RootSignature(RS)]
-Out VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD)
+VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD)
 {
-	Out o;
+	VertexOut o;
 	pos = mul(world, pos);
 	matrix camera = mul(proj, view);
 	o.svpos = mul(camera, pos);

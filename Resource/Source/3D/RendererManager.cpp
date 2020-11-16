@@ -7,6 +7,7 @@
 #include "System/Application.h"
 #include "3D/Camera.h"
 #include "Utility/dx12Tool.h"
+#include "2D/SpriteDrawer.h"
 
 using namespace std;
 
@@ -17,7 +18,15 @@ RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
 
 	auto wsize = Application::Instance().GetWindowSize();
 	auto& texLoader = dx12_.GetTexLoader();
-	cameraScreenH_	= texLoader.MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
+
+	wstring screenNames[] = { D3D_CAMERA_MR_COLOR, D3D_CAMERA_MR_NORMAL , D3D_CAMERA_MR_BRIGHT };
+
+	for (int i = 0; auto rtH : rendetTargetHandles_)
+	{
+		rtH = texLoader.MakeScreen(screenNames[i], wsize.w, wsize.h);
+	}
+
+	cameraScreenH_ = texLoader.MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
 	lightScreenH_	= texLoader.MakeScreen(D3D_LIGHT_VIEW_SCREEN, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
 
 	CreateRenderTargetHeap();
@@ -53,7 +62,12 @@ void RendererManager::Draw()
 		renderer->DrawShadow();
 	}
 
-	texLoader.SetDrawScreen(cameraScreenH_, TexLoader::DepthType::camera);
+	std::list<int> rtList;
+	for (auto rtHandle : rendetTargetHandles_)
+	{
+		rtList.emplace_back(rtHandle);
+	}
+	texLoader.SetDrawScreen(rtList, TexLoader::DepthType::camera);
 	texLoader.ClsDrawScreen();
 
 	dx12_.SetDefaultViewAndScissor();
@@ -62,6 +76,15 @@ void RendererManager::Draw()
 	{
 		renderer->Draw();
 	}
+
+	texLoader.SetDrawScreen(cameraScreenH_, TexLoader::DepthType::max);
+	texLoader.ClsDrawScreen();
+
+	dx12_.SetDefaultViewAndScissor();
+	auto& spriteDrawer = dx12_.GetSpriteDrawer();
+
+	spriteDrawer.SetPixelShader(L"Resource/Source/Shader/2D/PostEffect.hlsl");
+	spriteDrawer.DrawGraph(0, 0, rendetTargetHandles_.front());
 }
 
 void RendererManager::CreateRenderTargetHeap()

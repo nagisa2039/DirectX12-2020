@@ -94,8 +94,6 @@ float4 PS(Output input):SV_TARGET
 	
 		float3 light = normalize(float3(1, -1.0f, -1.0f));
 	
-		
-		//move = 0;
 		float3 eye = float3(offset, -3 + move);
 		float3 tpos = float3(uvpos * aspect, 0 + move);
 	

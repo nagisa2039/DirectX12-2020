@@ -6,6 +6,8 @@
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 2, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = 2,space = 3, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = 1,space = 4, flags = DESCRIPTORS_VOLATILE)),"\
+                          "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 5, flags = DESCRIPTORS_VOLATILE)),"\
+                          "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 6, flags = DESCRIPTORS_VOLATILE)),"\
                           "StaticSampler(s0 ,"\
                                              "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                              "addressU = TEXTURE_ADDRESS_CLAMP,"\
@@ -17,6 +19,8 @@
 // 2,Pixel情報配列
 // 3,深度
 // 4,utility定数
+// 5,追加テクスチャインデックス
+// 6,追加定数(float)
 
 struct Output
 {
@@ -49,3 +53,7 @@ StructuredBuffer<PixcelInf> pixcelInf : register(t0, space2);
 Texture2D<float> depthTex[2]      : register(t0, space3);
 
 StructuredBuffer<Utility> utility : register(t0, space4);
+
+StructuredBuffer<int> addTexIndex : register(t0, space5);
+
+StructuredBuffer<float> constandFloat : register(t0, space6);
