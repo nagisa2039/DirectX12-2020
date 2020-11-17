@@ -8,6 +8,7 @@
 
 class Renderer;
 class Dx12Wrapper;
+class ModelEndRendering;
 
 class RendererManager
 {
@@ -35,6 +36,8 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap> renderTargetHeap_;
 	std::array<int, static_cast<uint64_t>(RenderTargetType::max)> rendetTargetHandles_;
+
+	std::shared_ptr<ModelEndRendering> modelEndrendering_;
 
 	void CreateRenderTargetHeap();
 };

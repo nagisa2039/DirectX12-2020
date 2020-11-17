@@ -189,6 +189,18 @@
     <ClInclude Include="Resource\Source\2D\Material.h">
       <Filter>ヘッダー ファイル\2D</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\2D\MaterialBase.h">
+      <Filter>ヘッダー ファイル\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\2D\StanderedMaterial.h">
+      <Filter>ヘッダー ファイル\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\2D\MosaicMaterial.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\2D\Raymarching.h">
+      <Filter>ヘッダー ファイル\2D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -281,6 +293,15 @@
     <ClCompile Include="Resource\Source\2D\Material.cpp">
       <Filter>ソース ファイル\2D</Filter>
     </ClCompile>
+    <ClCompile Include="Resource\Source\2D\StanderedMaterial.cpp">
+      <Filter>ソース ファイル\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\2D\Raymarching.cpp">
+      <Filter>ソース ファイル\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\2D\MosaicMaterial.cpp">
+      <Filter>ソース ファイル\2D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\2D\2DStanderdPS.hlsl">
@@ -301,7 +322,13 @@
     <FxCompile Include="Resource\Source\Shader\3D\PrimitiveVS.hlsl">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Source\Shader\2D\PostEffect.hlsl">
+    <FxCompile Include="Resource\Source\Shader\2D\ModelEndRendering.hlsl">
+      <Filter>ソース ファイル\Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\2D\Raymarching.hlsl">
+      <Filter>ソース ファイル\Shader\2D</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\2D\Mosaic.hlsl">
       <Filter>ソース ファイル\Shader\2D</Filter>
     </FxCompile>
   </ItemGroup>

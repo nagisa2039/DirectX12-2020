@@ -4,6 +4,7 @@
 
 class RendererManager;
 class Player;
+class Material;
 
 class PlayScene :
 	public Scene
@@ -27,4 +28,7 @@ private:
 	int se2_;
 
 	std::unique_ptr<Player> player_;
+
+	std::shared_ptr<Material> raymarchingMat_;
+	std::shared_ptr<Material> mosaicMat_;
 };

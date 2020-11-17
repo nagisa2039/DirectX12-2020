@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\2D\Raymarching.h" />
+    <ClInclude Include="Resource\Source\2D\MosaicMaterial.h" />
+    <ClInclude Include="Resource\Source\2D\MaterialBase.h" />
     <ClInclude Include="Resource\Source\2D\ModelEndRendering.h" />
     <ClInclude Include="Resource\Source\3D\Camera.h" />
     <ClInclude Include="Resource\Source\3D\RendererManager.h" />
@@ -58,8 +61,11 @@
     <ClInclude Include="Resource\Source\System\ShaderLoader.h" />
     <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h" />
     <ClInclude Include="Resource\Source\2D\Material.h" />
+    <ClInclude Include="Resource\Source\2D\StanderedMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resource\Source\2D\Raymarching.cpp" />
+    <ClCompile Include="Resource\Source\2D\MosaicMaterial.cpp" />
     <ClCompile Include="Resource\Source\2D\ModelEndRendering.cpp" />
     <ClCompile Include="Resource\Source\3D\Camera.cpp" />
     <ClCompile Include="Resource\Source\3D\RendererManager.cpp" />
@@ -90,9 +96,26 @@
     <ClCompile Include="Resource\Source\Utility\Input.cpp" />
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp" />
     <ClCompile Include="Resource\Source\2D\Material.cpp" />
+    <ClCompile Include="Resource\Source\2D\StanderedMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Resource\Source\Shader\2D\PostEffect.hlsl">
+    <FxCompile Include="Resource\Source\Shader\2D\ModelEndRendering.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS</EntryPointName>
+    </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\2D\Mosaic.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS</EntryPointName>
+    </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\2D\Raymarching.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>

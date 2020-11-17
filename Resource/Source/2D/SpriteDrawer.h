@@ -10,6 +10,7 @@
 #include "Utility/UtilityShaderStruct.h"
 
 class Dx12Wrapper;
+class Material;
 
 enum class BlendMode
 {
@@ -28,7 +29,7 @@ public:
 	SpriteDrawer(Dx12Wrapper& dx12);
 	~SpriteDrawer();
 
-	bool SetPixelShader(const std::wstring& shaderPath);
+	bool SetMaterial(std::shared_ptr<Material> material);
 
 	bool DrawGraph(const INT x, const INT y, const int graphHandle);
 	bool DrawRotaGraph(const INT x, const INT y, const float exRate, const float angle, const int graphHandle);
@@ -88,7 +89,7 @@ private:
 	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
 	ComPtr<ID3D12RootSignature> rootSignature_ = nullptr;
-	std::array<ComPtr<ID3D12PipelineState>, static_cast<size_t>(BlendMode::max)> standeredBlendPipelineStates_;
+	std::array<std::shared_ptr<Material>, static_cast<size_t>(BlendMode::max)> standeredBlendPipelineStates_;
 
 	VertexResource verticesInfSB_;
 	ComPtr<ID3D12DescriptorHeap> verticesInfHeap_ = nullptr;
@@ -96,15 +97,13 @@ private:
 	PixelInfResource pixelInfSB_;
 	ComPtr<ID3D12DescriptorHeap> pixelInfHeap_ = nullptr;
 
-	ComPtr<ID3D12PipelineState> pipeLineState_;
-	BlendMode blendMode_;
+	std::shared_ptr<Material> material_;
 	DirectX::XMFLOAT3 drawBright_;
 	float blendValue_;
 
 	struct DrawGroup
 	{
-		ComPtr<ID3D12PipelineState> pipelineState;
-		BlendMode blendMode = BlendMode::noblend;
+		std::shared_ptr<Material> material;
 		int num = 1;
 	};
 	std::vector<DrawGroup> drawGroups_;
@@ -116,7 +115,7 @@ private:
 	/// <summary>
 	/// 自作ピクセルシェーダーごとのパイプラインマップ
 	/// </summary>
-	std::unordered_map<std::wstring, ComPtr<ID3D12PipelineState>> pipelineStateMap_;
+	std::unordered_map<std::wstring, std::shared_ptr<Material>> pipelineStateMap_;
 
 	struct UtilityResource
 	{

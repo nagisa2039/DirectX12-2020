@@ -7,6 +7,7 @@
 #include "System/Dx12Wrapper.h"
 #include "Utility/Cast.h"
 #include "System/ShaderLoader.h"
+#include "2D/StanderedMaterial.h"
 
 using namespace DirectX;
 using namespace std;
@@ -15,7 +16,6 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 {
 	drawBright_ = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	blendValue_ = 1.0f;
-	blendMode_ = BlendMode::noblend;
 
 	ClearDrawData();
 
@@ -52,29 +52,22 @@ SpriteDrawer::~SpriteDrawer()
 {
 }
 
-bool SpriteDrawer::SetPixelShader(const std::wstring& shaderPath)
+bool SpriteDrawer::SetMaterial(std::shared_ptr<Material> material)
 {
-	if (pipelineStateMap_.contains(shaderPath))
+	material_ = material;
+	if (material_->GetPipelineState() == nullptr)
 	{
-		pipeLineState_ = pipelineStateMap_[shaderPath];
-		return true;
+		//ルートシグネチャと頂点レイアウトの設定
+		std::vector<D3D12_INPUT_ELEMENT_DESC> iedVec;
+		GetDefaultInputElementDesc(iedVec);
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC gpsd = {};
+		GetDefaultPipelineStateDesc(iedVec, gpsd);
+		auto& sl = Application::Instance().GetShaderLoader();
+		gpsd.PS = CD3DX12_SHADER_BYTECODE(sl.GetPixelShader(material_->GetShaderPath().c_str()).Get());
+
+		H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, 
+			IID_PPV_ARGS(material_->GetPipelineState().ReleaseAndGetAddressOf())));
 	}
-
-	auto& sl = Application::Instance().GetShaderLoader();
-	auto ps = sl.GetShader(shaderPath.c_str(), "PS", ("ps_" + sl.GetShaderModel()).c_str());
-
-	std::vector<D3D12_INPUT_ELEMENT_DESC> iedVec;
-	GetDefaultInputElementDesc(iedVec);
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpsd = {};
-	GetDefaultPipelineStateDesc(iedVec, gpsd);
-	gpsd.PS = CD3DX12_SHADER_BYTECODE(ps.Get());
-
-	H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, 
-		IID_PPV_ARGS(pipelineStateMap_[shaderPath].ReleaseAndGetAddressOf())));
-
-	SetDrawBlendMode(BlendMode::noblend, 255);
-	pipeLineState_ = pipelineStateMap_[shaderPath];
-
 	return true;
 }
 
@@ -115,10 +108,12 @@ void SpriteDrawer::CreatePiplineState()
 		gpsd.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	};
 	
-	for (int i = 0; auto & pipelineState : standeredBlendPipelineStates_)
+	for (int i = 0; auto & material : standeredBlendPipelineStates_)
 	{
 		blendDescSets_[i]();
-		H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(pipelineState.ReleaseAndGetAddressOf())));
+		material = make_shared<StanderedMaterial>();
+		H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, 
+			IID_PPV_ARGS(material->GetPipelineState().ReleaseAndGetAddressOf())));
 		i++;
 	}
 }
@@ -244,7 +239,7 @@ void SpriteDrawer::End()
 		}
 		i += drawGroup.num;
 
-		cmdList.SetPipelineState(drawGroup.pipelineState.Get());
+		cmdList.SetPipelineState(drawGroup.material->GetPipelineState().Get());
 		cmdList.SetGraphicsRootSignature(rootSignature_.Get());
 
 		cmdList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -269,6 +264,9 @@ void SpriteDrawer::End()
 		// 定数
 		cmdList.SetDescriptorHeaps(1, utilityHeap_.GetAddressOf());
 		cmdList.SetGraphicsRootDescriptorTable(4, utilityHeap_->GetGPUDescriptorHandleForHeapStart());
+
+		// マテリアルごとの定数セット
+		drawGroup.material->SetEachDescriptorHeap(cmdList);
 
 		cmdList.DrawIndexedInstanced(6, drawGroup.num, 0, 0, 0);
 
@@ -359,7 +357,6 @@ void SpriteDrawer::SetDrawBright(const INT r, const INT g, const INT b)
 
 void SpriteDrawer::SetDrawBlendMode(const BlendMode blendMode, const INT value)
 {
-	blendMode_ = blendMode;
 	if (blendMode == BlendMode::noblend)
 	{
 		blendValue_ = 1.0f;
@@ -368,7 +365,7 @@ void SpriteDrawer::SetDrawBlendMode(const BlendMode blendMode, const INT value)
 	{
 		blendValue_ = Saturate(value / 255.0f);
 	}
-	pipeLineState_ = standeredBlendPipelineStates_[Uint64(blendMode)];
+	material_ = standeredBlendPipelineStates_[Uint64(blendMode)];
 }
 
 void SpriteDrawer::SetDrawScreen(const int graphHandle)
@@ -477,13 +474,13 @@ bool SpriteDrawer::DrawRectExtendGraph(const INT left, const INT top, const INT 
 
 void SpriteDrawer::AddDrawImage(SpriteDrawer::DrawImage& drawImage)
 {
-	if (drawGroups_.size() > 0 && drawGroups_.rbegin()->pipelineState == pipeLineState_)
+	if (drawGroups_.size() > 0 && drawGroups_.rbegin()->material == material_)
 	{
 		drawGroups_.rbegin()->num++;
 	}
 	else
 	{
-		drawGroups_.emplace_back(DrawGroup{ pipeLineState_, blendMode_, 1 });
+		drawGroups_.emplace_back(DrawGroup{ material_, 1 });
 	}
 
 	drawImage.pixelInf.bright = drawBright_;

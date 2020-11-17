@@ -1,4 +1,5 @@
 #include "../../Utility/UtilityShaderStruct.h"
+#include "../../2D/MaterialBase.h"
 
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
@@ -6,8 +7,9 @@
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 2, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = 2,space = 3, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = 1,space = 4, flags = DESCRIPTORS_VOLATILE)),"\
-                          "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 5, flags = DESCRIPTORS_VOLATILE)),"\
+                          "DescriptorTable(SRV(t0,numDescriptors = 1,space = 5, flags = DESCRIPTORS_VOLATILE)),"\
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 6, flags = DESCRIPTORS_VOLATILE)),"\
+                          "DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 7, flags = DESCRIPTORS_VOLATILE)),"\
                           "StaticSampler(s0 ,"\
                                              "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                              "addressU = TEXTURE_ADDRESS_CLAMP,"\
@@ -54,6 +56,8 @@ Texture2D<float> depthTex[2]      : register(t0, space3);
 
 StructuredBuffer<Utility> utility : register(t0, space4);
 
-StructuredBuffer<int> addTexIndex : register(t0, space5);
+StructuredBuffer<MaterialBase> materialBase : register(t0, space5);
 
-StructuredBuffer<float> constandFloat : register(t0, space6);
+StructuredBuffer<int> addTexIndex : register(t0, space6);
+
+StructuredBuffer<float> constandFloat : register(t0, space7);

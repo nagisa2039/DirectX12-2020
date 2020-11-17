@@ -8,6 +8,7 @@
 #include "3D/Camera.h"
 #include "Utility/dx12Tool.h"
 #include "2D/SpriteDrawer.h"
+#include "2D/ModelEndRendering.h"
 
 using namespace std;
 
@@ -24,10 +25,13 @@ RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
 	for (int i = 0; auto rtH : rendetTargetHandles_)
 	{
 		rtH = texLoader.MakeScreen(screenNames[i], wsize.w, wsize.h);
+		i++;
 	}
 
 	cameraScreenH_ = texLoader.MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
 	lightScreenH_	= texLoader.MakeScreen(D3D_LIGHT_VIEW_SCREEN, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+
+	modelEndrendering_ = make_shared<ModelEndRendering>();
 
 	CreateRenderTargetHeap();
 }
@@ -83,7 +87,8 @@ void RendererManager::Draw()
 	dx12_.SetDefaultViewAndScissor();
 	auto& spriteDrawer = dx12_.GetSpriteDrawer();
 
-	spriteDrawer.SetPixelShader(L"Resource/Source/Shader/2D/PostEffect.hlsl");
+
+	spriteDrawer.SetMaterial(modelEndrendering_);
 	spriteDrawer.DrawGraph(0, 0, rendetTargetHandles_.front());
 }
 

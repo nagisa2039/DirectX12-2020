@@ -1,12 +1,11 @@
 #pragma once
 #include "Material.h"
-
-class ModelEndRendering :
-	public Material
+class StanderedMaterial :
+    public Material
 {
 public:
-	ModelEndRendering();
-	~ModelEndRendering();
+	StanderedMaterial();
+	~StanderedMaterial();
 
 private:
 	// Material ‚ğ‰î‚µ‚ÄŒp³‚³‚ê‚Ü‚µ‚½

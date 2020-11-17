@@ -20,6 +20,14 @@ public:
 	/// <param name="entoryPoint">エントリーポイント</param>
 	/// <param name="shaderModel">シェーダーモデル</param>
 	Microsoft::WRL::ComPtr<ID3DBlob> GetShader(const LPCWSTR& shaderPath, const LPCSTR& entoryPoint, const LPCSTR& shaderModel);
+	
+	/// <summary>
+	/// Pixelシェーダーの取得
+	/// エントリーポイントとバージョンは固定
+	/// </summary>
+	/// <param name="shaderPath">ファイルパス</param>
+	/// <returns></returns>
+	Microsoft::WRL::ComPtr<ID3DBlob> GetPixelShader(const LPCWSTR& shaderPath);
 
 	/// <summary>
 	/// シェーダーモデルの取得
