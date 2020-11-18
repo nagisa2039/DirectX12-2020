@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include "ModelBufferStruct.h"
 #include <string>
+#include <DirectXMath.h>
 
 class ModelData
 {
@@ -55,7 +55,7 @@ public :
 	// マテリアル情報の取得
 	std::vector<Material>& GetMaterialData();
 	//マテリアルインデックス
-	std::vector<MaterialIndex>& GetMaterialIndexData();
+	std::vector<unsigned int>& GetMaterialIndexData();
 	// ボーン情報の取得
 	std::vector<Bone>& GetBoneData();
 
@@ -66,7 +66,7 @@ protected:
 	std::vector<MultiTexturePath> texPaths_;		//テクスチャのパス(相対)
 	std::vector<Material> materials_;		// マテリアルデータ
 	std::vector<Bone> bones_;
-	std::vector<MaterialIndex> materialIndexData_;	// マテリアルのインデックス 頂点インデックスに対応
+	std::vector<unsigned int> materialIndexData_;	// マテリアルのインデックス 頂点インデックスに対応
 
 	/// <summary>
 	/// マテリアルを読み込んだ後にindecesNumを基に

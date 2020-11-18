@@ -7,7 +7,7 @@
 #include "System/Dx12Wrapper.h"
 #include "Utility/Cast.h"
 #include "System/ShaderLoader.h"
-#include "2D/StanderedMaterial.h"
+#include "Material/StanderedMaterial.h"
 
 using namespace DirectX;
 using namespace std;
@@ -34,13 +34,13 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 
 	const int imageMax = Application::Instance().GetImageMax();
 	const int vertInfStructSize = sizeof(VerticesInf);
-	CreateStructuredBuffer(&dev, verticesInfSB_.mappedVertexInf, 
+	CreateStructuredBufferAndHeap(&dev, verticesInfSB_.mappedVertexInf,
 		verticesInfSB_.resource.buffer, verticesInfHeap_, vertInfStructSize, imageMax);
 	const int pixelInfStructSize = sizeof(PixelInf);
-	CreateStructuredBuffer(&dev, pixelInfSB_.mappedPixelInf,
+	CreateStructuredBufferAndHeap(&dev, pixelInfSB_.mappedPixelInf,
 		pixelInfSB_.resource.buffer, pixelInfHeap_, pixelInfStructSize, imageMax);
 
-	CreateStructuredBuffer(&dev, utility_.mapped, 
+	CreateStructuredBufferAndHeap(&dev, utility_.mapped,
 		utility_.resource.buffer, utilityHeap_, sizeof(*utility_.mapped), 1);
 
 	drawImages_.clear();
@@ -111,7 +111,7 @@ void SpriteDrawer::CreatePiplineState()
 	for (int i = 0; auto & material : standeredBlendPipelineStates_)
 	{
 		blendDescSets_[i]();
-		material = make_shared<StanderedMaterial>();
+		material = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/2DStanderd.hlsl");
 		H_ASSERT(dx12_.GetDevice().CreateGraphicsPipelineState(&gpsd, 
 			IID_PPV_ARGS(material->GetPipelineState().ReleaseAndGetAddressOf())));
 		i++;
@@ -250,23 +250,24 @@ void SpriteDrawer::End()
 		cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
 		cmdList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
 
-		// VS情報配列のセット
-		cmdList.SetDescriptorHeaps(1, verticesInfHeap_.GetAddressOf());
-		cmdList.SetGraphicsRootDescriptorTable(1, verticesInfHeap_->GetGPUDescriptorHandleForHeapStart());
-
-		// PS情報配列のセット
-		cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
-		cmdList.SetGraphicsRootDescriptorTable(2, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
-
 		// 深度テクスチャのセット
-		texLoader.SetDepthTexDescriptorHeap(3, TexLoader::DepthType::camera);
+		texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
 		// 定数
 		cmdList.SetDescriptorHeaps(1, utilityHeap_.GetAddressOf());
-		cmdList.SetGraphicsRootDescriptorTable(4, utilityHeap_->GetGPUDescriptorHandleForHeapStart());
+		cmdList.SetGraphicsRootDescriptorTable(3, utilityHeap_->GetGPUDescriptorHandleForHeapStart());
 
 		// マテリアルごとの定数セット
 		drawGroup.material->SetEachDescriptorHeap(cmdList);
+
+		// VS情報配列のセット
+		cmdList.SetDescriptorHeaps(1, verticesInfHeap_.GetAddressOf());
+		cmdList.SetGraphicsRootDescriptorTable(7, verticesInfHeap_->GetGPUDescriptorHandleForHeapStart());
+
+		// PS情報配列のセット
+		cmdList.SetDescriptorHeaps(1, pixelInfHeap_.GetAddressOf());
+		cmdList.SetGraphicsRootDescriptorTable(8, pixelInfHeap_->GetGPUDescriptorHandleForHeapStart());
+
 
 		cmdList.DrawIndexedInstanced(6, drawGroup.num, 0, 0, 0);
 

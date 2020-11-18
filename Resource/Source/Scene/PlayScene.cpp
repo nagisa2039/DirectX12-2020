@@ -10,8 +10,7 @@
 #include "System/SoundManager.h"
 #include "Utility/Input.h"
 #include "Game/Player.h"
-#include "2D/Raymarching.h"
-#include "2D/MosaicMaterial.h"
+#include "Material/StanderedMaterial.h"
 
 using namespace std;
 
@@ -33,8 +32,8 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/–ì—Ç”L‚Í‰F’ˆ‚ð–ÚŽw‚µ‚½.wav", true);
 	player_ = make_unique<Player>();
 
-	raymarchingMat_ = make_shared<Raymarching>();
-	mosaicMat_ = make_shared<MosaicMaterial>();
+	raymarchingMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Raymarching.hlsl");
+	mosaicMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Mosaic.hlsl");
 }
 
 PlayScene::~PlayScene()
@@ -74,10 +73,11 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	spriteDrawer.SetMaterial(raymarchingMat_);
+	spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	//spriteDrawer.SetMaterial(mosaicMat_);
+	spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
 
 	spriteDrawer.DrawRotaGraph(1200, 300, 0.5f, 0.0f, tnktH_);

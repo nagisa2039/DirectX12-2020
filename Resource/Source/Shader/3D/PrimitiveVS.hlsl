@@ -1,10 +1,5 @@
 #include "Primitive.hlsli"
 
-cbuffer worldBuffer : register(b1)
-{
-	matrix world;
-};
-
 [RootSignature(RS)]
 VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD)
 {

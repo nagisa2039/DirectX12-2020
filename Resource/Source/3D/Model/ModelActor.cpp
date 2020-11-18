@@ -15,6 +15,8 @@
 #include "System/TexLoader.h"
 #include "System/Application.h"
 #include "Utility/Input.h"
+#include "Material/ModelMaterial.h"
+#include "Utility/Cast.h"
 
 using namespace std;
 using namespace DirectX; 
@@ -99,7 +101,7 @@ bool ModelActor::Init(std::string modelPath)
 		assert(false);
 	}
 
-	// マテリアルのビュー作成
+	// マテリアルの作成
 	if (!CreateMaterial())
 	{
 		assert(false);
@@ -110,8 +112,6 @@ bool ModelActor::Init(std::string modelPath)
 	{
 		assert(false);
 	}
-
-	
 
 	// ボーン回転の初期化
 	fill(boneMats_.begin(), boneMats_.end(), XMMatrixIdentity());
@@ -262,26 +262,18 @@ void ModelActor::Draw()
 	auto& commandList = dx12_.GetCommand().CommandList();
 	auto& dev = dx12_.GetDevice();
 
-	// テクスチャ配列のセット
-	auto& texHeap = dx12_.GetTexLoader().GetTextureHeap();
-	commandList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
-
-	// マテリアル用デスクリプタヒープの設定
-	commandList.SetDescriptorHeaps(1, materialHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(1, materialHeap_->GetGPUDescriptorHandleForHeapStart());
-
-	// 2 カメラ
+	// マテリアルのセット
+	modelMaterial_->SetEachDescriptorHeap(commandList);
 
 	// 座標行列用デスクリプタヒープのセット
 	commandList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(3, worldHeap_->GetGPUDescriptorHandleForHeapStart());
+	commandList.SetGraphicsRootDescriptorTable(7, worldHeap_->GetGPUDescriptorHandleForHeapStart());
 
-	// 4 設定
+	// 設定
 
-	// 5 materialIndex for Primitive
+	// materialIndex for Primitive
 	commandList.SetDescriptorHeaps(1, materialIndexHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(5, materialIndexHeap_->GetGPUDescriptorHandleForHeapStart());
+	commandList.SetGraphicsRootDescriptorTable(9, materialIndexHeap_->GetGPUDescriptorHandleForHeapStart());
 
 	// インデックスバッファのセット
 	commandList.IASetIndexBuffer(&ibView_);
@@ -289,10 +281,6 @@ void ModelActor::Draw()
 	commandList.IASetVertexBuffers(0, 1, &vbView_);
 
 	// 描画コマンドの生成
-	// 第一引数 インデックス数
-	int idxOffset = 0;
-	auto handle = materialHeap_->GetGPUDescriptorHandleForHeapStart();
-
 	commandList.DrawIndexedInstanced(Uint32(modelData_->GetIndexData().size()), 1, 0, 0, 0);
 }
 
@@ -405,21 +393,19 @@ bool ModelActor::CreateMaterial()
 	auto materials = modelData_->GetMaterialData();
 
 	auto texPaths = modelData_->GetTexturePaths();
-	mats_.resize(texPaths.size());
 
-	auto size = Uint64(sizeof(mats_[0]) * mats_.size());
-	CreateUploadBuffer(&dev, materialBuffer_, size);
+	std::vector<MaterialBase> meterialBaseVec(materials.size());
 
-	auto FLOAT4 = [](const XMFLOAT3& float3)
+	auto FLOAT3 = [](const XMFLOAT4& float4)
 	{
-		return XMFLOAT4(float3.x, float3.y, float3.z, 0.0f);
+		return XMFLOAT3(float4.x, float4.y, float4.z);
 	};
 
-	for (int i = 0; auto & materialBufferInf : mats_)
+	for (int i = 0; auto & materialBase : meterialBaseVec)
 	{
 		const auto& mat = materials[i];
-		materialBufferInf = MaterialStruct{ mat.diffuse,
-			FLOAT4(mat.specular), FLOAT4(mat.ambient), mat.power };
+		materialBase = MaterialBase{ FLOAT3(mat.diffuse),
+			mat.specular, mat.ambient, mat.power, -1 };
 		i++;
 	}
 
@@ -438,24 +424,25 @@ bool ModelActor::CreateMaterial()
 		return failedIdx;
 	};
 
+	const int stride = 4;
+	std::vector<int> addTexVec(stride * materials.size());
 	auto dummyTexHandles = texLoader.GetDummyTextureHandles();
-	for (unsigned int j = 0; auto & mat : mats_)
+	for (int j = 0; j < addTexVec.size(); j+= stride)
 	{
-		mat.texIdx = GetTexture(texPaths[j].texPath, dummyTexHandles.whiteTexH);
-		mat.sphIdx = GetTexture(texPaths[j].sphPath, dummyTexHandles.whiteTexH);
-		mat.spaIdx = GetTexture(texPaths[j].spaPath, dummyTexHandles.blackTexH);
-		mat.addtexIdx = GetTexture(texPaths[j].subPath, dummyTexHandles.whiteTexH);
-		mat.toonIdx = GetTexture(texPaths[j].toonPath, dummyTexHandles.whiteTexH);
-		j++;
+		auto matIdx = j / stride;
+		meterialBaseVec[matIdx].textureIndex = GetTexture(texPaths[matIdx].texPath,  dummyTexHandles.whiteTexH);
+		addTexVec[Uint64(j + 0)]			 = GetTexture(texPaths[matIdx].sphPath,  dummyTexHandles.whiteTexH);
+		addTexVec[Uint64(j + 1)]			 = GetTexture(texPaths[matIdx].spaPath,  dummyTexHandles.blackTexH);
+		addTexVec[Uint64(j + 2)]			 = GetTexture(texPaths[matIdx].subPath,  dummyTexHandles.whiteTexH);
+		addTexVec[Uint64(j + 3)]			 = GetTexture(texPaths[matIdx].toonPath, dummyTexHandles.whiteTexH);
 	}
 
-	MaterialStruct* ms = nullptr;
-	CreateStructuredBuffer(&dev, materialBuffer_, materialHeap_, mats_, ms, true);
+	modelMaterial_ = make_unique<ModelMaterial>(meterialBaseVec, addTexVec);
 
 	// マテリアルインデックス
 	auto& materialIndexData = modelData_->GetMaterialIndexData();
-	MaterialIndex* mi = nullptr;
-	CreateStructuredBuffer(&dev, materialIndexBuffer_, materialIndexHeap_, materialIndexData, mi, true);
+	decltype(&materialIndexData[0]) mi = nullptr;
+	CreateStructuredBufferAndHeap(&dev, materialIndexBuffer_, materialIndexHeap_, materialIndexData, mi, true);
 
 	return true;
 }

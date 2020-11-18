@@ -4,11 +4,7 @@ class StanderedMaterial :
     public Material
 {
 public:
-	StanderedMaterial();
+	StanderedMaterial(const std::wstring& shaderPath);
 	~StanderedMaterial();
-
-private:
-	// Material ‚ğ‰î‚µ‚ÄŒp³‚³‚ê‚Ü‚µ‚½
-	void AddEachData();
 };
 

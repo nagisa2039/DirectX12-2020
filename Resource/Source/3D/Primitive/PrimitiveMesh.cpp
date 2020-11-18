@@ -4,6 +4,7 @@
 #include "System/TexLoader.h"
 #include "Utility/dx12Tool.h"
 #include "Utility/TextureStruct.h"
+#include "Material/Material.h"
 
 using namespace DirectX;
 using namespace std;
@@ -119,12 +120,10 @@ void PrimitiveMesh::Draw()
 {
 	// 座標行列用デスクリプタヒープのセット
 	auto& cmdList = dx12_.GetCommand().CommandList();
-	cmdList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(1, worldHeap_->GetGPUDescriptorHandleForHeapStart());
+	material_->SetEachDescriptorHeap(cmdList);
 
-	//// テクスチャ
-	//cmdList.SetDescriptorHeaps(1, _texHeap.GetAddressOf());
-	//cmdList.SetGraphicsRootDescriptorTable(3, _texHeap->GetGPUDescriptorHandleForHeapStart());
+	cmdList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
+	cmdList.SetGraphicsRootDescriptorTable(7, worldHeap_->GetGPUDescriptorHandleForHeapStart());
 
 	// インデックスバッファのセット
 	cmdList.IASetIndexBuffer(&ibv_);

@@ -28,10 +28,13 @@ Dx12Wrapper::~Dx12Wrapper()
 
 bool Dx12Wrapper::Init()
 {
+
+#ifdef _DEBUG
 	// デバッグレイヤーの有効化
 	ComPtr<ID3D12Debug> debuglayer;
 	D3D12GetDebugInterface(IID_PPV_ARGS(debuglayer.ReleaseAndGetAddressOf()));
 	debuglayer->EnableDebugLayer();
+#endif
 
 	// Deviceの作成
 	H_ASSERT(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(dev_.ReleaseAndGetAddressOf())));

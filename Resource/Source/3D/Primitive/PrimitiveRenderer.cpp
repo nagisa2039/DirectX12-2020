@@ -162,9 +162,10 @@ void PrimitiveRenderer::Draw()
 
 	cmdList.SetPipelineState(primPL_.Get());
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
-	dx12_.GetCamera().SetCameraDescriptorHeap(0);
-	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::light);
-	texLoader.SetTextureDescriptorHeap(3);
+
+	texLoader.SetTextureDescriptorHeap(0);
+	dx12_.GetCamera().SetCameraDescriptorHeap(1);
+	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
 	for (auto& prim : primitives_)
 	{

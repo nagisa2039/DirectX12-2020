@@ -7,9 +7,5 @@ class ModelEndRendering :
 public:
 	ModelEndRendering();
 	~ModelEndRendering();
-
-private:
-	// Material ‚ğ‰î‚µ‚ÄŒp³‚³‚ê‚Ü‚µ‚½
-	void AddEachData();
 };
 

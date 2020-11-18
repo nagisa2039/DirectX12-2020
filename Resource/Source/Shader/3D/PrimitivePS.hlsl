@@ -1,18 +1,11 @@
 #include "Primitive.hlsli"
 
-// テクスチャ
-Texture2D<float4> tex[512] : register(t0, space1);
-
-// シャドウマップ用	デプス
-Texture2D<float> lightDepthTex : register(t0, space0);
-
-SamplerState smp : register(s0);
-SamplerComparisonState shadowSmp : register(s1);
-
 [RootSignature(RS)]
 PixelOut PS(VertexOut input)
 {
 	PixelOut po;
+	
+	Texture2D<float> lightDepthTex = depthTex[1];
 
 	//float4 texColor = tex[].Sample(smp, input.uv);
 	float3 light = normalize(float3(1, -1, 1));

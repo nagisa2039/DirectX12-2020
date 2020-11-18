@@ -1,6 +1,7 @@
 #include "PlaneMesh.h"
 #include <array>
 #include "System/Dx12Wrapper.h"
+#include "Material/ModelMaterial.h"
 
 using namespace std;
 using namespace DirectX;
@@ -24,6 +25,15 @@ PlaneMesh::PlaneMesh(Dx12Wrapper& dx12, const XMFLOAT3& pos, const float width, 
 
 	rotate_ = { 0.0f,0.0f,0.0f };
 	CreateTransBuffer();
+
+	std::vector<MaterialBase> mbvec;
+	mbvec.emplace_back(MaterialBase{
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 
+		XMFLOAT3(0.0f, 0.0f, 0.0f),
+		0.0f, -1 });
+	std::vector<int> addTexVec(1);
+	material_ = make_unique<ModelMaterial>(mbvec, addTexVec);
 }
 
 PlaneMesh::~PlaneMesh()

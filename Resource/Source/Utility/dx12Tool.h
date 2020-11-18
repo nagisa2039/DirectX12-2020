@@ -150,7 +150,7 @@ namespace
 	/// <param name="heap">格納するヒープ</param>
 	/// <param name="elements">送る構造体配列</param>
 	template<class T>
-	void CreateStructuredBuffer(ID3D12Device* dev, T& mapped, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
+	void CreateStructuredBufferAndHeap(ID3D12Device* dev, T& mapped, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const UINT elementSize, const UINT elementNum)
 	{
 		assert(elementSize > 0 && elementNum > 0);
@@ -174,7 +174,7 @@ namespace
 	/// <param name="heap">格納するヒープ</param>
 	/// <param name="elements">送る構造体配列</param>
 	template<class T>
-	void CreateStructuredBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
+	void CreateStructuredBufferAndHeap(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const std::vector<T>& elements, T* mapped, const bool unmap)
 	{
 		mapped = nullptr;
@@ -193,6 +193,34 @@ namespace
 
 		// 定数バッファビューの作成
 		auto handle = heap->GetCPUDescriptorHandleForHeapStart();
+		CreateShaderResourceBufferView(dev, buff, handle, elementSize, elementNum);
+	}
+
+	/// <summary>
+	/// StructuredBufferの作成
+	/// </summary>
+	/// <typeparam name="T">Structの型</typeparam>
+	/// <param name="dev">I3D12Deviceのポインタ</param>
+	/// <param name="buff">格納するバッファ</param>
+	/// <param name="heap">格納するヒープ</param>
+	/// <param name="elements">送る構造体配列</param>
+	template<class T>
+	void CreateStructuredBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
+		D3D12_CPU_DESCRIPTOR_HANDLE& handle, const std::vector<T>& elements, T* mapped, const bool unmap)
+	{
+		mapped = nullptr;
+		const UINT elementNum = Uint32(elements.size());
+		assert(elementNum > 0);
+		const UINT elementSize = sizeof(elements[0]);
+		CreateUploadBuffer(dev, buff, Uint64(elementSize) * elementNum, false);
+		H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
+		std::copy(elements.begin(), elements.end(), mapped);
+		if (unmap)
+		{
+			buff->Unmap(0, nullptr);
+		}
+
+		// 定数バッファビューの作成
 		CreateShaderResourceBufferView(dev, buff, handle, elementSize, elementNum);
 	}
 

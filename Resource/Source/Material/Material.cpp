@@ -18,14 +18,10 @@ const std::wstring& Material::GetShaderPath() const
 
 void Material::SetEachDescriptorHeap(ID3D12GraphicsCommandList& cmdList)
 {
-	cmdList.SetDescriptorHeaps(1, materialBaseResource_.heap.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(5, materialBaseResource_.heap->GetGPUDescriptorHandleForHeapStart());
-
-	cmdList.SetDescriptorHeaps(1, texIndexResource_.heap.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(6, texIndexResource_.heap->GetGPUDescriptorHandleForHeapStart());
-
-	cmdList.SetDescriptorHeaps(1, constFloatResource_.heap.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(7, constFloatResource_.heap->GetGPUDescriptorHandleForHeapStart());
+	cmdList.SetDescriptorHeaps(1, heap_.GetAddressOf());
+	cmdList.SetGraphicsRootDescriptorTable(4, materialBaseResource_.handle);
+	cmdList.SetGraphicsRootDescriptorTable(5, texIndexResource_.handle);
+	cmdList.SetGraphicsRootDescriptorTable(6, constFloatResource_.handle);
 }
 
 ComPtr<ID3D12PipelineState>& Material::GetPipelineState()
@@ -33,9 +29,9 @@ ComPtr<ID3D12PipelineState>& Material::GetPipelineState()
 	return pipelineState_;
 }
 
-MaterialBase& Material::GetMaterialBase()
+std::vector<MaterialBase>& Material::GetMaterialBaseVec()
 {
-	return materialBaseResource_.elements[0];
+	return materialBaseResource_.elements;
 }
 
 std::vector<int>& Material::GetAddTextureIndexVec()
@@ -52,14 +48,26 @@ void Material::CreateEachDataBuffer()
 {
 	auto& dev = Application::Instance().GetDx12().GetDevice();
 
-	auto CreateSB = [&dev = dev](auto& matResource) 
+	CreateDescriptorHeap(&dev, heap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 3);
+
+	auto GPUHandle = heap_->GetGPUDescriptorHandleForHeapStart();
+	auto CPUHandle = heap_->GetCPUDescriptorHandleForHeapStart();
+	auto stride = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	auto CreateSB = 
+		[&dev = dev, &GHandle = GPUHandle, &CHandle = CPUHandle, &stride = stride](auto& matResource)
 	{
 		if (matResource.elements.size() <= 0)
 		{
 			matResource.elements.resize(1);
 		}
-		CreateStructuredBuffer(&dev, matResource.resource.buffer, matResource.heap,
+		CreateStructuredBuffer(&dev, matResource.resource.buffer, CHandle,
 			matResource.elements, matResource.mapped, false);
+
+		matResource.handle = GHandle;
+
+		GHandle.ptr += stride;
+		CHandle.ptr += stride;
 	};
 	
 	CreateSB(materialBaseResource_);

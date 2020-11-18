@@ -1,51 +1,19 @@
 #include "Model.hlsli"
 
-SamplerState smp : register(s0);
-SamplerState toomSmp : register(s1);
-SamplerComparisonState shadowSmp : register(s2);
-
-#include "../../3D/Model/ModelBufferStruct.h"
-
-Texture2D<float4> tex[512] : register(t0, space0);
-
-StructuredBuffer<MaterialStruct> matInfs : register(t0, space1);
-StructuredBuffer<MaterialIndex> materialIndexs : register(t0, space2);
-
-Texture2D<float> lightDepthTex : register(t0, space3);
-
-// 設定
-cbuffer Setting : register(b3)
-{
-	uint directional_light;
-	float3 light_dir;
-
-	float4 limColor;
-
-	float edgeWidth;
-	float edgePower;
-	uint antialiasing;
-	uint insNum;
-
-	uint dof;
-	uint ao;
-	float aoRadius;
-	float gomi;
-
-	float emissive;
-	float3 emissiveColor;
-
-	float time;
-	float divider;
-	uint debug;
-};
-
 //ピクセルシェーダ
-[RootSignature(RS)]
+//[RootSignature(RS)]
 PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 {
 	PixelOut po;
-	uint matIdx = (uint) materialIndexs[primitiveID].index;
-	MaterialStruct mat = matInfs[matIdx];
+	uint matIdx = materialIndexs[primitiveID];
+	MaterialBase mat = materialBase[matIdx];
+	
+	Texture2D<float4> sphTex  = tex[addTexIndex[matIdx * 4 + 0]];
+	Texture2D<float4> spaTex  = tex[addTexIndex[matIdx * 4 + 1]];
+	Texture2D<float4> addTex  = tex[addTexIndex[matIdx * 4 + 2]];
+	Texture2D<float4> toonTex = tex[addTexIndex[matIdx * 4 + 3]];
+	
+	Texture2D<float> lightDepthTex = depthTex[1];
 	
 	//return float4(input.normal.xyz,1);
 	// 光源ベクトルの反射ベクトル
@@ -68,16 +36,16 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	}
 
 	float bright = saturate(dot(input.normal.xyz, -lightDirNormal));
-	float4 toonColor = float4(tex[mat.toonIdx].Sample(toomSmp, float2(0, 1.0 - bright)).rgb, 1.0f);
+	float4 toonColor = float4(toonTex.Sample(toomSmp, float2(0, 1.0 - bright)).rgb, 1.0f);
 
-	float4 texColor = tex[mat.texIdx].Sample(smp, input.uv);
+	float4 texColor = tex[mat.textureIndex].Sample(smp, input.uv);
 	
-	float4 sphColor = tex[mat.sphIdx].Sample(smp, sphUV);
-	float4 spaColor = tex[mat.spaIdx].Sample(smp, sphUV);
+	float4 sphColor = sphTex.Sample(smp, sphUV);
+	float4 spaColor = spaTex.Sample(smp, sphUV);
 
 	float4 specColor = float4((mat.specular * specB).rgb, 0);
 	float4 ambientColor = float4((mat.ambient * 0.005f).rgb, 0);
-	float4 ret = mat.diffuse * texColor * toonColor * sphColor + specColor + spaColor + ambientColor;
+	float4 ret = float4(mat.diffuse.rgb, 1.0f) * texColor * toonColor * sphColor + specColor + spaColor + ambientColor;
 	
 	float shadowWeight = 1.0f;
 	float3 posFromLight = input.tpos.xyz / input.tpos.w;

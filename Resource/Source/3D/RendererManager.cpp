@@ -8,7 +8,7 @@
 #include "3D/Camera.h"
 #include "Utility/dx12Tool.h"
 #include "2D/SpriteDrawer.h"
-#include "2D/ModelEndRendering.h"
+#include "Material/ModelEndRendering.h"
 
 using namespace std;
 

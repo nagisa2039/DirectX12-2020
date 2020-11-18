@@ -212,8 +212,16 @@ void ModelRenderer::Draw()
 	commandList.SetPipelineState(modelPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
-	dx12_.GetCamera().SetCameraDescriptorHeap(2);
-	texLoader.SetDepthTexDescriptorHeap(6, TexLoader::DepthType::light);
+	// テクスチャ配列のセット
+	auto& texHeap = texLoader.GetTextureHeap();
+	commandList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
+	commandList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
+
+	// カメラ
+	dx12_.GetCamera().SetCameraDescriptorHeap(1);
+
+	// 深度
+	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
 	for (auto& actor : modelActors_)
 	{

@@ -12,12 +12,11 @@ FPSManager::FPSManager(const int fps): fixedFPS_(fps)
 
 void FPSManager::Wait()
 {
-	int wait = Int32(GetTickCount64() - prevFrameStartTime_);
+	int elapsedTime = Int32(GetTickCount64() - prevFrameStartTime_);
 	int targetTime = 1000 / fixedFPS_;
-	Sleep(max(targetTime - wait,0));
-	wait = Int32(GetTickCount64() - prevFrameStartTime_);
-	prevFrameStartTime_ += wait;
-	deltaTime_ = wait / 1000.0f;
+	Sleep(max(targetTime - elapsedTime,0));
+	prevFrameStartTime_ += targetTime;
+	deltaTime_ = max(targetTime,elapsedTime) / 1000.0f;
 }
 
 int FPSManager::FixedFPS()

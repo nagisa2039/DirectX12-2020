@@ -1,17 +1,5 @@
 #include "Model.hlsli"
 
-// 座標行列用スロット
-cbuffer worldBuffer : register(b1)
-{
-	matrix world;
-};
-
-// ボーン行列
-cbuffer bones : register(b2)
-{
-	matrix boneMats[512];
-};
-
 matrix GetTransform(const int4 boneno, const float4 weight)
 {
 	matrix a;

@@ -9,16 +9,6 @@
 ModelEndRendering::ModelEndRendering()
 	: Material(L"Resource/Source/Shader/2D/ModelEndRendering.hlsl")
 {
-	AddEachData();
-	CreateEachDataBuffer();
-}
-
-ModelEndRendering::~ModelEndRendering()
-{
-}
-
-void ModelEndRendering::AddEachData()
-{
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
 	std::wstring screenNames[] = {
 		D3D_CAMERA_MR_COLOR, D3D_CAMERA_MR_NORMAL , D3D_CAMERA_MR_BRIGHT };
@@ -28,4 +18,9 @@ void ModelEndRendering::AddEachData()
 	{
 		addTexIndexVec.emplace_back(texLoader.GetGraphHandle(name));
 	}
+	CreateEachDataBuffer();
+}
+
+ModelEndRendering::~ModelEndRendering()
+{
 }

@@ -10,11 +10,6 @@
 class Material
 {
 public:
-	/// <summary>
-	/// コンストラクタ
-	/// </summary>
-	/// <param name="shaderPaht">シェーダーファイルパス</param>
-	Material(const std::wstring& shaderPaht);
 	~Material();
 
 	/// <summary>
@@ -32,19 +27,27 @@ public:
 	/// </summary>
 	ComPtr<ID3D12PipelineState>& GetPipelineState();
 
-protected:
-	MaterialBase& GetMaterialBase();
-	std::vector<int>& GetAddTextureIndexVec();
-	std::vector<float>& GetConstFloatVec();
+	/// <summary>
+	/// マテリアル配列の取得
+	/// </summary>
+	std::vector <MaterialBase>& GetMaterialBaseVec();
 
 	/// <summary>
-	/// 個々のデータを作成
+	/// 追加テクスチャインデックス配列の取得
 	/// </summary>
-	//virtual void AddEachData() = 0;
-	void CreateEachDataBuffer();
+	std::vector<int>& GetAddTextureIndexVec();
 
-private:
-	const std::wstring shaderPath_;
+	/// <summary>
+	/// float定数配列の取得
+	/// </summary>
+	std::vector<float>& GetConstFloatVec();
+
+protected:
+	/// <summary>
+	/// コンストラクタ
+	/// </summary>
+	/// <param name="shaderPaht">シェーダーファイルパス</param>
+	Material(const std::wstring& shaderPaht);
 
 	template<class T>
 	struct StructuredResource
@@ -52,14 +55,21 @@ private:
 		Resource resource = {};
 		std::vector<T> elements;
 		T* mapped = nullptr;
-		ComPtr<ID3D12DescriptorHeap> heap = nullptr;
+		D3D12_GPU_DESCRIPTOR_HANDLE handle;
 	};
-
-	ComPtr<ID3D12PipelineState> pipelineState_ = nullptr;
 
 	StructuredResource<MaterialBase>	materialBaseResource_;
 	StructuredResource<int>				texIndexResource_;
 	StructuredResource<float>			constFloatResource_;
 
+	/// <summary>
+	/// データが決まったらバッファとヒープを作成する
+	/// </summary>
+	void CreateEachDataBuffer();
+
+private:
+	const std::wstring shaderPath_;
+	ComPtr<ID3D12PipelineState> pipelineState_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> heap_ = nullptr;
 
 };

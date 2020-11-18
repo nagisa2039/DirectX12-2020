@@ -10,11 +10,11 @@
 #include "ModelData.h"
 #include <memory>
 #include "Utility/TextureStruct.h"
-#include "ModelBufferStruct.h"
 
 class VMDMotion;
 class Dx12Wrapper;
 class ModelRenderer;
+class ModelMaterial;
 using Microsoft::WRL::ComPtr;
 
 class ModelActor
@@ -61,12 +61,8 @@ private:
 	// インデックスバッファビュー
 	D3D12_INDEX_BUFFER_VIEW ibView_ = {};
 
-	// GPUに転送用マテリアル配列
-	std::vector<MaterialStruct> mats_;
-
-	// マテリアルバッファ
-	ComPtr<ID3D12Resource> materialBuffer_ = nullptr;
-	ComPtr<ID3D12DescriptorHeap> materialHeap_ = nullptr;
+	// マテリアル
+	std::unique_ptr<ModelMaterial> modelMaterial_;
 
 	// マテリアルインデックスバッファ
 	ComPtr<ID3D12Resource> materialIndexBuffer_ = nullptr;

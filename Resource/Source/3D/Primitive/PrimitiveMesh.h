@@ -1,12 +1,13 @@
 #pragma once
 #include <DirectXMath.h>
-#include <wrl.h>
+#include "Utility/ComPtr.h"
 #include <d3d12.h>
 #include <vector>
 #include <string>
+#include <memory>
 
 class Dx12Wrapper;
-using Microsoft::WRL::ComPtr;
+class Material;
 
 class PrimitiveMesh
 {
@@ -31,6 +32,14 @@ public:
 			uv(DirectX::XMFLOAT2(0.0f, 0.0f)) {};
 	};
 
+	// (dx12の管理クラス, 座標, テクスチャファイルパス)
+	PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
+	~PrimitiveMesh();
+	// 更新
+	virtual void Update();
+	// 描画
+	virtual void Draw();
+
 protected:
 	Dx12Wrapper& dx12_;
 
@@ -44,6 +53,8 @@ protected:
 	D3D12_INDEX_BUFFER_VIEW ibv_;
 
 	int indexNum_;
+
+	std::unique_ptr<Material> material_;
 
 	// 座標
 	DirectX::XMFLOAT3 pos_;
@@ -73,14 +84,5 @@ protected:
 	DirectX::XMVECTOR GetSurfaceNormal(const DirectX::XMVECTOR& v0, const DirectX::XMVECTOR& v1, const DirectX::XMVECTOR& v2);
 	// 三角形の表面法線の取得(頂点配列, 中心)
 	void CalNormalVertex2(std::vector<PrimVertex>& vertices, DirectX::XMFLOAT3 center);
-
-public:
-	// (dx12の管理クラス, 座標, テクスチャファイルパス)
-	PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
-	~PrimitiveMesh();
-	// 更新
-	virtual void Update();
-	// 描画
-	virtual void Draw();
 };
 

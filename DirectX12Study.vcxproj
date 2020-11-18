@@ -19,14 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resource\Source\2D\Raymarching.h" />
-    <ClInclude Include="Resource\Source\2D\MosaicMaterial.h" />
-    <ClInclude Include="Resource\Source\2D\MaterialBase.h" />
-    <ClInclude Include="Resource\Source\2D\ModelEndRendering.h" />
+    <ClInclude Include="Resource\Source\Material\MaterialBase.h" />
+    <ClInclude Include="Resource\Source\Material\ModelMaterial.h" />
+    <ClInclude Include="Resource\Source\Material\ModelEndRendering.h" />
     <ClInclude Include="Resource\Source\3D\Camera.h" />
     <ClInclude Include="Resource\Source\3D\RendererManager.h" />
     <ClInclude Include="Resource\Source\3D\Renderer.h" />
-    <ClInclude Include="Resource\Source\3D\Model\ModelBufferStruct.h" />
     <ClInclude Include="Resource\Source\Game\Animator.h" />
     <ClInclude Include="Resource\Source\Game\Player.h" />
     <ClInclude Include="Resource\Source\3D\Primitive\PlaneMesh.h" />
@@ -60,13 +58,12 @@
     <ClInclude Include="Resource\Source\System\SoundManager.h" />
     <ClInclude Include="Resource\Source\System\ShaderLoader.h" />
     <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h" />
-    <ClInclude Include="Resource\Source\2D\Material.h" />
-    <ClInclude Include="Resource\Source\2D\StanderedMaterial.h" />
+    <ClInclude Include="Resource\Source\Material\Material.h" />
+    <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Resource\Source\2D\Raymarching.cpp" />
-    <ClCompile Include="Resource\Source\2D\MosaicMaterial.cpp" />
-    <ClCompile Include="Resource\Source\2D\ModelEndRendering.cpp" />
+    <ClCompile Include="Resource\Source\Material\ModelMaterial.cpp" />
+    <ClCompile Include="Resource\Source\Material\ModelEndRendering.cpp" />
     <ClCompile Include="Resource\Source\3D\Camera.cpp" />
     <ClCompile Include="Resource\Source\3D\RendererManager.cpp" />
     <ClCompile Include="Resource\Source\Game\Animator.cpp" />
@@ -95,8 +92,8 @@
     <ClCompile Include="Resource\Source\Utility\Geometry.cpp" />
     <ClCompile Include="Resource\Source\Utility\Input.cpp" />
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp" />
-    <ClCompile Include="Resource\Source\2D\Material.cpp" />
-    <ClCompile Include="Resource\Source\2D\StanderedMaterial.cpp" />
+    <ClCompile Include="Resource\Source\Material\Material.cpp" />
+    <ClCompile Include="Resource\Source\Material\StanderedMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\2D\ModelEndRendering.hlsl">
