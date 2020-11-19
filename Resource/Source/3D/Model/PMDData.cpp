@@ -51,8 +51,6 @@ bool PMDData::LoadFromPMD(std::string modelPath)
 	// マテリアルの読み込み
 	LoadMaterial(fp, modelPath);
 
-	SetVertexMaterialIndex();
-
 	// ボーンの読み込み
 	LoadBone(fp);
 
@@ -152,7 +150,7 @@ void PMDData::LoadMaterial(FILE * fp, std::string &modelPath)
 				auto ext = GetExtension(name);
 				if (ext == "sph")
 				{
-					texPaths_[idx].sphPath = WStringFromString(GetFolderPath(modelPath + name));
+					texPaths_[idx].sphPath = WStringFromString(GetFolderPath(modelPath) + name);
 				}
 				else if (ext == "spa")
 				{

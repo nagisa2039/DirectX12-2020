@@ -56,8 +56,6 @@ bool PMXData::LoadFromPMX(std::string modelPath)
 	// マテリアルの読み込み
 	LoadMaterial(fp, modelPath);
 
-	SetVertexMaterialIndex();
-
 	// ボーンの読み込み
 	LoadBone(fp);
 

@@ -237,7 +237,7 @@ void ModelRenderer::DrawShadow()
 	commandList.SetPipelineState(shadowPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
-	dx12_.GetCamera().SetCameraDescriptorHeap(2); 
+	dx12_.GetCamera().SetCameraDescriptorHeap(1); 
 	texLoader.SetTextureDescriptorHeap(0);
 
 	for (auto& actor : modelActors_)

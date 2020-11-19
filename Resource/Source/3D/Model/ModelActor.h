@@ -64,10 +64,6 @@ private:
 	// マテリアル
 	std::unique_ptr<ModelMaterial> modelMaterial_;
 
-	// マテリアルインデックスバッファ
-	ComPtr<ID3D12Resource> materialIndexBuffer_ = nullptr;
-	ComPtr<ID3D12DescriptorHeap> materialIndexHeap_ = nullptr;
-
 	Transform trans_;
 	DirectX::XMMATRIX* mappedTrans_;
 

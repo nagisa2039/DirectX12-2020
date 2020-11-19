@@ -25,39 +25,9 @@ std::vector<ModelData::Material>& ModelData::GetMaterialData()
 	return materials_;
 }
 
-std::vector<unsigned int>& ModelData::GetMaterialIndexData()
-{
-	return materialIndexData_;
-}
-
 std::vector<ModelData::Bone>& ModelData::GetBoneData()
 {
 	return bones_;
-}
-
-void ModelData::SetVertexMaterialIndex()
-{
-	const auto indexNum = indexData_.size();
-	const int primitiveVertNum = 3;
-	assert(indexNum % primitiveVertNum == 0);
-	materialIndexData_.resize(indexNum/ primitiveVertNum);
-
-	int indexOffset = 0;
-	for (unsigned int matIdx = 0; auto& mat : materials_)
-	{
-		uint32_t index = 0;
-		while (true)
-		{
-			materialIndexData_[(Uint64(indexOffset) + index) / primitiveVertNum] = matIdx;
-			index += primitiveVertNum;
-			if (index >= mat.indeicesNum)
-			{
-				indexOffset += mat.indeicesNum;
-				matIdx++;
-				break;
-			}
-		}
-	}
 }
 
 std::vector<ModelData::MultiTexturePath>& ModelData::GetTexturePaths()

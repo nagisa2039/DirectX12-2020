@@ -73,11 +73,10 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	spriteDrawer.SetMaterial(raymarchingMat_);
-	spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	spriteDrawer.SetMaterial(mosaicMat_);
+	//spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
 
 	spriteDrawer.DrawRotaGraph(1200, 300, 0.5f, 0.0f, tnktH_);
@@ -88,6 +87,7 @@ void PlayScene::Draw()
 	spriteDrawer.DrawExtendGraph(0, 300, aspect * size, 300 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
 	spriteDrawer.DrawExtendGraph(0, 400, aspect * size, 400 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_NORMAL));
 	spriteDrawer.DrawExtendGraph(0, 500, aspect * size, 500 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
+	spriteDrawer.DrawExtendGraph(0, 600, aspect * size, 600 + size, texLoader.GetGraphHandle(D3D_LIGHT_VIEW_SCREEN));
 
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	player_->Draw();

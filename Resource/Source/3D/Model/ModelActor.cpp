@@ -271,10 +271,6 @@ void ModelActor::Draw()
 
 	// 設定
 
-	// materialIndex for Primitive
-	commandList.SetDescriptorHeaps(1, materialIndexHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(9, materialIndexHeap_->GetGPUDescriptorHandleForHeapStart());
-
 	// インデックスバッファのセット
 	commandList.IASetIndexBuffer(&ibView_);
 	// 頂点バッファビューの設定
@@ -401,13 +397,16 @@ bool ModelActor::CreateMaterial()
 		return XMFLOAT3(float4.x, float4.y, float4.z);
 	};
 
+	std::vector<float> constFloatVec(materials.size());
 	for (int i = 0; auto & materialBase : meterialBaseVec)
 	{
 		const auto& mat = materials[i];
-		materialBase = MaterialBase{ FLOAT3(mat.diffuse),
+		materialBase = MaterialBase{ mat.diffuse,
 			mat.specular, mat.ambient, mat.power, -1 };
+		constFloatVec[i] = Float(mat.indeicesNum);
 		i++;
 	}
+
 
 	auto& texLoader = dx12_.GetTexLoader();
 	auto GetTexture = [&texLoader = texLoader](const std::wstring& path, const int failedIdx)
@@ -437,12 +436,7 @@ bool ModelActor::CreateMaterial()
 		addTexVec[Uint64(j + 3)]			 = GetTexture(texPaths[matIdx].toonPath, dummyTexHandles.whiteTexH);
 	}
 
-	modelMaterial_ = make_unique<ModelMaterial>(meterialBaseVec, addTexVec);
-
-	// マテリアルインデックス
-	auto& materialIndexData = modelData_->GetMaterialIndexData();
-	decltype(&materialIndexData[0]) mi = nullptr;
-	CreateStructuredBufferAndHeap(&dev, materialIndexBuffer_, materialIndexHeap_, materialIndexData, mi, true);
+	modelMaterial_ = make_unique<ModelMaterial>(meterialBaseVec, addTexVec, constFloatVec);
 
 	return true;
 }

@@ -28,7 +28,7 @@ PlaneMesh::PlaneMesh(Dx12Wrapper& dx12, const XMFLOAT3& pos, const float width, 
 
 	std::vector<MaterialBase> mbvec;
 	mbvec.emplace_back(MaterialBase{
-		XMFLOAT3(1.0f, 1.0f, 1.0f), 
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 
 		XMFLOAT3(1.0f, 1.0f, 1.0f), 
 		XMFLOAT3(0.0f, 0.0f, 0.0f),
 		0.0f, -1 });

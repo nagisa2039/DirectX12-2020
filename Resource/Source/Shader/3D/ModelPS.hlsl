@@ -1,11 +1,27 @@
 #include "Model.hlsli"
+uint GetMaterialIndex(uint primitiveID)
+{
+	float end = 0.0f;
+	uint num, stride;
+	materialBase.GetDimensions(num, stride);
+	float indicesNum = (float) primitiveID * 3.0f;
+	for (int i = 0; i < num; ++i)
+	{
+		end += constandFloat[i];
+		if (end > indicesNum)
+		{
+			return i;
+		}
+	}
+	return 0;
+}
 
 //ピクセルシェーダ
-//[RootSignature(RS)]
+[RootSignature(RS)]
 PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 {
 	PixelOut po;
-	uint matIdx = materialIndexs[primitiveID];
+	uint matIdx = GetMaterialIndex(primitiveID);
 	MaterialBase mat = materialBase[matIdx];
 	
 	Texture2D<float4> sphTex  = tex[addTexIndex[matIdx * 4 + 0]];
