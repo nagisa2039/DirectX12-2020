@@ -64,8 +64,6 @@ void PlayScene::Draw()
 	auto& spriteDrawer = dx12.GetSpriteDrawer();
 	auto wsize = Application::Instance().GetWindowSize();
 
-	int shadowH = texLoader.GetGraphHandle(D3D_LIGHT_VIEW_SCREEN);
-
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
 	spriteDrawer.SetDrawBright(255, 255, 255);
@@ -77,18 +75,18 @@ void PlayScene::Draw()
 
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	//spriteDrawer.SetMaterial(mosaicMat_);
-	spriteDrawer.DrawGraph(0, 0, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
+	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	spriteDrawer.DrawRotaGraph(1200, 300, 0.5f, 0.0f, tnktH_);
 	spriteDrawer.DrawRotaGraph(1200, 500, 0.5f, 0.0f, dmdnH_);
 
 	int size = 100;
 	float aspect = wsize.w / static_cast<float>(wsize.h);
+	spriteDrawer.DrawExtendGraph(0, 200, aspect * size, 200 + size, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
 	spriteDrawer.DrawExtendGraph(0, 300, aspect * size, 300 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
 	spriteDrawer.DrawExtendGraph(0, 400, aspect * size, 400 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_NORMAL));
 	spriteDrawer.DrawExtendGraph(0, 500, aspect * size, 500 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
-	spriteDrawer.DrawExtendGraph(0, 600, aspect * size, 600 + size, texLoader.GetGraphHandle(D3D_LIGHT_VIEW_SCREEN));
-
+	
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	player_->Draw();
 

@@ -129,9 +129,6 @@
     <ClInclude Include="Resource\Source\Utility\Input.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Utility\Geometry.h">
-      <Filter>ヘッダー ファイル\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\Game\Player.h">
       <Filter>ヘッダー ファイル\Game</Filter>
     </ClInclude>
@@ -234,9 +231,6 @@
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\Utility\Input.cpp">
-      <Filter>ソース ファイル\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Utility\Geometry.cpp">
       <Filter>ソース ファイル\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\Game\Player.cpp">

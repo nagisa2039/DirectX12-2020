@@ -10,7 +10,6 @@
 #include <DirectXMath.h>
 #include <string>
 #include "Utility/TextureStruct.h"
-#include "Utility/Geometry.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -80,6 +79,13 @@ public:
 	/// ‘S‰æ–Ê‚ÉViewport‚ÆScissor‚ğİ’è‚·‚é
 	/// </summary>
 	void SetDefaultViewAndScissor();
+
+	/// <summary>
+	/// w’è”ÍˆÍ‚É‚ÉViewport‚ÆScissor‚ğİ’è‚·‚é
+	/// </summary>
+	/// <param name="width">‰æ–Ê•</param>
+	/// <param name="height">‰æ–Ê‚‚³</param>
+	void SetViewAndScissor(const UINT width, const UINT height);
 
 private:
 	HWND hwnd_;

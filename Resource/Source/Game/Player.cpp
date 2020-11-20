@@ -2,6 +2,7 @@
 #include "Animator.h"
 #include "Utility/Input.h"
 #include "System/Application.h"
+#include "Utility/Cast.h"
 
 using namespace std;
 
@@ -11,7 +12,7 @@ Player::Player()
 	animator_->FolderImageReadAndInitAnim(L"idle", 6, true, L"Resource/Image/Hero Knight/Sprites/HeroKnight/Idle/HeroKnight_Idle_");
 	animator_->ChengeAnim(L"idle");
 
-	pos_ = Vector2f();
+	pos_ = DirectX::XMFLOAT2(0.0f, 0.0f);
 }
 
 Player::~Player()
@@ -40,5 +41,5 @@ void Player::Update()
 
 void Player::Draw()
 {
-	animator_->Draw(pos_.ToVector2<int>(), 1.0f, false);
+	animator_->Draw(DirectX::XMINT2(Int32(pos_.x), Int32(pos_.y)), 1.0f, false);
 }

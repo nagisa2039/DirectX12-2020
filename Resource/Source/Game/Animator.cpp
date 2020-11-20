@@ -7,6 +7,8 @@
 #include <sstream>
 #include "Utility/Constant.h"
 
+using namespace DirectX;
+
 Animator::Animator()
 {
 	animationName_ = L"";
@@ -40,8 +42,7 @@ bool Animator::FolderImageRead(const std::wstring& path, std::vector<AnimRect>& 
 		unsigned int width, height;
 		texLoader.GetGraphSize(handle, width, height);
 		animRect.emplace_back(AnimRect{ handle, 
-			Rect(Vector2i(width/2, height/2), 
-			Size(width, height)), Vector2i(width/2, height-1)});
+			Rect{XMINT2(width / 2, height / 2), XMINT2(width, height)}, XMINT2(width / 2, height - 1) });
 		num++;
 	}
 	return num <= 0;
@@ -79,7 +80,7 @@ void Animator::Update()
 	animFrame_++;
 }
 
-void Animator::Draw(const Vector2i pos, const float exRate, const bool turn)
+void Animator::Draw(const XMINT2& pos, const float exRate, const bool turn)
 {
 	const auto& anim = animations_[animationName_];
 	int idx = 0;
@@ -93,12 +94,29 @@ void Animator::Draw(const Vector2i pos, const float exRate, const bool turn)
 	}
 	auto& animRect = anim.animRectVec[idx];
 
-	auto drawRect = Rect(pos, animRect.rect.size * exRate);
+	auto drawRect = Rect{ pos, XMINT2(animRect.rect.size.x * exRate, animRect.rect.size.y * exRate) };
 	//if (!camera.GetCameraRect().IsHit(drawRect))return;
 	//drawRect.center += camera.GetOffset();
 
 	auto& spriteDrawer = Application::Instance().GetDx12().GetSpriteDrawer();
 	spriteDrawer.DrawRectRotaGraph2(drawRect.center.x, drawRect.center.y,
-		animRect.rect.Left(), animRect.rect.Top(), animRect.rect.size.w, animRect.rect.size.h,
+		animRect.rect.Left(), animRect.rect.Top(), animRect.rect.size.x, animRect.rect.size.y,
 		animRect.center.x, animRect.center.y, exRate, 0.0, animRect.handle);
+}
+
+unsigned int Animator::Rect::Top()const
+{
+	return center.y - size.y / 2;
+}
+unsigned int Animator::Rect::Bottom()const
+{
+	return center.y + size.y / 2;
+}
+unsigned int Animator::Rect::Left()const
+{
+	return center.x - size.x / 2;
+}
+unsigned int Animator::Rect::Right()const
+{
+	return center.x + size.x / 2;
 }

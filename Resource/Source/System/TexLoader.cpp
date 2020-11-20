@@ -558,7 +558,7 @@ void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 	cmd_.Execute();
 
 	// — ‰æ–Ê‚Æ•\‰æ–Ê‚ÌØ‚è‘Ö‚¦
-	swapChain.Present(1, 0);
+	swapChain.Present(0, 0);
 }
 
 int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height)

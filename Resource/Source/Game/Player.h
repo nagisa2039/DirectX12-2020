@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "Utility/Geometry.h"
+#include <DirectXMath.h>
 
 class Animator;
 
@@ -14,7 +14,7 @@ public:
 	void Draw();
 
 private:
-	Vector2f pos_;
+	DirectX::XMFLOAT2 pos_;
 	std::unique_ptr<Animator> animator_;
 };
 

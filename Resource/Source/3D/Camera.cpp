@@ -1,5 +1,4 @@
 #include "Camera.h"
-#include "Utility/Geometry.h"
 #include "Utility/dx12Tool.h"
 #include "System/Application.h"
 #include "System/Command.h"
@@ -61,24 +60,24 @@ void Camera::SetCameraDescriptorHeap(const UINT rootParamIdx)
 		cameraHeap_->GetGPUDescriptorHandleForHeapStart());
 }
 
-Vector3 Camera::GetCameraPosition() const
+DirectX::XMFLOAT3 Camera::GetCameraPosition() const
 {
-	return Vector3(eye_.x, eye_.y, eye_.z);
+	return DirectX::XMFLOAT3(eye_.x, eye_.y, eye_.z);
 }
 
-Vector3 Camera::GetCameraTarget() const
+DirectX::XMFLOAT3 Camera::GetCameraTarget() const
 {
-	return Vector3(target_.x, target_.y, target_.z);
+	return DirectX::XMFLOAT3(target_.x, target_.y, target_.z);
 }
 
-void Camera::SetCameraPosision(const Vector3& pos)
+void Camera::SetCameraPosision(const DirectX::XMFLOAT3& pos)
 {
-	eye_ = pos.ToXMFloat3();
+	eye_ = pos;
 }
 
-void Camera::SetCameraTarget(const Vector3& target)
+void Camera::SetCameraTarget(const DirectX::XMFLOAT3& target)
 {
-	target_ = target.ToXMFloat3();
+	target_ = target;
 }
 
 bool Camera::CreateCameraConstantBufferAndView()

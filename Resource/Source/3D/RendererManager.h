@@ -32,7 +32,7 @@ private:
 	std::vector<std::shared_ptr<Renderer>> renderers_;
 
 	int cameraScreenH_;
-	int lightScreenH_;
+	int shrinkScreenH_;
 
 	ComPtr<ID3D12DescriptorHeap> renderTargetHeap_;
 	std::array<int, static_cast<uint64_t>(RenderTargetType::max)> rendetTargetHandles_;

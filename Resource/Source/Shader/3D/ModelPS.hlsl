@@ -46,32 +46,26 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 
 	// ƒXƒyƒLƒ…ƒ‰
 	float specB = saturate(dot(rLight, -eyeRay));
-	if (specB > 0 && mat.power > 0)
-	{
-		specB = pow(specB, mat.power);
-	}
+	specB = pow(max(specB, 0), max(mat.power, 0));
 
 	float bright = saturate(dot(input.normal.xyz, -lightDirNormal));
 	float4 toonColor = float4(toonTex.Sample(toomSmp, float2(0, 1.0 - bright)).rgb, 1.0f);
 
 	float4 texColor = tex[mat.textureIndex].Sample(smp, input.uv);
 	
-	float4 sphColor = sphTex.Sample(smp, sphUV);
+	float4 sphColor = float4(sphTex.Sample(smp, sphUV).rgb, 1.0f);
 	float4 spaColor = spaTex.Sample(smp, sphUV);
 
-	float4 specColor = float4((mat.specular * specB).rgb, 0);
+	float4 specColor = float4(saturate(mat.specular * specB).rgb, 0);
 	float4 ambientColor = float4((mat.ambient * 0.005f).rgb, 0);
-	float4 ret = float4(mat.diffuse.rgb, 1.0f) * texColor * toonColor * sphColor + specColor + spaColor + ambientColor;
 	
-	float shadowWeight = 1.0f;
+	float4 baseColor = saturate(mat.diffuse * texColor);
+	float4 ret = float4(saturate(float3(baseColor.rgb * toonColor.rgb * sphColor.rgb + specColor.rgb + spaColor.rgb + ambientColor.rgb)), baseColor.a);
+	
 	float3 posFromLight = input.tpos.xyz / input.tpos.w;
 	float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
 	float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z - 0.005f);
-	if (posFromLight.z > shadowZ + 0.0005f)
-	{
-		shadowWeight = 0.7f;
-	}
-
+	float shadowWeight = 1.0f - 0.3f * step(shadowZ + 0.0005f, posFromLight.z);
 	float edge = abs(dot(eyeRay, input.normal.xyz)) < edgeWidth ? 1 - edgePower : 1;
 	float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
 	lim = pow(lim, limColor.a);
@@ -83,11 +77,8 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
 	po.normal.a = input.normal.a = 1;
 
-	po.bright = float4(0, 0, 0, 1);
-	float b = step(dot(po.color.rgb, float3(0.3f, 0.4f, 0.3f)), 0.9f);
-	{
-		po.bright = float4(b, b, b, 1);
-	}
+	float b = step(0.9f, dot(po.color.rgb, float3(0.3f, 0.4f, 0.3f)));
+	po.bright = float4(b, b, b, 1);
 
 	return po;
 }

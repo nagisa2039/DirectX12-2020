@@ -121,23 +121,27 @@ Camera& Dx12Wrapper::GetCamera()
 
 void Dx12Wrapper::SetDefaultViewAndScissor()
 {
-	D3D12_VIEWPORT viewport = {};
-	D3D12_RECT scissorRect = {};
-
 	unsigned int screenW, screenH;
 	texLoader_->GetScreenSize(screenW, screenH);
 
+	SetViewAndScissor(screenW, screenH);
+}
+
+void Dx12Wrapper::SetViewAndScissor(const UINT width, const UINT height)
+{
+	D3D12_VIEWPORT viewport = {};
+	D3D12_RECT scissorRect = {};
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = Float(screenW);
-	viewport.Height = Float(screenH);
+	viewport.Width = Float(width);
+	viewport.Height = Float(height);
 	viewport.MaxDepth = 1.0f;
 	viewport.MinDepth = 0.0f;
 
 	scissorRect.left = 0;
 	scissorRect.top = 0;
-	scissorRect.right = screenW;
-	scissorRect.bottom = screenH;
+	scissorRect.right = width;
+	scissorRect.bottom = height;
 
 	auto& commandList = cmd_->CommandList();
 	commandList.RSSetViewports(1, &viewport);

@@ -51,7 +51,6 @@
     <ClInclude Include="Resource\Source\System\FPSManager.h" />
     <ClInclude Include="Resource\Source\System\TexLoader.h" />
     <ClInclude Include="Resource\Source\Utility\dx12Tool.h" />
-    <ClInclude Include="Resource\Source\Utility\Geometry.h" />
     <ClInclude Include="Resource\Source\Utility\Input.h" />
     <ClInclude Include="Resource\Source\Utility\Tool.h" />
     <ClInclude Include="Resource\Source\Utility\TextureStruct.h" />
@@ -89,7 +88,6 @@
     <ClCompile Include="Resource\Source\System\TexLoader.cpp" />
     <ClCompile Include="Resource\Source\System\SoundManager.cpp" />
     <ClCompile Include="Resource\Source\System\WAVFileReader.cpp" />
-    <ClCompile Include="Resource\Source\Utility\Geometry.cpp" />
     <ClCompile Include="Resource\Source\Utility\Input.cpp" />
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp" />
     <ClCompile Include="Resource\Source\Material\Material.cpp" />

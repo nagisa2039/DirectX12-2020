@@ -12,6 +12,11 @@
 
 using namespace std;
 
+namespace
+{
+	constexpr unsigned int SHRINK_CNT = 4;
+}
+
 RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
 {
 	renderers_.emplace_back(make_shared<ModelRenderer>(dx12_));
@@ -29,7 +34,7 @@ RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
 	}
 
 	cameraScreenH_ = texLoader.MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
-	lightScreenH_	= texLoader.MakeScreen(D3D_LIGHT_VIEW_SCREEN, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+	shrinkScreenH_ = texLoader.MakeScreen(D3D_CAMERA_SHRINK_SCREEN, wsize.w/2, wsize.h);
 
 	modelEndrendering_ = make_shared<ModelEndRendering>();
 
@@ -56,21 +61,25 @@ void RendererManager::Draw()
 
 	commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	texLoader.SetDrawScreen(lightScreenH_, TexLoader::DepthType::light);
+	// 影のレンダリング
+	std::list<int> nullTargets;
+	texLoader.SetDrawScreen(nullTargets, TexLoader::DepthType::light);
 	texLoader.ClsDrawScreen();
 
-	dx12_.SetDefaultViewAndScissor();
+	dx12_.SetViewAndScissor(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
 
 	for (auto& renderer : renderers_)
 	{
 		renderer->DrawShadow();
 	}
 
+	// マルチレンダリング
 	std::list<int> rtList;
 	for (auto rtHandle : rendetTargetHandles_)
 	{
 		rtList.emplace_back(rtHandle);
 	}
+
 	texLoader.SetDrawScreen(rtList, TexLoader::DepthType::camera);
 	texLoader.ClsDrawScreen();
 
@@ -81,15 +90,33 @@ void RendererManager::Draw()
 		renderer->Draw();
 	}
 
-	texLoader.SetDrawScreen(cameraScreenH_, TexLoader::DepthType::max);
+	// 縮小バッファへの描画
+	auto& spriteDrawer = dx12_.GetSpriteDrawer();
+	spriteDrawer.SetDrawScreen(shrinkScreenH_);
+	
+	texLoader.ClsDrawScreen(); 
+	int highLumH = rendetTargetHandles_[Uint64(RenderTargetType::bright)];
+	unsigned int w, h;
+	int top,left;
+	top = left = 0;
+	texLoader.GetGraphSize(highLumH, w, h);
+	for (int i = 0; i < SHRINK_CNT; ++i)
+	{
+		w /= 2;
+		h /= 2;
+		spriteDrawer.DrawExtendGraph(left, top, left + w, top + h, highLumH);
+		top += h;
+	}
+
+	// レンダリング結果の合成
+	spriteDrawer.SetDrawScreen(cameraScreenH_);
 	texLoader.ClsDrawScreen();
 
 	dx12_.SetDefaultViewAndScissor();
-	auto& spriteDrawer = dx12_.GetSpriteDrawer();
-
 
 	spriteDrawer.SetMaterial(modelEndrendering_);
 	spriteDrawer.DrawGraph(0, 0, rendetTargetHandles_.front());
+	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 }
 
 void RendererManager::CreateRenderTargetHeap()

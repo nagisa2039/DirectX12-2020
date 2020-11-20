@@ -7,7 +7,7 @@
 #include <functional>
 #include <windows.h>
 #include "Utility/ComPtr.h"
-#include "Utility/Geometry.h"
+#include <DirectXMath.h>
 
 class Input
 {
@@ -95,7 +95,7 @@ private:
 	/// </summary>
 	std::array<inputFunc_t, static_cast<size_t>(PeripheralType::max)> peripheralInfFuncs_;
 
-	Vector2i mousePos_;		// マウスの座標
+	DirectX::XMINT2 mousePos_;		// マウスの座標
 
 	/// <summary>
 	/// 入力テーブルを取得する

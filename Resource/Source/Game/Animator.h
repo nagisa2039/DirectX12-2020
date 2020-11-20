@@ -2,9 +2,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include "Utility/Geometry.h"
-
-//class Camera;
+#include <DirectXMath.h>
 
 class Animator
 {
@@ -15,11 +13,22 @@ public:
 	Animator();
 	~Animator() = default;
 
+	struct Rect
+	{
+		DirectX::XMINT2 center;
+		DirectX::XMINT2 size;
+
+		unsigned int Top()const;
+		unsigned int Bottom()const;
+		unsigned int Left()const;
+		unsigned int Right()const;
+	};
+
 	struct AnimRect
 	{
 		int handle;
 		Rect rect;
-		Vector2i center;
+		DirectX::XMINT2 center;
 	};
 
 	struct Animation
@@ -66,7 +75,7 @@ public:
 	/// <param name="exRate">ägëÂó¶</param>
 	/// <param name="turn">îΩì]</param>
 	/// <param name="camera">ÉJÉÅÉâ</param>
-	void Draw(const Vector2i pos, const float exRate, const bool turn);
+	void Draw(const DirectX::XMINT2& pos, const float exRate, const bool turn);
 
 private:
 	std::map<std::wstring, Animation> animations_;

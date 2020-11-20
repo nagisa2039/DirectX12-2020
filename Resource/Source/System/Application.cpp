@@ -146,7 +146,7 @@ void Application::Run()
 		input_->Update();
 		sceneController_->SceneUpdate();
 
-		fpsManager_->Wait();
+		//fpsManager_->Wait();
 	}
 }
 

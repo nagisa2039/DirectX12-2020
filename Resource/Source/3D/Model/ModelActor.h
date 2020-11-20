@@ -47,14 +47,12 @@ private:
 	ModelRenderer& renderer_;
 	Dx12Wrapper& dx12_;
 
-
 	std::shared_ptr<ModelData> modelData_;
 
 	// 頂点バッファ
 	ComPtr<ID3D12Resource> vertexBuffer_ = nullptr;
 	// 頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vbView_ = {};
-
 
 	// 頂点インデックスバッファ
 	ComPtr<ID3D12Resource> indexBuffer_ = nullptr;

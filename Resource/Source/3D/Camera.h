@@ -2,7 +2,6 @@
 #include "Utility/ComPtr.h"
 #include <d3d12.h>
 #include <DirectXMath.h>
-#include "Utility/Geometry.h"
 
 class Command;
 class ID3D12Device;
@@ -24,24 +23,24 @@ public:
 	/// <summary>
 	/// カメラの座標取得
 	/// </summary>
-	Vector3 GetCameraPosition()const;
+	DirectX::XMFLOAT3 GetCameraPosition()const;
 
 	/// <summary>
 	/// カメラのターゲット座標の取得
 	/// </summary>
-	Vector3 GetCameraTarget()const;
+	DirectX::XMFLOAT3 GetCameraTarget()const;
 
 	/// <summary>
 	/// カメラの座標設定
 	/// </summary>
 	/// <param name="pos">カメラ座標</param>
-	void SetCameraPosision(const Vector3& pos);
+	void SetCameraPosision(const DirectX::XMFLOAT3& pos);
 
 	/// <summary>
 	/// カメラのターゲット座標設定
 	/// </summary>
 	/// <param name="target">ターゲット座標</param>
-	void SetCameraTarget(const Vector3& target);
+	void SetCameraTarget(const DirectX::XMFLOAT3& target);
 
 	/// <summary>
 	/// カメラ行列の更新
