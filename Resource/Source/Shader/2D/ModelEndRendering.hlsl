@@ -3,7 +3,7 @@
 float3 GetBulr(const Texture2D tex, const uint w, const uint h, const float2 uv)
 {
 	float3 ret = float3(0.0f, 0.0f, 0.0f);
-	const int lapCnt = 1;
+	const int lapCnt = 2;
 	const int cnt = 1 + 2 * lapCnt;
 	const int totalCnt = cnt * cnt;
 	const float dx = 1.0f / (float)w;
@@ -30,17 +30,16 @@ float3 GetShrinkColor(const Texture2D shrinkTex, const float2 uv)
 	h /= 2;
 	currentUV.y = 0.0f;
 	
-	for (int i = 0; i < shrinkCnt; ++i)
-	{
-		ret += GetBulr(shrinkTex, w, h, currentUV);
-		currentUV.y += (1.0f - uv.y) * h / (float) defaultH;
-		w /= 2;
-		h /= 2;
-		currentUV.x /= 2.0f;
-		currentUV.y += uv.y * h / (float) defaultH;
-
-	}
-	ret /= shrinkCnt;
+    float2 uvSize = float2(1.0f, 0.5f);
+    float2 uvOffset = float2(0.0f, 0.0f);
+    for (int j = 0; j < shrinkCnt; j++)
+    {
+        ret += GetBulr(shrinkTex, w, h, uv * uvSize + uvOffset);
+        uvOffset.y += uvSize.y;
+        uvSize *= 0.5f;
+    }
+    ret /= shrinkCnt;
+	
 	return ret;
 }
 
@@ -62,7 +61,7 @@ float4 PS(Output input) : SV_TARGET
 	
 	float bright = saturate(dot(-lightDirNormal, normal.rgb));
 	float3 shrinkColor = GetShrinkColor(shrinkTex, input.uv);
-	float3 color = saturate(baseColor.rgb/* + shrinkColor*/);
+    float3 color = saturate(baseColor.rgb + shrinkColor);
 	
 	return float4(color * pixcelInf[input.instanceID].bright, baseColor.a * pixcelInf[input.instanceID].alpha);
 }

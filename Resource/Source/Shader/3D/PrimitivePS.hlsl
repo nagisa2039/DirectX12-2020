@@ -36,7 +36,7 @@ PixelOut PS(VertexOut input)
 	po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
 	po.normal.a = input.normal.a = 1;
 	
-	float b = step(0.9f, dot(po.color.rgb * bright, float3(0.3f, 0.4f, 0.3f)));
+    float b = step(0.95f, dot(po.color.rgb * bright, float3(0.3f, 0.4f, 0.3f)));
 	po.bright = float4(b, b, b, 1);
 
 	return po;
