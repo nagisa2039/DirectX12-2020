@@ -24,9 +24,6 @@ PlaneMesh::PlaneMesh(Dx12Wrapper& dx12, const XMFLOAT3& pos, const float width, 
 	CreateVertexBufferAndView(vertices);
 	CreateIndexBufferAndView(indices);
 
-	rotate_ = { 0.0f,0.0f,0.0f };
-	CreateTransBuffer();
-
 	std::vector<MaterialBase> mbvec;
 	mbvec.emplace_back(MaterialBase{
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 

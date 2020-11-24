@@ -42,23 +42,6 @@ void PrimitiveMesh::CreateIndexBufferAndView(std::vector<uint16_t> indices)
 	indexNum_ = ibv_.SizeInBytes / sizeof(uint16_t);
 }
 
-void PrimitiveMesh::CreateTransBuffer()
-{
-	// 座標の定数バッファの作成
-	CreateUploadBuffer(&dx12_.GetDevice(), transCB_, sizeof(*mappedTrans_));
-	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
-
-	*mappedTrans_ =
-		XMMatrixRotationRollPitchYaw(rotate_.x, rotate_.y, rotate_.z)
-		*XMMatrixTranslation(pos_.x, pos_.y, pos_.z);
-
-	// 座標のヒープ作成
-	CreateDescriptorHeap(&dx12_.GetDevice(), worldHeap_);
-
-	// 定数バッファビューの作成
-	CreateConstantBufferView(&dx12_.GetDevice(), transCB_, worldHeap_->GetCPUDescriptorHandleForHeapStart());
-}
-
 void PrimitiveMesh::CalNormalVertex(std::vector<PrimVertex>& vertices, const std::vector<uint16_t>& indices)
 {
 	for (int j = 0; j < vertices.size(); j++)
@@ -98,9 +81,15 @@ void PrimitiveMesh::CalNormalVertex2(std::vector<PrimVertex>& vertices, XMFLOAT3
 	}
 }
 
-PrimitiveMesh::PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):dx12_(dx12), pos_(pos)
+PrimitiveMesh::PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):dx12_(dx12)
 {
 	animCnt_ = 0;
+	vbv_ = {};
+	ibv_ = {};
+	indexNum_ = 0;
+	auto trans = GetTransform();
+	trans.pos = pos;
+	SetTransform(trans);
 }
 
 PrimitiveMesh::~PrimitiveMesh()
@@ -109,11 +98,6 @@ PrimitiveMesh::~PrimitiveMesh()
 
 void PrimitiveMesh::Update()
 {
-	animCnt_++;
-
-	*mappedTrans_ =
-		XMMatrixRotationRollPitchYaw(rotate_.x * XM_PI / 180.0f, rotate_.y * XM_PI / 180.0f, rotate_.z * XM_PI / 180.0f)
-		*XMMatrixTranslation(pos_.x, pos_.y, pos_.z);
 }
 
 void PrimitiveMesh::Draw()
@@ -122,8 +106,8 @@ void PrimitiveMesh::Draw()
 	auto& cmdList = dx12_.GetCommand().CommandList();
 	material_->SetEachDescriptorHeap(cmdList);
 
-	cmdList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
-	cmdList.SetGraphicsRootDescriptorTable(7, worldHeap_->GetGPUDescriptorHandleForHeapStart());
+	// 座標のセット
+	SetTransformHeap(7);
 
 	// インデックスバッファのセット
 	cmdList.IASetIndexBuffer(&ibv_);

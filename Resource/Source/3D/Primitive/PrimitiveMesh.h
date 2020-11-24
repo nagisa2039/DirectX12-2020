@@ -1,4 +1,5 @@
 #pragma once
+#include "3D/Actor.h"
 #include <DirectXMath.h>
 #include "Utility/ComPtr.h"
 #include <d3d12.h>
@@ -9,7 +10,8 @@
 class Dx12Wrapper;
 class Material;
 
-class PrimitiveMesh
+class PrimitiveMesh:
+	public Actor
 {
 public:
 	struct PrimVertex
@@ -36,15 +38,12 @@ public:
 	PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
 	~PrimitiveMesh();
 	// 更新
-	virtual void Update();
+	void Update()override;
 	// 描画
-	virtual void Draw();
+	void Draw()override;
 
 protected:
 	Dx12Wrapper& dx12_;
-
-	ComPtr<ID3D12Resource>texBuffer_;
-	ComPtr<ID3D12DescriptorHeap>texHeap_;
 
 	ComPtr<ID3D12Resource> vbuffer_;
 	D3D12_VERTEX_BUFFER_VIEW vbv_;
@@ -56,18 +55,6 @@ protected:
 
 	std::unique_ptr<Material> material_;
 
-	// 座標
-	DirectX::XMFLOAT3 pos_;
-	DirectX::XMMATRIX* mappedTrans_;
-
-	// 座標行列用定数バッファ
-	ComPtr<ID3D12Resource> transCB_ = nullptr;
-	// transCBを入れるヒープ
-	ComPtr<ID3D12DescriptorHeap> worldHeap_ = nullptr;
-
-	// 回転
-	DirectX::XMFLOAT3 rotate_;
-
 	// アニメーションカウント
 	unsigned int animCnt_;
 
@@ -75,8 +62,6 @@ protected:
 	void CreateVertexBufferAndView(std::vector<PrimVertex> vertices);
 	// インデックスバッファとビューの作成
 	void CreateIndexBufferAndView(std::vector<uint16_t> indices);
-	// transformバッファの作成
-	void CreateTransBuffer();
 
 	// 各頂点の法線計算(頂点配列, インデックス配列)
 	void CalNormalVertex(std::vector<PrimVertex>& vertices, const std::vector<uint16_t>& indices);
