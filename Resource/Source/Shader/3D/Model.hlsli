@@ -9,9 +9,9 @@
 							"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 2, flags = DESCRIPTORS_VOLATILE)),"\
 							"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 3, flags = DESCRIPTORS_VOLATILE)),"\
 							"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 4, flags = DESCRIPTORS_VOLATILE)),"\
-							"DescriptorTable(CBV(b1,numDescriptors = 2,space = 0,flags = DESCRIPTORS_VOLATILE)),"\
+							"DescriptorTable(CBV(b1,numDescriptors = 1,space = 0,flags = DESCRIPTORS_VOLATILE)),"\
+							"DescriptorTable(CBV(b2,numDescriptors = 1,space = 0,flags = DESCRIPTORS_VOLATILE)),"\
 							"DescriptorTable(CBV(b3,numDescriptors = 1,space = 0,flags = DESCRIPTORS_VOLATILE)),"\
-							"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 5,flags = DESCRIPTORS_VOLATILE)),"\
 							"StaticSampler(s0 ,"\
                                             "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                             "addressU = TEXTURE_ADDRESS_WRAP,"\
@@ -38,9 +38,9 @@
 // 5,追加テクスチャインデックス
 // 6,追加定数(float)
 
-// 7,座標, ボーン 
-// 8,設定
-// 9,マテリアルインデックス
+// 7,座標, 
+// 8,ボーン
+// 9,設定
 
 Texture2D tex[512] : register(t0, space0);
 Texture2D<float> depthTex[2] : register(t0, space1);
@@ -96,7 +96,6 @@ cbuffer Setting : register(b3, space0)
 	float divider;
 	uint debug;
 };
-StructuredBuffer<int> materialIndexs : register(t0, space5);
 
 SamplerState smp : register(s0);
 SamplerState toomSmp : register(s1);

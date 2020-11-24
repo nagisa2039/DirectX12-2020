@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\3D\Actor.h" />
     <ClInclude Include="Resource\Source\Material\MaterialBase.h" />
     <ClInclude Include="Resource\Source\Material\ModelMaterial.h" />
     <ClInclude Include="Resource\Source\Material\ModelEndRendering.h" />
@@ -61,6 +62,7 @@
     <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resource\Source\3D\Actor.cpp" />
     <ClCompile Include="Resource\Source\Material\ModelMaterial.cpp" />
     <ClCompile Include="Resource\Source\Material\ModelEndRendering.cpp" />
     <ClCompile Include="Resource\Source\3D\Camera.cpp" />

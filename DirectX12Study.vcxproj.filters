@@ -198,6 +198,9 @@
     <ClInclude Include="Resource\Source\Material\MaterialBase.h">
       <Filter>ヘッダー ファイル\Material</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Actor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -292,6 +295,9 @@
     </ClCompile>
     <ClCompile Include="Resource\Source\Material\ModelMaterial.cpp">
       <Filter>ソース ファイル\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Actor.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -74,11 +74,13 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	
 	po.color = ret;
 
-	po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
+	//po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
+	po.normal.rgb = float3((-lightDirNormal + 1.0f) / 2.0f);
 	po.normal.a = input.normal.a = 1;
 
-    float b = step(0.95f, dot(po.color.rgb, float3(0.3f, 0.4f, 0.3f)));
-	po.bright = float4(b, b, b, 1);
+    float b = step(0.9f, dot(po.color.rgb, float3(0.3f, 0.4f, 0.3f)));
+	//po.bright = float4(b, b, b, 1);
+	po.bright = float4(po.color.rgb * b, 1);
 
 	return po;
 }

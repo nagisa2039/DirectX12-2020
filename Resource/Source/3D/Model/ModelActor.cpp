@@ -117,8 +117,6 @@ bool ModelActor::Init(std::string modelPath)
 	fill(boneMats_.begin(), boneMats_.end(), XMMatrixIdentity());
 
 	// 諸々の初期化
-	trans_.pos = { 0,0,0 };
-	trans_.rotate = { 0,0,0 };
 	lastTickTime_ = 0;
 
 	return true;
@@ -242,19 +240,17 @@ void ModelActor::Update()
 		}
 	};
 
+	auto trans = GetTransform();
 	const float speed = 2.0f;
-	Move(DIK_LEFT,	trans_.rotate.y, +speed*2.0f);
-	Move(DIK_RIGHT, trans_.rotate.y, -speed*2.0f);
-	Move(DIK_DOWN,	trans_.pos.y, -speed);
-	Move(DIK_UP,	trans_.pos.y, +speed);
-	Move(DIK_O,		trans_.pos.z, -speed);
-	Move(DIK_I,		trans_.pos.z, +speed);
+	Move(DIK_LEFT,	trans.rotate.y, +speed*2.0f);
+	Move(DIK_RIGHT, trans.rotate.y, -speed*2.0f);
+	Move(DIK_DOWN,	trans.pos.y,	-speed);
+	Move(DIK_UP,	trans.pos.y,	+speed);
+	Move(DIK_O,		trans.pos.z,	-speed);
+	Move(DIK_I,		trans.pos.z,	+speed);
 
 	// 座標更新
-	const float deg2rad = (XM_PI / 180.0f);
-	*mappedTrans_ =
-		XMMatrixRotationRollPitchYaw(trans_.rotate.x * deg2rad, trans_.rotate.y * deg2rad, trans_.rotate.z * deg2rad)
-		*XMMatrixTranslation(trans_.pos.x, trans_.pos.y, trans_.pos.z);
+	SetTransform(trans);
 }
 
 void ModelActor::Draw()
@@ -266,8 +262,11 @@ void ModelActor::Draw()
 	modelMaterial_->SetEachDescriptorHeap(commandList);
 
 	// 座標行列用デスクリプタヒープのセット
-	commandList.SetDescriptorHeaps(1, worldHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(7, worldHeap_->GetGPUDescriptorHandleForHeapStart());
+	SetTransformHeap(7);
+
+	// ボーン用デスクリプタヒープのセット
+	commandList.SetDescriptorHeaps(1, boneHeap_.GetAddressOf());
+	commandList.SetGraphicsRootDescriptorTable(8, boneHeap_->GetGPUDescriptorHandleForHeapStart());
 
 	// 設定
 
@@ -283,16 +282,6 @@ void ModelActor::Draw()
 void ModelActor::StartAnimation()
 {
 	lastTickTime_ = GetTickCount64();
-}
-
-ModelActor::Transform & ModelActor::GetTransform()
-{
-	return trans_;
-}
-
-void ModelActor::SetTransform(const Transform & trans)
-{
-	trans_ = trans;
 }
 
 // 頂点バッファの作成
@@ -471,31 +460,16 @@ void ModelActor::RotateBone(std::wstring boneName, DirectX::XMVECTOR location, D
 
 bool ModelActor::CreateConstanteBuffers()
 {
-	// 座標の定数バッファの作成
 	auto& dev = dx12_.GetDevice();
-	CreateUploadBuffer(&dev, transCB_, sizeof(*mappedTrans_));
-	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
-
-	// 座標のヒープ作成
-	CreateDescriptorHeap(&dev, worldHeap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
-
-	// 定数バッファビューの作成
-	D3D12_CONSTANT_BUFFER_VIEW_DESC viewDesc = {};
-	viewDesc.BufferLocation = transCB_->GetGPUVirtualAddress();
-	viewDesc.SizeInBytes = static_cast<UINT>(transCB_->GetDesc().Width);
-	auto handle = worldHeap_->GetCPUDescriptorHandleForHeapStart();
-	dev.CreateConstantBufferView(&viewDesc, handle);
-	handle.ptr += dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	// ボーンヒープ作成
+	CreateDescriptorHeap(&dev, boneHeap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
 
 	// ボーンの定数バッファの作成
 	CreateUploadBuffer(&dev, boneCB_, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
 	boneCB_->Map(0, nullptr, (void**)&mappedBones_);
 
 	// 定数バッファビューの作成
-	viewDesc = {};
-	viewDesc.BufferLocation = boneCB_->GetGPUVirtualAddress();
-	viewDesc.SizeInBytes = static_cast<UINT>(boneCB_->GetDesc().Width);
-	dev.CreateConstantBufferView(&viewDesc, handle);
+	CreateConstantBufferView(&dev, boneCB_, boneHeap_->GetCPUDescriptorHandleForHeapStart());
 
 	return true;
 }

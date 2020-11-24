@@ -1,4 +1,5 @@
 #pragma once
+#include "3D/Actor.h"
 #include <vector>
 #include <DirectXMath.h>
 #include <string>
@@ -17,14 +18,10 @@ class ModelRenderer;
 class ModelMaterial;
 using Microsoft::WRL::ComPtr;
 
-class ModelActor
+class ModelActor:
+	public Actor
 {
 public:
-	struct Transform
-	{
-		DirectX::XMFLOAT3 pos;
-		DirectX::XMFLOAT3 rotate;
-	};
 
 	ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& rnderer, VMDMotion& vmd);
 	~ModelActor();
@@ -37,10 +34,6 @@ public:
 	void Draw();
 	// アニメーションを開始する
 	void StartAnimation();
-	// transform取得
-	Transform& GetTransform();
-	// transformの設定
-	void SetTransform(const Transform& trans);
 
 private:
 
@@ -62,14 +55,6 @@ private:
 	// マテリアル
 	std::unique_ptr<ModelMaterial> modelMaterial_;
 
-	Transform trans_;
-	DirectX::XMMATRIX* mappedTrans_;
-
-	// 座標行列用定数バッファ
-	ComPtr<ID3D12Resource> transCB_ = nullptr;
-	// transCBを入れるヒープ
-	ComPtr<ID3D12DescriptorHeap> worldHeap_ = nullptr;
-
 	struct BoneNode
 	{
 		int boneIdx = 0;	// _boneMatsのインデックス
@@ -82,7 +67,9 @@ private:
 	std::unordered_map<std::wstring, BoneNode> boneMap_;	// ボーン名からboneMatsのインデックスをとる
 
 	ComPtr<ID3D12Resource> boneCB_ = nullptr;
-	DirectX::XMMATRIX* mappedBones_;
+	DirectX::XMMATRIX* mappedBones_ = nullptr;
+
+	ComPtr<ID3D12DescriptorHeap> boneHeap_ = nullptr;
 
 	//vmd
 	VMDMotion& vmdMotion_;
