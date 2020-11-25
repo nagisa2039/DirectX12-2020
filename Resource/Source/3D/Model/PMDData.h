@@ -9,6 +9,8 @@ public:
 	~PMDData();
 
 private:
+	std::vector<int> toonIndexVec_;
+
 	// pmdƒ‚ƒfƒ‹‚Ì“Ç‚İ‚İ
 	bool LoadFromPMD(std::string modelPath);
 

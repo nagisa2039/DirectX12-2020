@@ -54,7 +54,7 @@ float4 PS(Output input) : SV_TARGET
 	
 	float bright = saturate(dot(-lightDirNormal, normal.rgb));
 	float3 shrinkColor = GetShrinkColor(shrinkTex, input.uv);
-	float3 color = saturate(baseColor.rgb + shrinkColor) * bright;
+	float3 color = saturate(baseColor.rgb/* + shrinkColor*/) /** bright*/;
 	
 	return float4(color * pixcelInf[input.instanceID].bright, baseColor.a * pixcelInf[input.instanceID].alpha);
 }

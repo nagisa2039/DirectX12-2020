@@ -419,10 +419,10 @@ bool ModelActor::CreateMaterial()
 	{
 		auto matIdx = j / stride;
 		meterialBaseVec[matIdx].textureIndex = GetTexture(texPaths[matIdx].texPath,  dummyTexHandles.whiteTexH);
-		addTexVec[Uint64(j + 0)]			 = GetTexture(texPaths[matIdx].sphPath,  dummyTexHandles.whiteTexH);
-		addTexVec[Uint64(j + 1)]			 = GetTexture(texPaths[matIdx].spaPath,  dummyTexHandles.blackTexH);
-		addTexVec[Uint64(j + 2)]			 = GetTexture(texPaths[matIdx].subPath,  dummyTexHandles.whiteTexH);
-		addTexVec[Uint64(j + 3)]			 = GetTexture(texPaths[matIdx].toonPath, dummyTexHandles.whiteTexH);
+		addTexVec[Uint64(j) + 0]			 = GetTexture(texPaths[matIdx].sphPath,  dummyTexHandles.whiteTexH);
+		addTexVec[Uint64(j) + 1]			 = GetTexture(texPaths[matIdx].spaPath,  dummyTexHandles.blackTexH);
+		addTexVec[Uint64(j) + 2]			 = GetTexture(texPaths[matIdx].subPath,  dummyTexHandles.whiteTexH);
+		addTexVec[Uint64(j) + 3]			 = GetTexture(texPaths[matIdx].toonPath, dummyTexHandles.whiteTexH);
 	}
 
 	modelMaterial_ = make_unique<ModelMaterial>(meterialBaseVec, addTexVec, constFloatVec);

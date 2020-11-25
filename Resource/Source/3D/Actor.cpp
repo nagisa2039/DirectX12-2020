@@ -43,9 +43,9 @@ void Actor::UpdateTransform()
 {
 	const float deg2rad = (XM_PI / 180.0f);
 	*mappedTrans_ =
-		XMMatrixTranslation(trans_.pos.x, trans_.pos.y, trans_.pos.z)
-		* XMMatrixRotationRollPitchYaw(trans_.rotate.x * deg2rad, trans_.rotate.y * deg2rad, trans_.rotate.z * deg2rad)
-		* XMMatrixScaling(trans_.scale.x, trans_.scale.y, trans_.scale.z);
+		XMMatrixRotationRollPitchYaw(trans_.rotate.x * deg2rad, trans_.rotate.y * deg2rad, trans_.rotate.z * deg2rad)
+		* XMMatrixScaling(trans_.scale.x, trans_.scale.y, trans_.scale.z)
+		* XMMatrixTranslation(trans_.pos.x, trans_.pos.y, trans_.pos.z);
 }
 
 void Actor::SetTransformHeap(const UINT rootParamatorIndex)

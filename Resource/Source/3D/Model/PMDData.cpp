@@ -54,6 +54,142 @@ bool PMDData::LoadFromPMD(std::string modelPath)
 	// ボーンの読み込み
 	LoadBone(fp);
 
+	WORD ik_data_cnt;
+	fread_s(&ik_data_cnt, sizeof(ik_data_cnt), sizeof(ik_data_cnt), 1, fp);
+
+	//IIK---------------------------------
+#pragma pack(1)
+	struct IK_Data_t
+	{
+		WORD bone_idx;
+		WORD target_bone_index;
+		BYTE chain_length;
+		WORD iterations;
+		float control_weight;
+	};
+
+#pragma pack()
+	struct IK_Data
+	{
+		WORD bone_idx;
+		WORD target_bone_index;
+		WORD iterations;
+		float control_weight;
+		std::vector<WORD> child_bone_index;
+	};
+
+	std::vector<IK_Data> ik_datas(ik_data_cnt);
+	for (auto & ik_data : ik_datas)
+	{
+		IK_Data_t d;
+		fread_s(&d, sizeof(IK_Data_t), sizeof(IK_Data_t), 1, fp);
+
+		IK_Data ikData{ d.bone_idx, d.target_bone_index, d.iterations, d.control_weight };
+		ikData.child_bone_index.resize(d.chain_length);
+		fread_s(ikData.child_bone_index.data(), sizeof(WORD) * ikData.child_bone_index.size(),
+			sizeof(WORD), ikData.child_bone_index.size(), fp);
+		ik_data = ikData;
+	}
+
+	//表情リスト---------------------------------
+	WORD skin_cnt;
+	fread_s(&skin_cnt, sizeof(skin_cnt), sizeof(skin_cnt), 1, fp);
+
+#pragma pack(1)
+	struct Skin_Data_t
+	{
+		char skin_name[20]; //　表情名
+		DWORD skin_vert_count; // 表情用の頂点数
+		BYTE skin_type; // 表情の種類 // 0：base、1：まゆ、2：目、3：リップ、4：その他
+	};
+
+	struct Skin_Vert_Data
+	{	// base  : 表情用の頂点の番号(頂点リストにある番号)
+		// other : 表情用の頂点の番号(baseの番号。skin_vert_index)
+		DWORD skin_vert_index; 
+		// base  : x, y, z // 表情用の頂点の座標(頂点自体の座標)
+		// other : // x, y, z // 表情用の頂点の座標オフセット値(baseに対するオフセット)
+		float skin_vert_pos[3]; 
+	};
+#pragma pack()
+
+	struct SkinData
+	{
+		BYTE skin_type; // 表情の種類 // 0：base、1：まゆ、2：目、3：リップ、4：その他
+		std::vector<Skin_Vert_Data> vertData;
+	};
+
+	vector<SkinData> skinDatas(skin_cnt);
+	for (auto& skinData : skinDatas)
+	{
+		Skin_Data_t d;
+		fread_s(&d, sizeof(Skin_Data_t), sizeof(Skin_Data_t), 1, fp);
+
+		skinData.skin_type = d.skin_type;
+		skinData.vertData.resize(d.skin_vert_count);
+		fread_s(skinData.vertData.data(), sizeof(Skin_Vert_Data) * d.skin_vert_count, 
+			sizeof(Skin_Vert_Data), d.skin_vert_count, fp);
+	}
+
+	//表情枠用表示リスト---------------------------------
+	BYTE skin_disp_count;
+	fread_s(&skin_disp_count, sizeof(skin_disp_count), sizeof(skin_disp_count), 1, fp);
+	vector<WORD> skin_index(skin_disp_count); // 表情番号
+	fread_s(skin_index.data(), sizeof(WORD) * skin_disp_count, sizeof(WORD), skin_disp_count, fp);
+
+	//ボーン枠用枠名リスト---------------------------------
+	BYTE bone_disp_name_count; // ボーン枠用の枠名数 // センター(1番上に表示される枠)は含まない
+	fread_s(&bone_disp_name_count, sizeof(bone_disp_name_count), sizeof(bone_disp_name_count), 1, fp);
+	vector<char[50]> dispName(bone_disp_name_count);
+	fread_s(dispName.data(), sizeof(char) * 50 * dispName.size(), sizeof(char) * 50, dispName.size(), fp);
+
+	//ボーン枠用表示リスト---------------------------------
+	DWORD bone_disp_count; // ボーン枠に表示するボーン数 (枠0(センター)を除く、すべてのボーン枠の合計)
+	fread_s(&bone_disp_count, sizeof(bone_disp_count), sizeof(bone_disp_count), 1, fp);
+
+#pragma pack(1)
+	struct Bone_Disp_t
+	{
+		WORD bone_index; // 枠用ボーン番号
+		BYTE bone_disp_frame_index;
+	};
+#pragma pack()
+	vector<Bone_Disp_t> bone_disps(bone_disp_count); // 枠用ボーンデータ (3Bytes/bone)
+	fread_s(bone_disps.data(), sizeof(Bone_Disp_t) * bone_disps.size(), 
+		sizeof(Bone_Disp_t), bone_disps.size(), fp);
+
+	//拡張-----------------------------------------------------------------------------------
+
+	//英語名対応---------------------------------
+	BYTE english_name_compatibility;
+	fread_s(&english_name_compatibility, sizeof(english_name_compatibility), 
+		sizeof(english_name_compatibility), 1, fp);
+	if (english_name_compatibility == 1)
+	{
+		// モデル名
+		fseek(fp, 20, SEEK_CUR);
+		// コメント
+		fseek(fp, 256, SEEK_CUR);
+
+		// ボーン名
+		fseek(fp, 20 * bones_.size(), SEEK_CUR);
+
+		// 表情リスト
+		fseek(fp, 20 * (skinDatas.size()-1), SEEK_CUR);
+
+		// ボーン枠用枠名リスト
+		fseek(fp, 50 * dispName.size(), SEEK_CUR);
+	}
+
+	//toon---------------------------------
+	std::vector<char[100]> toonTexPath(10);
+	fread_s(toonTexPath.data(), sizeof(char) * 100 * toonTexPath.size(), sizeof(char) * 100 * toonTexPath.size(), 1, fp);
+
+	for (int i = 0; auto& path : texPaths_)
+	{
+		path.toonPath = WStringFromString(GetFolderPath(modelPath) + toonTexPath[toonIndexVec_[i]]);
+	}
+
 	fclose(fp);
 
 	return true;
@@ -132,6 +268,7 @@ void PMDData::LoadMaterial(FILE * fp, std::string &modelPath)
 	materials_.resize(materialNum);
 	texPaths_.resize(materialNum);
 	int idx = 0;
+	toonIndexVec_.resize(materials_.size());
 	for (auto& material : materials_)
 	{
 		material.diffuse = materials[idx].diffuse_color;
@@ -168,6 +305,7 @@ void PMDData::LoadMaterial(FILE * fp, std::string &modelPath)
 			ostringstream oss;
 			oss << "toon/toon" << setw(2) << setfill('0') << static_cast<int>(materials[idx].toon_index + 1) << ".bmp";
 			texPaths_[idx].toonPath = WStringFromString(oss.str());
+			toonIndexVec_[idx] = materials[idx].toon_index;
 		}
 
 		idx++;
