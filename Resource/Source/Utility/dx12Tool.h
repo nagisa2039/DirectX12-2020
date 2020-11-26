@@ -206,7 +206,7 @@ namespace
 	/// <param name="elements">ëóÇÈç\ë¢ëÃîzóÒ</param>
 	template<class T>
 	void CreateStructuredBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
-		D3D12_CPU_DESCRIPTOR_HANDLE& handle, const std::vector<T>& elements, T* mapped, const bool unmap)
+		D3D12_CPU_DESCRIPTOR_HANDLE& handle, const std::vector<T>& elements, T*& mapped, const bool unmap)
 	{
 		mapped = nullptr;
 		const UINT elementNum = Uint32(elements.size());

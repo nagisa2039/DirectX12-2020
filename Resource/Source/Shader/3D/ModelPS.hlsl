@@ -1,11 +1,9 @@
 #include "Model.hlsli"
-uint GetMaterialIndex(uint primitiveID)
+uint GetMaterialIndex(const uint primitiveID, const uint materialNum)
 {
 	float end = 0.0f;
-	uint num, stride;
-	materialBase.GetDimensions(num, stride);
 	float indicesNum = (float) primitiveID * 3.0f;
-	for (int i = 0; i < num; ++i)
+	for (int i = 0; i < materialNum; ++i)
 	{
 		end += constandFloat[i];
 		if (end > indicesNum)
@@ -21,13 +19,19 @@ uint GetMaterialIndex(uint primitiveID)
 PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 {
 	PixelOut po;
-	uint matIdx = GetMaterialIndex(primitiveID);
+	uint matNum, stride;
+	materialBase.GetDimensions(matNum, stride);
+	uint matIdx = GetMaterialIndex(primitiveID, matNum);
 	MaterialBase mat = materialBase[matIdx];
+	
 	
 	Texture2D<float4> sphTex  = tex[addTexIndex[matIdx * 4 + 0]];
 	Texture2D<float4> spaTex  = tex[addTexIndex[matIdx * 4 + 1]];
 	Texture2D<float4> addTex  = tex[addTexIndex[matIdx * 4 + 2]];
 	Texture2D<float4> toonTex = tex[addTexIndex[matIdx * 4 + 3]];
+	
+	Texture2D<float4> noiseTex = tex[addTexIndex[matNum * 4]];
+	float noiseThreshold = constandFloat[matNum];
 	
 	Texture2D<float> lightDepthTex = depthTex[1];
 	
@@ -59,6 +63,9 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	float4 specColor = float4(saturate(mat.specular * specB).rgb, 0);
 	float4 ambientColor = float4((mat.ambient * 0.005f).rgb, 0);
 	
+	float4 noiseColor = noiseTex.Sample(smp, input.uv);
+	float noiseValue = dot(noiseColor.rgb, float3(0.33f, 0.34f, 0.33));
+	
 	float4 baseColor = saturate(mat.diffuse * texColor);
 	float4 ret = float4(saturate(float3(baseColor.rgb * toonColor.rgb * sphColor.rgb + specColor.rgb + spaColor.rgb + ambientColor.rgb)), baseColor.a);
 	
@@ -70,17 +77,20 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
 	lim = pow(lim, limColor.a);
 
-	ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, ret.a);
+	float alpha = ret.a * step(noiseThreshold, noiseValue);
+	ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, alpha);
 	
 	po.color = ret;
 
-	//po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
-	po.normal.rgb = float3((-lightDirNormal + 1.0f) / 2.0f);
+	po.normal.rgb = float3((input.normal.xyz + 1.0f) / 2.0f);
+	//po.normal.rgb = float3((-lightDirNormal + 1.0f) / 2.0f);
 	po.normal.a = input.normal.a = 1;
 
     float b = step(0.9f, dot(po.color.rgb, float3(0.3f, 0.4f, 0.3f)));
 	//po.bright = float4(b, b, b, 1);
-	po.bright = float4(po.color.rgb * b, 1);
+	//po.bright = float4(po.color.rgb * b, 1);
+	float mask = step(noiseValue, noiseThreshold)*step(noiseThreshold, noiseValue+0.05f);
+	po.bright = float4(float3(1.0f, 0.1f, 0.1f) * mask, 1.0f);
 
 	return po;
 }

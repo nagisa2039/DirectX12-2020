@@ -20,7 +20,7 @@ void Material::SetEachDescriptorHeap(ID3D12GraphicsCommandList& cmdList)
 {
 	cmdList.SetDescriptorHeaps(1, heap_.GetAddressOf());
 	cmdList.SetGraphicsRootDescriptorTable(4, materialBaseResource_.handle);
-	cmdList.SetGraphicsRootDescriptorTable(5, texIndexResource_.handle);
+	cmdList.SetGraphicsRootDescriptorTable(5, addTexIndexResource_.handle);
 	cmdList.SetGraphicsRootDescriptorTable(6, constFloatResource_.handle);
 }
 
@@ -29,19 +29,25 @@ ComPtr<ID3D12PipelineState>& Material::GetPipelineState()
 	return pipelineState_;
 }
 
-std::vector<MaterialBase>& Material::GetMaterialBaseVec()
+void Material::SetMaterialBase(const size_t index, const MaterialBase& value)
 {
-	return materialBaseResource_.elements;
+	assert(index < materialBaseResource_.elements.size());
+	materialBaseResource_.elements[index] = value;
+	materialBaseResource_.mapped[index] = value;
 }
 
-std::vector<int>& Material::GetAddTextureIndexVec()
+void Material::SetAddTexIndex(const size_t index, const int& value)
 {
-	return texIndexResource_.elements;
+	assert(index < addTexIndexResource_.elements.size());
+	addTexIndexResource_.elements[index] = value;
+	addTexIndexResource_.mapped[index] = value;
 }
 
-std::vector<float>& Material::GetConstFloatVec()
+void Material::SetConstFloat(const size_t index, const float& value)
 {
-	return constFloatResource_.elements;
+	assert(index < constFloatResource_.elements.size());
+	constFloatResource_.elements[index] = value;
+	constFloatResource_.mapped[index] = value;
 }
 
 void Material::CreateEachDataBuffer()
@@ -71,6 +77,6 @@ void Material::CreateEachDataBuffer()
 	};
 	
 	CreateSB(materialBaseResource_);
-	CreateSB(texIndexResource_);
+	CreateSB(addTexIndexResource_);
 	CreateSB(constFloatResource_);
 }

@@ -9,6 +9,7 @@
 #include "Utility/dx12Tool.h"
 #include "2D/SpriteDrawer.h"
 #include "Material/ModelEndRendering.h"
+#include "Mesh.h"
 
 using namespace std;
 
@@ -19,8 +20,9 @@ namespace
 
 RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
 {
-	renderers_.emplace_back(make_shared<ModelRenderer>(dx12_));
-	renderers_.emplace_back(make_shared<PrimitiveRenderer>(dx12_));
+	renderers_.resize(Uint64(Mesh::Type::max));
+	renderers_[Uint64(Mesh::Type::static_mesh)]	  = make_shared<PrimitiveRenderer>(dx12_);
+	renderers_[Uint64(Mesh::Type::skeletal_mesh)] = make_shared<ModelRenderer>(dx12_);
 
 	auto wsize = Application::Instance().GetWindowSize();
 	auto& texLoader = dx12_.GetTexLoader();

@@ -11,6 +11,7 @@
 #include "ModelData.h"
 #include <memory>
 #include "Utility/TextureStruct.h"
+#include "Utility/TimeLine.h"
 
 class VMDMotion;
 class Dx12Wrapper;
@@ -75,6 +76,8 @@ private:
 	VMDMotion& vmdMotion_;
 
 	uint64_t lastTickTime_;
+
+	std::unique_ptr<TimeLine<float>> noiseThresholdTL_;
 
 	// í∏ì_bufferÇÃçÏê¨
 	bool CreateVertexBuffer();

@@ -12,11 +12,11 @@ ModelEndRendering::ModelEndRendering()
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
 	std::wstring screenNames[] = {
 		D3D_CAMERA_MR_COLOR, D3D_CAMERA_MR_NORMAL , D3D_CAMERA_MR_BRIGHT, D3D_CAMERA_SHRINK_SCREEN };
-	auto& addTexIndexVec = GetAddTextureIndexVec();
-	addTexIndexVec.reserve(Uint64(RendererManager::RenderTargetType::max));
+
+	addTexIndexResource_.elements.reserve(Uint64(RendererManager::RenderTargetType::max));
 	for (const auto& name : screenNames)
 	{
-		addTexIndexVec.emplace_back(texLoader.GetGraphHandle(name));
+		addTexIndexResource_.elements.emplace_back(texLoader.GetGraphHandle(name));
 	}
 	CreateEachDataBuffer();
 }

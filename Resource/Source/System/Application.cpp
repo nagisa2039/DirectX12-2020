@@ -65,6 +65,11 @@ ShaderLoader& Application::GetShaderLoader()
 	return *shaderLoader_;
 }
 
+FPSManager& Application::GetFPSManager()
+{
+	return *fpsManager_;
+}
+
 bool Application::Initialize()
 {
 	// windows‚Ì‹@”\‚ðŽg‚í‚¹‚Ä‚à‚ç‚¤
@@ -146,7 +151,7 @@ void Application::Run()
 		input_->Update();
 		sceneController_->SceneUpdate();
 
-		//fpsManager_->Wait();
+		fpsManager_->Wait();
 	}
 }
 

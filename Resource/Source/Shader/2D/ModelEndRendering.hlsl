@@ -3,7 +3,7 @@
 float3 GetBulr(const Texture2D tex, const float dx, const float dy, const float2 uv)
 {
 	float3 ret = float3(0.0f, 0.0f, 0.0f);
-	const int lapCnt = 0;
+	const int lapCnt = 1;
 	const int cnt = 1 + 2 * lapCnt;
 	const int totalCnt = cnt * cnt;
 	for (int i = 0; i < totalCnt; ++i)
@@ -54,7 +54,7 @@ float4 PS(Output input) : SV_TARGET
 	
 	float bright = saturate(dot(-lightDirNormal, normal.rgb));
 	float3 shrinkColor = GetShrinkColor(shrinkTex, input.uv);
-	float3 color = saturate(baseColor.rgb/* + shrinkColor*/) /** bright*/;
+	float3 color = saturate(baseColor.rgb + shrinkColor*10.0f) /** bright*/;
 	
 	return float4(color * pixcelInf[input.instanceID].bright, baseColor.a * pixcelInf[input.instanceID].alpha);
 }

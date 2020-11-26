@@ -18,8 +18,8 @@ public:
 
 private:
 	std::unique_ptr<RendererManager> rendererManager_;
-	int tnktH_;
-	int dmdnH_;
+	int cameraH_;
+	int hitoshashiH_;
 	int d3dH_;
 
 	int BGMH_;

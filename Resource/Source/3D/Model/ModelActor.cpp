@@ -3,6 +3,7 @@
 #include <cassert>
 #include <algorithm>
 #include <windows.h>
+#include <sstream>
 
 #include "d3dx12.h"
 #include "Utility/Tool.h"
@@ -63,6 +64,10 @@ ModelActor::ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& 
 	{
 		assert(false);
 	}
+	noiseThresholdTL_ = make_unique<TimeLine<float>>(true);
+	noiseThresholdTL_->AddKey(0.0f, 1.0f);
+	noiseThresholdTL_->AddKey(2.0f, 0.0f);
+	noiseThresholdTL_->AddKey(4.0f, 1.0f);
 }
 
 
@@ -251,6 +256,11 @@ void ModelActor::Update()
 
 	// À•WXV
 	SetTransform(trans);
+
+	noiseThresholdTL_->Update();
+	auto value = noiseThresholdTL_->GetValue();
+	modelMaterial_->SetConstFloat(
+		modelData_->GetMaterialData().size(), value);
 }
 
 void ModelActor::Draw()
@@ -386,7 +396,7 @@ bool ModelActor::CreateMaterial()
 		return XMFLOAT3(float4.x, float4.y, float4.z);
 	};
 
-	std::vector<float> constFloatVec(materials.size());
+	std::vector<float> constFloatVec(materials.size()+1);
 	for (int i = 0; auto & materialBase : meterialBaseVec)
 	{
 		const auto& mat = materials[i];
@@ -395,6 +405,7 @@ bool ModelActor::CreateMaterial()
 		constFloatVec[i] = Float(mat.indeicesNum);
 		i++;
 	}
+	constFloatVec[materials.size()] = 0.0f;
 
 
 	auto& texLoader = dx12_.GetTexLoader();
@@ -413,9 +424,9 @@ bool ModelActor::CreateMaterial()
 	};
 
 	const int stride = 4;
-	std::vector<int> addTexVec(stride * materials.size());
+	std::vector<int> addTexVec(stride * materials.size()+1);
 	auto dummyTexHandles = texLoader.GetDummyTextureHandles();
-	for (int j = 0; j < addTexVec.size(); j+= stride)
+	for (int j = 0; j < addTexVec.size()-1; j+= stride)
 	{
 		auto matIdx = j / stride;
 		meterialBaseVec[matIdx].textureIndex = GetTexture(texPaths[matIdx].texPath,  dummyTexHandles.whiteTexH);
@@ -424,6 +435,7 @@ bool ModelActor::CreateMaterial()
 		addTexVec[Uint64(j) + 2]			 = GetTexture(texPaths[matIdx].subPath,  dummyTexHandles.whiteTexH);
 		addTexVec[Uint64(j) + 3]			 = GetTexture(texPaths[matIdx].toonPath, dummyTexHandles.whiteTexH);
 	}
+	addTexVec[Uint64(stride) * materials.size()] = texLoader.LoadGraph(L"Resource/Image/noise.png");
 
 	modelMaterial_ = make_unique<ModelMaterial>(meterialBaseVec, addTexVec, constFloatVec);
 

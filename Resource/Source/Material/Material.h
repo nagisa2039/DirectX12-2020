@@ -28,19 +28,25 @@ public:
 	ComPtr<ID3D12PipelineState>& GetPipelineState();
 
 	/// <summary>
-	/// マテリアル配列の取得
+	/// マテリアルの設定
 	/// </summary>
-	std::vector <MaterialBase>& GetMaterialBaseVec();
+	/// <param name="index">配列インデックス</param>
+	/// <param name="value">設定する値</param>
+	void SetMaterialBase(const size_t index, const MaterialBase& value);
+	
+	/// <summary>
+	/// 追加テクスチャインデックスの設定
+	/// </summary>
+	/// <param name="index">配列インデックス</param>
+	/// <param name="value">設定する値</param>
+	void SetAddTexIndex	(const size_t index, const int& value);
 
 	/// <summary>
-	/// 追加テクスチャインデックス配列の取得
+	/// 定数floatの設定
 	/// </summary>
-	std::vector<int>& GetAddTextureIndexVec();
-
-	/// <summary>
-	/// float定数配列の取得
-	/// </summary>
-	std::vector<float>& GetConstFloatVec();
+	/// <param name="index">配列インデックス</param>
+	/// <param name="value">設定する値</param>
+	void SetConstFloat	(const size_t index, const float& value);
 
 protected:
 	/// <summary>
@@ -55,11 +61,11 @@ protected:
 		Resource resource = {};
 		std::vector<T> elements;
 		T* mapped = nullptr;
-		D3D12_GPU_DESCRIPTOR_HANDLE handle;
+		D3D12_GPU_DESCRIPTOR_HANDLE handle = {};
 	};
 
 	StructuredResource<MaterialBase>	materialBaseResource_;
-	StructuredResource<int>				texIndexResource_;
+	StructuredResource<int>				addTexIndexResource_;
 	StructuredResource<float>			constFloatResource_;
 
 	/// <summary>

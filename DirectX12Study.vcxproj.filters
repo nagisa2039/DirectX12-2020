@@ -199,7 +199,13 @@
       <Filter>ヘッダー ファイル\Material</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\3D\Actor.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Mesh.h">
+      <Filter>ヘッダー ファイル\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Utility\TimeLine.h">
+      <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -297,7 +303,10 @@
       <Filter>ソース ファイル\Material</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\3D\Actor.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Mesh.cpp">
+      <Filter>ソース ファイル\3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

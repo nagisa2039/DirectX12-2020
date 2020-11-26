@@ -7,7 +7,7 @@ ModelMaterial::ModelMaterial(
 	: Material(L"")
 {
 	materialBaseResource_.elements	= materialBaseVec;
-	texIndexResource_.elements		= addTexIdxVec;
+	addTexIndexResource_.elements		= addTexIdxVec;
 	constFloatResource_.elements = constFloatVec;
 
 	CreateEachDataBuffer();

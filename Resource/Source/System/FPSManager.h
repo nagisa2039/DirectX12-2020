@@ -8,17 +8,21 @@ class FPSManager
 public:
 	~FPSManager() = default;
 
-	/// <summary>
-	/// 指定したフレーム数になるまで待つ
-	/// </summary>
-	void Wait();
 
 	/// <summary>
 	/// 固定したフレーム数を取得
 	/// </summary>
 	int FixedFPS();
 
+	/// <summary>
+	/// 現在のフレーム数の取得
+	/// </summary>
 	float GetFPS();
+
+	/// <summary>
+	/// 1フレーム内の経過時間の取得
+	/// </summary>
+	float GetDeltaTime();
 
 private:
 	/// <summary>
@@ -44,6 +48,11 @@ private:
 	unsigned int prevFrameStartTime_;
 
 	float deltaTime_;
+
+	/// <summary>
+	/// 指定したフレーム数になるまで待つ
+	/// </summary>
+	void Wait();
 
 };
 

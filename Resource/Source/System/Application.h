@@ -51,6 +51,11 @@ public:
 	/// </summary>
 	ShaderLoader& GetShaderLoader();
 
+	/// <summary>
+	/// フレーム管理クラスの取得
+	/// </summary>
+	FPSManager& GetFPSManager();
+
 	// アプリケーションを初期化する
 
 	/// <summary>

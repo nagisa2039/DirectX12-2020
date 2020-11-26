@@ -18,8 +18,8 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 {
 	rendererManager_ = std::make_unique<RendererManager>(Application::Instance().GetDx12());
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
-	tnktH_ = texLoader.LoadGraph(L"Resource/Image/tnkt.png");
-	dmdnH_ = texLoader.LoadGraph(L"Resource/Image/dmdn.jpg");
+	//cameraH_ = texLoader.LoadGraph(L"Resource/Image/camera.png");
+	//hitoshashiH_ = texLoader.LoadGraph(L"Resource/Image/hitoshashi.png");
 
 	auto wsize = Application::Instance().GetWindowSize();
 	d3dH_ = texLoader.GetGraphHandle(D3D_CAMERA_VIEW_SCREEN);
@@ -77,8 +77,10 @@ void PlayScene::Draw()
 	//spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
-	spriteDrawer.DrawRotaGraph(1200, 300, 0.5f, 0.0f, tnktH_);
-	spriteDrawer.DrawRotaGraph(1200, 500, 0.5f, 0.0f, dmdnH_);
+	//spriteDrawer.DrawRotaGraph(1200, 300, 0.5f, 0.0f, cameraH_);
+	//spriteDrawer.DrawRotaGraph(1200, 500, 0.5f, 0.0f, hitoshashiH_);
+
+	OutputDebugString("");
 
 	int size = 100;
 	float aspect = wsize.w / static_cast<float>(wsize.h);
