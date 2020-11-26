@@ -17,7 +17,6 @@ public:
 	void Draw()override;
 
 private:
-	std::unique_ptr<RendererManager> rendererManager_;
 	int cameraH_;
 	int hitoshashiH_;
 	int d3dH_;

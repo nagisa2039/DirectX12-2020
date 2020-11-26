@@ -1,5 +1,5 @@
 #pragma once
-#include "3D/Actor.h"
+#include "3D/Mesh.h"
 #include <DirectXMath.h>
 #include "Utility/ComPtr.h"
 #include <d3d12.h>
@@ -10,8 +10,8 @@
 class Dx12Wrapper;
 class Material;
 
-class PrimitiveMesh:
-	public Actor
+class PrimitiveMesh :
+	public Mesh
 {
 public:
 	struct PrimVertex
@@ -35,7 +35,7 @@ public:
 	};
 
 	// (dx12の管理クラス, 座標, テクスチャファイルパス)
-	PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
+	PrimitiveMesh(std::shared_ptr<Actor>owner, Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
 	~PrimitiveMesh();
 	// 更新
 	void Update()override;

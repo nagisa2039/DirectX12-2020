@@ -1,4 +1,4 @@
-#include "ModelActor.h"
+#include "SkeletalMesh.h"
 #include <iostream>
 #include <cassert>
 #include <algorithm>
@@ -8,7 +8,7 @@
 #include "d3dx12.h"
 #include "Utility/Tool.h"
 #include "Utility/dx12Tool.h"
-#include "ModelRenderer.h"
+#include "SkeletalMeshRenderer.h"
 #include "PMXData.h"
 #include "PMDData.h"
 #include "VMDMotion.h"
@@ -18,6 +18,7 @@
 #include "Utility/Input.h"
 #include "Material/ModelMaterial.h"
 #include "Utility/Cast.h"
+#include "3D/Actor.h"
 
 using namespace std;
 using namespace DirectX; 
@@ -57,8 +58,10 @@ namespace
 	}
 }
 
-ModelActor::ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& renderer, VMDMotion& vmd)
-	:dx12_(dx12), renderer_(renderer), vmdMotion_(vmd)
+SkeletalMesh::SkeletalMesh(std::shared_ptr<Actor> owner, 
+	std::string modelPath, Dx12Wrapper& dx12, VMDMotion& vmd)
+	:dx12_(dx12), vmdMotion_(vmd), 
+	Mesh(Mesh::Type::skeletal_mesh, owner)
 {
 	if (!Init(modelPath))
 	{
@@ -70,13 +73,12 @@ ModelActor::ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& 
 	noiseThresholdTL_->AddKey(4.0f, 1.0f);
 }
 
-
-ModelActor::~ModelActor()
+SkeletalMesh::~SkeletalMesh()
 {
 }
 
 
-bool ModelActor::Init(std::string modelPath)
+bool SkeletalMesh::Init(std::string modelPath)
 {
 	auto ext = GetExtension(modelPath);
 	if (ext == "pmx")
@@ -128,7 +130,7 @@ bool ModelActor::Init(std::string modelPath)
 }
 
 
-bool ModelActor::CreateBoneHierarchy()
+bool SkeletalMesh::CreateBoneHierarchy()
 {
 	auto bones = modelData_->GetBoneData();
 	boneMats_.resize(bones.size());
@@ -166,7 +168,7 @@ bool ModelActor::CreateBoneHierarchy()
 	return true;
 }
 
-void ModelActor::MotionUpdate(const unsigned int motionFrame)
+void SkeletalMesh::MotionUpdate(const unsigned int motionFrame)
 {
 	// ボーン回転の初期化
 	fill(boneMats_.begin(), boneMats_.end(), XMMatrixIdentity());
@@ -225,7 +227,7 @@ void ModelActor::MotionUpdate(const unsigned int motionFrame)
 
 }
 
-void ModelActor::Update()
+void SkeletalMesh::Update()
 {
 	// モーションの更新
 	auto fps = 30;
@@ -245,7 +247,8 @@ void ModelActor::Update()
 		}
 	};
 
-	auto trans = GetTransform();
+	auto owner = GetOwner();
+	auto trans = owner->GetTransform();
 	const float speed = 2.0f;
 	Move(DIK_LEFT,	trans.rotate.y, +speed*2.0f);
 	Move(DIK_RIGHT, trans.rotate.y, -speed*2.0f);
@@ -255,7 +258,7 @@ void ModelActor::Update()
 	Move(DIK_I,		trans.pos.z,	+speed);
 
 	// 座標更新
-	SetTransform(trans);
+	owner->SetTransform(trans);
 
 	noiseThresholdTL_->Update();
 	auto value = noiseThresholdTL_->GetValue();
@@ -263,7 +266,7 @@ void ModelActor::Update()
 		modelData_->GetMaterialData().size(), value);
 }
 
-void ModelActor::Draw()
+void SkeletalMesh::Draw()
 {
 	auto& commandList = dx12_.GetCommand().CommandList();
 	auto& dev = dx12_.GetDevice();
@@ -272,7 +275,7 @@ void ModelActor::Draw()
 	modelMaterial_->SetEachDescriptorHeap(commandList);
 
 	// 座標行列用デスクリプタヒープのセット
-	SetTransformHeap(7);
+	GetOwner()->SetTransformHeap(7);
 
 	// ボーン用デスクリプタヒープのセット
 	commandList.SetDescriptorHeaps(1, boneHeap_.GetAddressOf());
@@ -289,13 +292,13 @@ void ModelActor::Draw()
 	commandList.DrawIndexedInstanced(Uint32(modelData_->GetIndexData().size()), 1, 0, 0, 0);
 }
 
-void ModelActor::StartAnimation()
+void SkeletalMesh::StartAnimation()
 {
 	lastTickTime_ = GetTickCount64();
 }
 
 // 頂点バッファの作成
-bool ModelActor::CreateVertexBuffer()
+bool SkeletalMesh::CreateVertexBuffer()
 {
 	auto vertices = modelData_->GetVertexData();
 
@@ -317,7 +320,7 @@ bool ModelActor::CreateVertexBuffer()
 	// データ転送
 	// vertexBufferにverMapの内容を書き込む
 	// 頂点書き込み
-	ModelData::Vertex* verMap = nullptr;
+	SkeletalMeshData::Vertex* verMap = nullptr;
 	if (FAILED(vertexBuffer_->Map(0, nullptr, (void**)&verMap)))
 	{
 		return false;
@@ -340,7 +343,7 @@ bool ModelActor::CreateVertexBuffer()
 	return true;
 }
 
-bool ModelActor::CreateIndexBuffer()
+bool SkeletalMesh::CreateIndexBuffer()
 {
 	auto indices = modelData_->GetIndexData();
 
@@ -382,7 +385,7 @@ bool ModelActor::CreateIndexBuffer()
 	return true;
 }
 
-bool ModelActor::CreateMaterial()
+bool SkeletalMesh::CreateMaterial()
 {
 	auto& dev = dx12_.GetDevice();
 	auto materials = modelData_->GetMaterialData();
@@ -442,7 +445,7 @@ bool ModelActor::CreateMaterial()
 	return true;
 }
 
-void ModelActor::RecursiveMatrixMultiply(BoneNode & node, DirectX::XMMATRIX& inMat)
+void SkeletalMesh::RecursiveMatrixMultiply(BoneNode & node, DirectX::XMMATRIX& inMat)
 {
 	boneMats_[node.boneIdx] *= inMat;
 	for (auto& cnode : node.children)
@@ -451,7 +454,7 @@ void ModelActor::RecursiveMatrixMultiply(BoneNode & node, DirectX::XMMATRIX& inM
 	}
 }
 
-void ModelActor::RotateBone(std::wstring boneName, DirectX::XMVECTOR location, DirectX::XMFLOAT4& q1, DirectX::XMFLOAT4& q2, float t)
+void SkeletalMesh::RotateBone(std::wstring boneName, DirectX::XMVECTOR location, DirectX::XMFLOAT4& q1, DirectX::XMFLOAT4& q2, float t)
 {
 	auto bone = boneMap_[boneName];
 	auto vec = XMLoadFloat3(&bone.startPos);
@@ -470,7 +473,7 @@ void ModelActor::RotateBone(std::wstring boneName, DirectX::XMVECTOR location, D
 	boneMats_[bone.boneIdx] *= mat;
 }
 
-bool ModelActor::CreateConstanteBuffers()
+bool SkeletalMesh::CreateConstanteBuffers()
 {
 	auto& dev = dx12_.GetDevice();
 	// ボーンヒープ作成

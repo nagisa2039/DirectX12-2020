@@ -5,6 +5,7 @@
 #include "Utility/dx12Tool.h"
 #include "Utility/TextureStruct.h"
 #include "Material/Material.h"
+#include "3D/Actor.h"
 
 using namespace DirectX;
 using namespace std;
@@ -81,15 +82,18 @@ void PrimitiveMesh::CalNormalVertex2(std::vector<PrimVertex>& vertices, XMFLOAT3
 	}
 }
 
-PrimitiveMesh::PrimitiveMesh(Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):dx12_(dx12)
+PrimitiveMesh::PrimitiveMesh(std::shared_ptr<Actor>owner, 
+	Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):dx12_(dx12), 
+	Mesh(Mesh::Type::skeletal_mesh, owner)
 {
 	animCnt_ = 0;
 	vbv_ = {};
 	ibv_ = {};
 	indexNum_ = 0;
-	auto trans = GetTransform();
+	auto actor = GetOwner();
+	auto trans = actor->GetTransform();
 	trans.pos = pos;
-	SetTransform(trans);
+	actor->SetTransform(trans);
 }
 
 PrimitiveMesh::~PrimitiveMesh()
@@ -107,7 +111,7 @@ void PrimitiveMesh::Draw()
 	material_->SetEachDescriptorHeap(cmdList);
 
 	// 座標のセット
-	SetTransformHeap(7);
+	GetOwner()->SetTransformHeap(7);
 
 	// インデックスバッファのセット
 	cmdList.IASetIndexBuffer(&ibv_);

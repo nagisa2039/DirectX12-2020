@@ -2,6 +2,10 @@
 #include "Utility/ComPtr.h"
 #include <DirectXMath.h>
 #include <d3d12.h>
+#include <memory>
+#include <vector>
+
+class Component;
 
 // トランスフォーム情報
 struct Transform
@@ -26,12 +30,7 @@ public:
 	/// <summary>
 	/// 更新
 	/// </summary>
-	virtual void Update() = 0;
-
-	/// <summary>
-	/// 描画
-	/// </summary>
-	virtual void Draw() = 0;
+	void Update();
 
 	/// <summary>
 	/// トランスフォームの取得
@@ -54,6 +53,12 @@ public:
 	/// <param name="rootParamatorIndex">rootParamatorのインデックス</param>
 	void SetTransformHeap(const UINT rootParamatorIndex);
 
+	/// <summary>
+	/// コンポーネントの追加
+	/// </summary>
+	/// <param name="component">対象のコンポーネント</param>
+	void AddComponent(std::shared_ptr<Component> component);
+
 protected:
 	/// <summary>
 	/// トランスフォーム情報を格納したヒープの取得
@@ -68,5 +73,7 @@ private:
 	ComPtr<ID3D12Resource> transCB_ = nullptr;
 	// transCBを入れるヒープ
 	ComPtr<ID3D12DescriptorHeap> transHeap_ = nullptr;
+
+	std::vector<std::shared_ptr<Component>> components_;
 };
 

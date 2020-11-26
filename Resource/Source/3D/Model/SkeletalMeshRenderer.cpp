@@ -1,11 +1,10 @@
-#include "ModelRenderer.h"
+#include "SkeletalMeshRenderer.h"
 #include <cassert>
 #include "d3dx12.h"
-#include "ModelActor.h"
+#include "SkeletalMesh.h"
 #include "Utility/Tool.h"
 #include "System/Dx12Wrapper.h"
 #include "System/Command.h"
-#include "VMDMotion.h"
 #include "System/Application.h"
 #include "System/TexLoader.h"
 #include "2D/SpriteDrawer.h"
@@ -13,20 +12,21 @@
 #include "Utility/dx12Tool.h"
 #include "System/ShaderLoader.h"
 #include "3D/Camera.h"
+#include "3D/Mesh.h"
 
 using namespace std;
 using namespace DirectX;
 
-ModelRenderer::ModelRenderer(Dx12Wrapper& dx12): dx12_(dx12)
+SkeletalMeshRenderer::SkeletalMeshRenderer(Dx12Wrapper& dx12): dx12_(dx12)
 {
 	Init();
 }
 
-ModelRenderer::~ModelRenderer()
+SkeletalMeshRenderer::~SkeletalMeshRenderer()
 {
 }
 
-bool ModelRenderer::CreateModelPL()
+bool SkeletalMeshRenderer::CreateModelPL()
 {
 	// ルートシグネチャの作成
 	auto& sl = Application::Instance().GetShaderLoader();
@@ -153,7 +153,7 @@ bool ModelRenderer::CreateModelPL()
 	return true;
 }
 
-bool ModelRenderer::Init()
+bool SkeletalMeshRenderer::Init()
 {
 	// pmxパイプラインステートの作成
 	if (!CreateModelPL())
@@ -161,52 +161,11 @@ bool ModelRenderer::Init()
 		assert(false);
 		return false;
 	}
-	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/安柏/安柏.pmx", _dx12, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
-	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/桜ミク/雪ミク.pmd", dx12_, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
-	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/桜ミク/mikuXS桜ミク.pmd", dx12_, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
-	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/swing2.vmd")));
-	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	//modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/prinzeugen/prinzeugen.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	//modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/つみ式ミクさん/つみ式ミクさん(素足).pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	//modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/ぽんぷ長式鹿島/ぽんぷ長式鹿島.pmx", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	//_modelActors.emplace_back(make_shared<ModelActor>("Resource/Model/斑鳩/斑鳩.pmd", _dx12, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	modelActors_.emplace_back(make_shared<ModelActor>("Resource/Model/葛城/葛城.pmd", dx12_, *this, GetVMDMotion("Resource/VMD/ヤゴコロダンス.vmd")));
-	
-	for (int j = 0; j < modelActors_.size(); j++)
-	{
-		int moveZ = (j + 1) / 2;
-		int moveX = moveZ * ((j % 2) * 2 - 1);
-
-		auto trans = modelActors_[j]->GetTransform();
-		trans.pos = XMFLOAT3(8.0f * moveX, 0.0f, 5.0f * moveZ);
-		modelActors_[j]->SetTransform(trans);
-		modelActors_[j]->StartAnimation();
-	}
 
 	return true;
 }
 
-void ModelRenderer::Update()
-{
-	BYTE keycodeTbl[256];
-	auto result = GetKeyboardState(keycodeTbl);
-
-	auto move = [&](float& target, const unsigned int keycode, const float speed)
-	{
-		// 最上位ビットが押しているかを表しているので128と&演算を行う
-		if (keycodeTbl[keycode] & 0x80)
-		{
-			target += speed;
-		}
-	};
-
-	for (auto& actor : modelActors_)
-	{
-		actor->Update();
-	}
-}
-
-void ModelRenderer::Draw()
+void SkeletalMeshRenderer::Draw(std::vector<std::shared_ptr<Mesh>>& models)
 {
 	auto& texLoader = dx12_.GetTexLoader();
 	auto& commandList = dx12_.GetCommand().CommandList();
@@ -225,13 +184,13 @@ void ModelRenderer::Draw()
 	// 深度
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
-	for (auto& actor : modelActors_)
+	for (auto& mesh : models)
 	{
-		actor->Draw();
+		mesh->Draw();
 	}
 }
 
-void ModelRenderer::DrawShadow()
+void SkeletalMeshRenderer::DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)
 {
 	auto& texLoader = dx12_.GetTexLoader();
 	auto& commandList = dx12_.GetCommand().CommandList();
@@ -242,27 +201,18 @@ void ModelRenderer::DrawShadow()
 	dx12_.GetCamera().SetCameraDescriptorHeap(1); 
 	texLoader.SetTextureDescriptorHeap(0);
 
-	for (auto& actor : modelActors_)
+	for (auto& mesh : models)
 	{
-		actor->Draw();
+		mesh->Draw();
 	}
 }
 
-void ModelRenderer::SetModelRS()
+void SkeletalMeshRenderer::SetModelRS()
 {
 	dx12_.GetCommand().CommandList().SetGraphicsRootSignature(modelRS_.Get());
 }
 
-void ModelRenderer::SetModelPL()
+void SkeletalMeshRenderer::SetModelPL()
 {
 	dx12_.GetCommand().CommandList().SetPipelineState(modelPL_.Get());
-}
-
-VMDMotion & ModelRenderer::GetVMDMotion(std::string motionPath)
-{
-	if (vmdMotions_.find(motionPath) == vmdMotions_.end())
-	{
-		vmdMotions_.emplace(motionPath, make_shared<VMDMotion>(motionPath));
-	}
-	return *vmdMotions_[motionPath];
 }

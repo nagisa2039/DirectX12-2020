@@ -150,15 +150,6 @@
     <ClInclude Include="Resource\Source\3D\Primitive\PrimitiveRenderer.h">
       <Filter>ヘッダー ファイル\3D\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\ModelActor.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\ModelData.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\ModelRenderer.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\3D\Model\PMDData.h">
       <Filter>ヘッダー ファイル\3D\Model</Filter>
     </ClInclude>
@@ -206,6 +197,18 @@
     </ClInclude>
     <ClInclude Include="Resource\Source\Utility\TimeLine.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Component.h">
+      <Filter>ヘッダー ファイル\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\SkeletalMesh.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\SkeletalMeshRenderer.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Model\SkeletalMeshData.h">
+      <Filter>ヘッダー ファイル\3D\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -263,15 +266,6 @@
     <ClCompile Include="Resource\Source\3D\Primitive\PrimitiveRenderer.cpp">
       <Filter>ソース ファイル\3D\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\ModelActor.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\ModelData.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\ModelRenderer.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
-    </ClCompile>
     <ClCompile Include="Resource\Source\3D\Model\PMDData.cpp">
       <Filter>ソース ファイル\3D\Model</Filter>
     </ClCompile>
@@ -307,6 +301,18 @@
     </ClCompile>
     <ClCompile Include="Resource\Source\3D\Mesh.cpp">
       <Filter>ソース ファイル\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Component.cpp">
+      <Filter>ソース ファイル\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\SkeletalMesh.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\SkeletalMeshRenderer.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Model\SkeletalMeshData.cpp">
+      <Filter>ソース ファイル\3D\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

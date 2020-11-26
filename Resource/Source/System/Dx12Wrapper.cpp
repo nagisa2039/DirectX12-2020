@@ -8,6 +8,7 @@
 #include "2D/SpriteDrawer.h"
 #include "SoundManager.h"
 #include "3D/Camera.h"
+#include "3D/RendererManager.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -56,6 +57,7 @@ bool Dx12Wrapper::Init()
 	texLoader_->SetDrawScreen(GetBackScreenHandle());
 
 	camera_ = make_shared<Camera>(*cmd_, *dev_.Get());
+	rendererManager_ = std::make_shared<RendererManager>(*this);
 
 	return true;
 }
@@ -68,6 +70,11 @@ ID3D12Device& Dx12Wrapper::GetDevice()
 Command& Dx12Wrapper::GetCommand()
 {
 	return *cmd_;
+}
+
+RendererManager& Dx12Wrapper::GetRendererManager()
+{
+	return *rendererManager_;
 }
 
 int Dx12Wrapper::GetBackScreenHandle()

@@ -2,6 +2,7 @@
 #include "Utility/dx12Tool.h"
 #include "System/Application.h"
 #include "System/Dx12Wrapper.h"
+#include "3D/Component.h"
 
 using namespace DirectX;
 
@@ -25,6 +26,14 @@ Actor::Actor()
 
 Actor::~Actor()
 {
+}
+
+void Actor::Update()
+{
+	for (auto& component : components_)
+	{
+		component->Update();
+	}
 }
 
 const Transform& Actor::GetTransform() const
@@ -53,6 +62,11 @@ void Actor::SetTransformHeap(const UINT rootParamatorIndex)
 	auto& commandList = Application::Instance().GetDx12().GetCommand().CommandList();
 	commandList.SetDescriptorHeaps(1, transHeap_.GetAddressOf());
 	commandList.SetGraphicsRootDescriptorTable(7, transHeap_->GetGPUDescriptorHandleForHeapStart());
+}
+
+void Actor::AddComponent(std::shared_ptr<Component> component)
+{
+	components_.emplace_back(component);
 }
 
 const ComPtr<ID3D12DescriptorHeap>& Actor::GetTransformHeap() const

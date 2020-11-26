@@ -1,12 +1,12 @@
 #pragma once
-#include <memory>
+#include "3D/Component.h"
 class Actor;
 
 /// <summary>
 /// メッシュ基底クラス
 /// </summary>
 class Mesh
-	: public std::enable_shared_from_this<Mesh>
+	:public Component
 {
 public:
 	enum class Type
@@ -35,17 +35,11 @@ public:
 	virtual void Draw()=0;
 
 	/// <summary>
-	/// 影描画
-	/// </summary>
-	virtual void DrawShadow() = 0;
-
-	/// <summary>
 	/// メッシュタイプの取得
 	/// </summary>
 	Mesh::Type GetMeshType()const;
 
 private:
-	std::shared_ptr<Actor> owner_;
 	const Mesh::Type type_;
 };
 

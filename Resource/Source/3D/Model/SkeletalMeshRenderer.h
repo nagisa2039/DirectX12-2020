@@ -4,37 +4,31 @@
 #include <wrl.h>
 #include <memory>
 #include <vector>
-#include <map>
-#include <string>
 #include "3D/Renderer.h"
 
 using Microsoft::WRL::ComPtr;
-class ModelActor;
+class SkeletalMesh;
 class Dx12Wrapper;
-class VMDMotion;
+class Mesh;
 
-class ModelRenderer : 
+class SkeletalMeshRenderer : 
 	public Renderer
 {
 public:
-	ModelRenderer(Dx12Wrapper& dx12);
-	~ModelRenderer();
+	SkeletalMeshRenderer(Dx12Wrapper& dx12);
+	~SkeletalMeshRenderer();
 
 	// 初期化
 	bool Init();
-	// 更新
-	void Update()override;
 	// 描画
-	void Draw()override;
+	void Draw(std::vector<std::shared_ptr<Mesh>>& models)override;
 	// 影描画
-	void DrawShadow()override;
+	void DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)override;
 
 	// RootSignatureの設定
 	void SetModelRS();
 	// PipelineStateの設定
 	void SetModelPL();
-	// モーション情報の取得(モーションファイルパス)
-	VMDMotion& GetVMDMotion(std::string motionPath);
 
 private:
 	Dx12Wrapper& dx12_;
@@ -44,9 +38,6 @@ private:
 
 	// 影用パイプラインステート
 	ComPtr<ID3D12PipelineState> shadowPL_ = nullptr;
-
-	std::vector<std::shared_ptr<ModelActor>> modelActors_;
-	std::map<std::string, std::shared_ptr<VMDMotion>> vmdMotions_;
 
 	bool CreateModelPL();
 };

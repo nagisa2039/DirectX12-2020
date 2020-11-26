@@ -1,5 +1,5 @@
 #include "RendererManager.h"
-#include "Model/ModelRenderer.h"
+#include "Model/SkeletalMeshRenderer.h"
 #include "Primitive/PrimitiveRenderer.h"
 #include "System/Dx12Wrapper.h"
 #include "System/TexLoader.h"
@@ -10,19 +10,24 @@
 #include "2D/SpriteDrawer.h"
 #include "Material/ModelEndRendering.h"
 #include "Mesh.h"
+#include "3D/Model/SkeletalMesh.h"
+#include "3D/Primitive/PlaneMesh.h"
+#include "3D/Model/VMDMotion.h"
+#include "Actor.h"
 
 using namespace std;
+using namespace DirectX;
 
 namespace
 {
 	constexpr unsigned int SHRINK_CNT = 4;
 }
 
-RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
+RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 {
-	renderers_.resize(Uint64(Mesh::Type::max));
-	renderers_[Uint64(Mesh::Type::static_mesh)]	  = make_shared<PrimitiveRenderer>(dx12_);
-	renderers_[Uint64(Mesh::Type::skeletal_mesh)] = make_shared<ModelRenderer>(dx12_);
+	meshRenderers_.resize(Uint64(Mesh::Type::max));
+	meshRenderers_[Uint64(Mesh::Type::static_mesh)].renderer	= make_shared<PrimitiveRenderer>(dx12_);
+	meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)].renderer	= make_shared<SkeletalMeshRenderer>(dx12_);
 
 	auto wsize = Application::Instance().GetWindowSize();
 	auto& texLoader = dx12_.GetTexLoader();
@@ -36,11 +41,51 @@ RendererManager::RendererManager(Dx12Wrapper& dx12):dx12_(dx12)
 	}
 
 	cameraScreenH_ = texLoader.MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
-	shrinkScreenH_ = texLoader.MakeScreen(D3D_CAMERA_SHRINK_SCREEN, wsize.w/2, wsize.h);
+	shrinkScreenH_ = texLoader.MakeScreen(D3D_CAMERA_SHRINK_SCREEN, wsize.w / 2, wsize.h);
 
 	modelEndrendering_ = make_shared<ModelEndRendering>();
 
 	CreateRenderTargetHeap();
+
+	actors_.reserve(10);
+	auto& staticMeshRenderer = meshRenderers_[Uint64(Mesh::Type::static_mesh)];
+	auto& skeletalMeshRenderer = meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)];
+
+	auto AddPlaneActor = [&](RendererManager::MeshRender& mr)
+	{
+		auto actor = make_shared<Actor>();
+		auto mesh = make_shared<PlaneMesh>(actor, dx12, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f / 536.0f) * 80.0f, 80.0f, L"image/fiona.png");
+		mr.meshs_.emplace_back(mesh);
+		actor->AddComponent(mesh);
+		actors_.emplace_back(actor);
+	};
+
+	auto AddMMDActor = [&](const std::string& modelFilePath, const std::string& motionFilePath, RendererManager::MeshRender& mr)
+	{
+		auto actor = make_shared<Actor>();
+		auto mesh = make_shared<SkeletalMesh>(actor, modelFilePath, dx12_, GetVMDMotion(motionFilePath));
+		mr.meshs_.emplace_back(mesh);
+		actor->AddComponent(mesh);
+		actors_.emplace_back(actor);
+	};
+
+	AddMMDActor("Resource/Model/桜ミク/雪ミク.pmd",					"Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
+	/*AddMMDActor("Resource/Model/桜ミク/mikuXS桜ミク.pmd",			"Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
+	AddMMDActor("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", "Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
+	AddMMDActor("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", "Resource/VMD/ヤゴコロダンス.vmd",  skeletalMeshRenderer);
+	AddMMDActor("Resource/Model/葛城/葛城.pmd",						"Resource/VMD/ヤゴコロダンス.vmd",	skeletalMeshRenderer);*/
+	for (int i = 0; auto& actor : actors_)
+	{
+		int moveZ = (i + 1) / 2;
+		int moveX = moveZ * ((i % 2) * 2 - 1);
+
+		auto trans = actor->GetTransform();
+		trans.pos = XMFLOAT3(8.0f * moveX, 0.0f, 5.0f * moveZ);
+		actor->SetTransform(trans);
+		i++;
+	}
+
+	//AddPlaneActor(staticMeshRenderer);
 }
 
 RendererManager::~RendererManager()
@@ -50,9 +95,13 @@ RendererManager::~RendererManager()
 void RendererManager::Update()
 {
 	dx12_.GetCamera().Update();
-	for (auto& renderer : renderers_)
+
+	for (auto& meshRenderer : meshRenderers_)
 	{
-		renderer->Update();
+		for (auto& mesh : meshRenderer.meshs_)
+		{
+			mesh->Update();
+		}
 	}
 }
 
@@ -70,9 +119,9 @@ void RendererManager::Draw()
 
 	dx12_.SetViewAndScissor(SHADOW_RESOLUTION, SHADOW_RESOLUTION);
 
-	for (auto& renderer : renderers_)
+	for (auto& meshRenderer : meshRenderers_)
 	{
-		renderer->DrawShadow();
+		meshRenderer.renderer->DrawShadow(meshRenderer.meshs_);
 	}
 
 	// マルチレンダリング
@@ -87,9 +136,9 @@ void RendererManager::Draw()
 
 	dx12_.SetDefaultViewAndScissor();
 
-	for (auto& renderer : renderers_)
+	for (auto& meshRenderer : meshRenderers_)
 	{
-		renderer->Draw();
+		meshRenderer.renderer->Draw(meshRenderer.meshs_);
 	}
 
 	// 縮小バッファへの描画
@@ -152,4 +201,13 @@ void RendererManager::CreateRenderTargetHeap()
 		cpuHandle.ptr += incSize;
 		i++;
 	}
+}
+
+VMDMotion& RendererManager::GetVMDMotion(std::string motionPath)
+{
+	if (!vmdMotions_.contains(motionPath))
+	{
+		vmdMotions_.emplace(motionPath, make_shared<VMDMotion>(motionPath));
+	}
+	return *vmdMotions_[motionPath];
 }

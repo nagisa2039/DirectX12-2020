@@ -14,7 +14,6 @@ class PrimitiveRenderer :
 {
 private:
 	Dx12Wrapper& dx12_;
-	std::vector<std::shared_ptr<PrimitiveMesh>> primitives_;
 
 	ComPtr<ID3D12RootSignature> primRS_ = nullptr;
 	ComPtr<ID3D12PipelineState> primPL_ = nullptr;
@@ -28,11 +27,9 @@ public:
 	PrimitiveRenderer(Dx12Wrapper& dx12);
 	~PrimitiveRenderer();
 
-	// çXêV
-	void Update()override;
 	// ï`âÊ
-	void Draw()override;
+	void Draw(std::vector<std::shared_ptr<Mesh>>& models)override;
 	// âeï`âÊ
-	void DrawShadow()override;
+	void DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)override;
 };
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "3D/Actor.h"
+#include "3D/Mesh.h"
 #include <vector>
 #include <DirectXMath.h>
 #include <string>
@@ -8,24 +8,23 @@
 #include <wrl.h>
 #include <unordered_map>
 #include <array>
-#include "ModelData.h"
 #include <memory>
 #include "Utility/TextureStruct.h"
 #include "Utility/TimeLine.h"
+#include "SkeletalMeshData.h"
 
 class VMDMotion;
 class Dx12Wrapper;
-class ModelRenderer;
 class ModelMaterial;
 using Microsoft::WRL::ComPtr;
 
-class ModelActor:
-	public Actor
+class SkeletalMesh:
+	public Mesh
 {
 public:
-
-	ModelActor(std::string modelPath, Dx12Wrapper& dx12, ModelRenderer& rnderer, VMDMotion& vmd);
-	~ModelActor();
+	SkeletalMesh(std::shared_ptr<Actor> owner, 
+		std::string modelPath, Dx12Wrapper& dx12, VMDMotion& vmd);
+	~SkeletalMesh();
 
 	// 初期化(モデルのファイルパス)
 	bool Init(std::string modelPath);
@@ -37,11 +36,9 @@ public:
 	void StartAnimation();
 
 private:
-
-	ModelRenderer& renderer_;
 	Dx12Wrapper& dx12_;
 
-	std::shared_ptr<ModelData> modelData_;
+	std::shared_ptr<SkeletalMeshData> modelData_;
 
 	// 頂点バッファ
 	ComPtr<ID3D12Resource> vertexBuffer_ = nullptr;

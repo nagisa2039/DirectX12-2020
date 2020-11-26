@@ -3,7 +3,7 @@
 #include <string>
 #include <DirectXMath.h>
 
-class ModelData
+class SkeletalMeshData
 {
 public :
 
@@ -43,8 +43,8 @@ public :
 		DirectX::XMFLOAT3 endPos	= DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);	// ボーンの終点
 	};
 
-	ModelData();
-	~ModelData();
+	SkeletalMeshData();
+	~SkeletalMeshData();
 
 	// 頂点情報の取得
 	std::vector<Vertex>& GetVertexData();

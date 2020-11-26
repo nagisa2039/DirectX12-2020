@@ -1,9 +1,9 @@
 #pragma once
-#include "ModelData.h"
+#include "SkeletalMeshData.h"
 #include <string>
 
 class PMXData :
-	public ModelData
+	public SkeletalMeshData
 {
 public:
 	// (モデルファイルパス)

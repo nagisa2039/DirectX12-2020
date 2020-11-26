@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\3D\Component.h" />
     <ClInclude Include="Resource\Source\3D\Mesh.h" />
     <ClInclude Include="Resource\Source\3D\Actor.h" />
     <ClInclude Include="Resource\Source\Material\MaterialBase.h" />
@@ -37,9 +38,9 @@
     <ClInclude Include="Resource\Source\Utility\Cast.h" />
     <ClInclude Include="Resource\Source\Utility\DirectXStruct.h" />
     <ClInclude Include="Resource\Source\Utility\Constant.h" />
-    <ClInclude Include="Resource\Source\3D\Model\ModelActor.h" />
-    <ClInclude Include="Resource\Source\3D\Model\ModelData.h" />
-    <ClInclude Include="Resource\Source\3D\Model\ModelRenderer.h" />
+    <ClInclude Include="Resource\Source\3D\Model\SkeletalMesh.h" />
+    <ClInclude Include="Resource\Source\3D\Model\SkeletalMeshData.h" />
+    <ClInclude Include="Resource\Source\3D\Model\SkeletalMeshRenderer.h" />
     <ClInclude Include="Resource\Source\3D\Model\PMDData.h" />
     <ClInclude Include="Resource\Source\3D\Model\PMXData.h" />
     <ClInclude Include="Resource\Source\3D\Model\VMDMotion.h" />
@@ -64,6 +65,7 @@
     <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resource\Source\3D\Component.cpp" />
     <ClCompile Include="Resource\Source\3D\Mesh.cpp" />
     <ClCompile Include="Resource\Source\3D\Actor.cpp" />
     <ClCompile Include="Resource\Source\Material\ModelMaterial.cpp" />
@@ -72,9 +74,9 @@
     <ClCompile Include="Resource\Source\3D\RendererManager.cpp" />
     <ClCompile Include="Resource\Source\Game\Animator.cpp" />
     <ClCompile Include="Resource\Source\Game\Player.cpp" />
-    <ClCompile Include="Resource\Source\3D\Model\ModelActor.cpp" />
-    <ClCompile Include="Resource\Source\3D\Model\ModelData.cpp" />
-    <ClCompile Include="Resource\Source\3D\Model\ModelRenderer.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\SkeletalMesh.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\SkeletalMeshData.cpp" />
+    <ClCompile Include="Resource\Source\3D\Model\SkeletalMeshRenderer.cpp" />
     <ClCompile Include="Resource\Source\3D\Model\PMDData.cpp" />
     <ClCompile Include="Resource\Source\3D\Model\PMXData.cpp" />
     <ClCompile Include="Resource\Source\3D\Model\VMDMotion.cpp" />

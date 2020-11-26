@@ -16,7 +16,6 @@ using namespace std;
 
 PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 {
-	rendererManager_ = std::make_unique<RendererManager>(Application::Instance().GetDx12());
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
 	//cameraH_ = texLoader.LoadGraph(L"Resource/Image/camera.png");
 	//hitoshashiH_ = texLoader.LoadGraph(L"Resource/Image/hitoshashi.png");
@@ -42,10 +41,10 @@ PlayScene::~PlayScene()
 
 void PlayScene::Update()
 {
-	rendererManager_->Update();
-
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& input = Application::Instance().GetInput();
+
+	dx12.GetRendererManager().Update();
 
 	if (input.GetButtonDown(DIK_SPACE))
 	{
@@ -57,12 +56,12 @@ void PlayScene::Update()
 
 void PlayScene::Draw()
 {
-	rendererManager_->Draw();
-
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& texLoader = dx12.GetTexLoader();
 	auto& spriteDrawer = dx12.GetSpriteDrawer();
 	auto wsize = Application::Instance().GetWindowSize();
+
+	dx12.GetRendererManager().Draw();
 
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();

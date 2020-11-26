@@ -9,6 +9,7 @@
 #include "System/ShaderLoader.h"
 #include "Utility/dx12Tool.h"
 #include "3D/Camera.h"
+#include "3D/Mesh.h"
 
 using namespace std;
 using namespace DirectX;
@@ -136,10 +137,6 @@ PrimitiveRenderer::PrimitiveRenderer(Dx12Wrapper& dx12):dx12_(dx12)
 	{
 		assert(false);
 	}
-	primitives_.emplace_back(make_shared<PlaneMesh>(dx12_, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f/536.0f) * 80.0f, 80.0f, L"image/fiona.png"));
-
-	//_primitives.emplace_back(make_shared<ConeMesh>(_dx12, XMFLOAT3(10.0f, 0.0f, -10.0f), 5.0f, 10.0f, L"image/so.png"));
-	//_primitives.emplace_back(make_shared<CylinderMesh>(_dx12, XMFLOAT3(-10.0f, 0.0f, 0.0f), 5.0f, 10.0f, L"image/misaki.png"));
 }
 
 
@@ -147,15 +144,7 @@ PrimitiveRenderer::~PrimitiveRenderer()
 {
 }
 
-void PrimitiveRenderer::Update()
-{
-	for (auto& prim : primitives_)
-	{
-		prim->Update();
-	}
-}
-
-void PrimitiveRenderer::Draw()
+void PrimitiveRenderer::Draw(std::vector<std::shared_ptr<Mesh>>& models)
 {
 	auto& cmdList = dx12_.GetCommand().CommandList();
 	auto& texLoader = dx12_.GetTexLoader();
@@ -167,13 +156,13 @@ void PrimitiveRenderer::Draw()
 	dx12_.GetCamera().SetCameraDescriptorHeap(1);
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
-	for (auto& prim : primitives_)
+	for (auto& mesh : models)
 	{
-		prim->Draw();
+		mesh->Draw();
 	}
 }
 
-void PrimitiveRenderer::DrawShadow()
+void PrimitiveRenderer::DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)
 {
 	auto& cmdList = dx12_.GetCommand().CommandList();
 	auto& texLoader = dx12_.GetTexLoader();
@@ -182,8 +171,8 @@ void PrimitiveRenderer::DrawShadow()
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
 	dx12_.GetCamera().SetCameraDescriptorHeap(0);
 
-	for (auto& actor : primitives_)
+	for (auto& mesh : models)
 	{
-		actor->Draw();
+		mesh->Draw();
 	}
 }
