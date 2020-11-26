@@ -70,10 +70,10 @@ RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 	};
 
 	AddMMDActor("Resource/Model/桜ミク/雪ミク.pmd",					"Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
-	/*AddMMDActor("Resource/Model/桜ミク/mikuXS桜ミク.pmd",			"Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
+	AddMMDActor("Resource/Model/桜ミク/mikuXS桜ミク.pmd",			"Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
 	AddMMDActor("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", "Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
 	AddMMDActor("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", "Resource/VMD/ヤゴコロダンス.vmd",  skeletalMeshRenderer);
-	AddMMDActor("Resource/Model/葛城/葛城.pmd",						"Resource/VMD/ヤゴコロダンス.vmd",	skeletalMeshRenderer);*/
+	AddMMDActor("Resource/Model/葛城/葛城.pmd",						"Resource/VMD/ヤゴコロダンス.vmd",	skeletalMeshRenderer);
 	for (int i = 0; auto& actor : actors_)
 	{
 		int moveZ = (i + 1) / 2;
@@ -85,23 +85,21 @@ RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 		i++;
 	}
 
-	//AddPlaneActor(staticMeshRenderer);
+	AddPlaneActor(staticMeshRenderer);
 }
 
 RendererManager::~RendererManager()
 {
+	actors_.clear();
 }
 
 void RendererManager::Update()
 {
 	dx12_.GetCamera().Update();
 
-	for (auto& meshRenderer : meshRenderers_)
+	for (auto& actor : actors_)
 	{
-		for (auto& mesh : meshRenderer.meshs_)
-		{
-			mesh->Update();
-		}
+		actor->Update();
 	}
 }
 

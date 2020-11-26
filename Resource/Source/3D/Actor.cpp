@@ -26,6 +26,7 @@ Actor::Actor()
 
 Actor::~Actor()
 {
+	int a = 0;
 }
 
 void Actor::Update()

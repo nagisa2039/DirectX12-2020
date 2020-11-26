@@ -247,7 +247,7 @@ void SkeletalMesh::Update()
 		}
 	};
 
-	auto owner = GetOwner();
+	auto owner = GetOwner().lock();
 	auto trans = owner->GetTransform();
 	const float speed = 2.0f;
 	Move(DIK_LEFT,	trans.rotate.y, +speed*2.0f);
@@ -275,7 +275,7 @@ void SkeletalMesh::Draw()
 	modelMaterial_->SetEachDescriptorHeap(commandList);
 
 	// 座標行列用デスクリプタヒープのセット
-	GetOwner()->SetTransformHeap(7);
+	GetOwner().lock()->SetTransformHeap(7);
 
 	// ボーン用デスクリプタヒープのセット
 	commandList.SetDescriptorHeaps(1, boneHeap_.GetAddressOf());

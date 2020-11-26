@@ -19,7 +19,7 @@ public:
 	/// <summary>
 	/// 所有者のActor取得
 	/// </summary>
-	std::shared_ptr<Actor> GetOwner();
+	std::weak_ptr<Actor> GetOwner();
 
 	/// <summary>
 	/// 毎フレーム更新
@@ -27,5 +27,5 @@ public:
 	virtual void Update() = 0;
 
 private:
-	std::shared_ptr<Actor> owner_;
+	std::weak_ptr<Actor> owner_;
 };

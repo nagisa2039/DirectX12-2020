@@ -90,7 +90,7 @@ PrimitiveMesh::PrimitiveMesh(std::shared_ptr<Actor>owner,
 	vbv_ = {};
 	ibv_ = {};
 	indexNum_ = 0;
-	auto actor = GetOwner();
+	auto actor = GetOwner().lock();
 	auto trans = actor->GetTransform();
 	trans.pos = pos;
 	actor->SetTransform(trans);
@@ -111,7 +111,7 @@ void PrimitiveMesh::Draw()
 	material_->SetEachDescriptorHeap(cmdList);
 
 	// 座標のセット
-	GetOwner()->SetTransformHeap(7);
+	GetOwner().lock()->SetTransformHeap(7);
 
 	// インデックスバッファのセット
 	cmdList.IASetIndexBuffer(&ibv_);
