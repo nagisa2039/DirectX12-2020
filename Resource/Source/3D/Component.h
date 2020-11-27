@@ -14,12 +14,21 @@ public:
 	/// 所有者のアクター
 	/// </summary>
 	/// <param name="owner">アクター</param>
-	Component(std::shared_ptr<Actor>owner);
+	Component(std::weak_ptr<Actor>owner);
+
+	virtual ~Component()= default;
 
 	/// <summary>
 	/// 所有者のActor取得
 	/// </summary>
 	std::weak_ptr<Actor> GetOwner();
+
+	/// <summary>
+	/// 初期化
+	/// コンストラクタでできない(自身が作られないと出来ない)
+	/// 処理を行う
+	/// </summary>
+	virtual void Init()=0;
 
 	/// <summary>
 	/// 毎フレーム更新

@@ -7,10 +7,9 @@
 #include <string>
 #include <memory>
 
-class Dx12Wrapper;
 class Material;
 
-class PrimitiveMesh :
+class StaticMesh :
 	public Mesh
 {
 public:
@@ -35,16 +34,14 @@ public:
 	};
 
 	// (dx12の管理クラス, 座標, テクスチャファイルパス)
-	PrimitiveMesh(std::shared_ptr<Actor>owner, Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
-	~PrimitiveMesh();
+	StaticMesh(std::weak_ptr<Actor>owner, Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
+	~StaticMesh();
 	// 更新
 	void Update()override;
 	// 描画
 	void Draw()override;
 
 protected:
-	Dx12Wrapper& dx12_;
-
 	ComPtr<ID3D12Resource> vbuffer_;
 	D3D12_VERTEX_BUFFER_VIEW vbv_;
 

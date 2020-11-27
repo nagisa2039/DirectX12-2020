@@ -1,6 +1,6 @@
 #include "RendererManager.h"
-#include "Model/SkeletalMeshRenderer.h"
-#include "Primitive/PrimitiveRenderer.h"
+#include "Skeletal/SkeletalMeshRenderer.h"
+#include "Static/StaticMeshRenderer.h"
 #include "System/Dx12Wrapper.h"
 #include "System/TexLoader.h"
 #include "Utility/Constant.h"
@@ -10,10 +10,6 @@
 #include "2D/SpriteDrawer.h"
 #include "Material/ModelEndRendering.h"
 #include "Mesh.h"
-#include "3D/Model/SkeletalMesh.h"
-#include "3D/Primitive/PlaneMesh.h"
-#include "3D/Model/VMDMotion.h"
-#include "Actor.h"
 
 using namespace std;
 using namespace DirectX;
@@ -26,7 +22,7 @@ namespace
 RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 {
 	meshRenderers_.resize(Uint64(Mesh::Type::max));
-	meshRenderers_[Uint64(Mesh::Type::static_mesh)].renderer	= make_shared<PrimitiveRenderer>(dx12_);
+	meshRenderers_[Uint64(Mesh::Type::static_mesh)].renderer	= make_shared<StaticMeshRenderer>(dx12_);
 	meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)].renderer	= make_shared<SkeletalMeshRenderer>(dx12_);
 
 	auto wsize = Application::Instance().GetWindowSize();
@@ -46,61 +42,15 @@ RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 	modelEndrendering_ = make_shared<ModelEndRendering>();
 
 	CreateRenderTargetHeap();
-
-	actors_.reserve(10);
-	auto& staticMeshRenderer = meshRenderers_[Uint64(Mesh::Type::static_mesh)];
-	auto& skeletalMeshRenderer = meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)];
-
-	auto AddPlaneActor = [&](RendererManager::MeshRender& mr)
-	{
-		auto actor = make_shared<Actor>();
-		auto mesh = make_shared<PlaneMesh>(actor, dx12, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f / 536.0f) * 80.0f, 80.0f, L"image/fiona.png");
-		mr.meshs_.emplace_back(mesh);
-		actor->AddComponent(mesh);
-		actors_.emplace_back(actor);
-	};
-
-	auto AddMMDActor = [&](const std::string& modelFilePath, const std::string& motionFilePath, RendererManager::MeshRender& mr)
-	{
-		auto actor = make_shared<Actor>();
-		auto mesh = make_shared<SkeletalMesh>(actor, modelFilePath, dx12_, GetVMDMotion(motionFilePath));
-		mr.meshs_.emplace_back(mesh);
-		actor->AddComponent(mesh);
-		actors_.emplace_back(actor);
-	};
-
-	AddMMDActor("Resource/Model/桜ミク/雪ミク.pmd",					"Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
-	AddMMDActor("Resource/Model/桜ミク/mikuXS桜ミク.pmd",			"Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
-	AddMMDActor("Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", "Resource/VMD/swing2.vmd",			skeletalMeshRenderer);
-	AddMMDActor("Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", "Resource/VMD/ヤゴコロダンス.vmd",  skeletalMeshRenderer);
-	AddMMDActor("Resource/Model/葛城/葛城.pmd",						"Resource/VMD/ヤゴコロダンス.vmd",	skeletalMeshRenderer);
-	for (int i = 0; auto& actor : actors_)
-	{
-		int moveZ = (i + 1) / 2;
-		int moveX = moveZ * ((i % 2) * 2 - 1);
-
-		auto trans = actor->GetTransform();
-		trans.pos = XMFLOAT3(8.0f * moveX, 0.0f, 5.0f * moveZ);
-		actor->SetTransform(trans);
-		i++;
-	}
-
-	AddPlaneActor(staticMeshRenderer);
 }
 
 RendererManager::~RendererManager()
 {
-	actors_.clear();
 }
 
 void RendererManager::Update()
 {
 	dx12_.GetCamera().Update();
-
-	for (auto& actor : actors_)
-	{
-		actor->Update();
-	}
 }
 
 void RendererManager::Draw()
@@ -168,6 +118,22 @@ void RendererManager::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 }
 
+void RendererManager::AddMesh(Mesh* mesh)
+{
+	auto meshTypeIndex = Uint64(mesh->GetMeshType());
+	assert(meshTypeIndex < meshRenderers_.size());
+	meshRenderers_[meshTypeIndex].meshs_.emplace_back(mesh);
+}
+
+void RendererManager::RemoveMesh(Mesh* mesh)
+{
+	auto meshTypeIndex = Uint64(mesh->GetMeshType());
+	assert(meshTypeIndex < meshRenderers_.size());
+
+	auto& vec = meshRenderers_[meshTypeIndex].meshs_;
+	std::erase_if(vec, [mesh](Mesh* m) {return m == mesh; });
+}
+
 void RendererManager::CreateRenderTargetHeap()
 {
 	auto& dev = dx12_.GetDevice();
@@ -199,13 +165,4 @@ void RendererManager::CreateRenderTargetHeap()
 		cpuHandle.ptr += incSize;
 		i++;
 	}
-}
-
-VMDMotion& RendererManager::GetVMDMotion(std::string motionPath)
-{
-	if (!vmdMotions_.contains(motionPath))
-	{
-		vmdMotions_.emplace(motionPath, make_shared<VMDMotion>(motionPath));
-	}
-	return *vmdMotions_[motionPath];
 }

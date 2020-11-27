@@ -7,9 +7,9 @@
 using namespace std;
 using namespace DirectX;
 
-PMDData::PMDData(std::string modelPath)
+PMDData::PMDData(std::wstring modelPath)
 {
-	LoadFromPMD(modelPath);
+	LoadFromPMD(StringFromWString(modelPath));
 }
 
 
@@ -71,10 +71,10 @@ bool PMDData::LoadFromPMD(std::string modelPath)
 #pragma pack()
 	struct IK_Data
 	{
-		WORD bone_idx;
-		WORD target_bone_index;
-		WORD iterations;
-		float control_weight;
+		WORD bone_idx			= 0;
+		WORD target_bone_index	= 0;
+		WORD iterations			= 0;
+		float control_weight	= 0.0f;
 		std::vector<WORD> child_bone_index;
 	};
 
@@ -115,7 +115,7 @@ bool PMDData::LoadFromPMD(std::string modelPath)
 
 	struct SkinData
 	{
-		BYTE skin_type; // 表情の種類 // 0：base、1：まゆ、2：目、3：リップ、4：その他
+		BYTE skin_type = 0; // 表情の種類 // 0：base、1：まゆ、2：目、3：リップ、4：その他
 		std::vector<Skin_Vert_Data> vertData;
 	};
 
@@ -172,13 +172,13 @@ bool PMDData::LoadFromPMD(std::string modelPath)
 		fseek(fp, 256, SEEK_CUR);
 
 		// ボーン名
-		fseek(fp, 20 * bones_.size(), SEEK_CUR);
+		fseek(fp, Cast(long, 20 * bones_.size()), SEEK_CUR);
 
 		// 表情リスト
-		fseek(fp, 20 * (skinDatas.size()-1), SEEK_CUR);
+		fseek(fp, Cast(long, 20 * (skinDatas.size()-1)), SEEK_CUR);
 
 		// ボーン枠用枠名リスト
-		fseek(fp, 50 * dispName.size(), SEEK_CUR);
+		fseek(fp, Cast(long, 50 * dispName.size()), SEEK_CUR);
 	}
 
 	//toon---------------------------------

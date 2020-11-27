@@ -22,7 +22,7 @@ public:
 	};
 
 	// (モーションファイルパス)
-	VMDMotion(std::string filePath);
+	VMDMotion(std::wstring filePath);
 	~VMDMotion();
 
 	// キーフレーム数の取得

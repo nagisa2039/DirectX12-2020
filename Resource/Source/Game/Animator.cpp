@@ -94,7 +94,8 @@ void Animator::Draw(const XMINT2& pos, const float exRate, const bool turn)
 	}
 	auto& animRect = anim.animRectVec[idx];
 
-	auto drawRect = Rect{ pos, XMINT2(animRect.rect.size.x * exRate, animRect.rect.size.y * exRate) };
+	auto drawRect = Rect{ pos, 
+		XMINT2(Int32(animRect.rect.size.x * exRate), Int32(animRect.rect.size.y * exRate)) };
 	//if (!camera.GetCameraRect().IsHit(drawRect))return;
 	//drawRect.center += camera.GetOffset();
 

@@ -10,6 +10,7 @@
 #include <DirectXMath.h>
 #include <string>
 #include "Utility/TextureStruct.h"
+#include "System/FileSystem.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -19,6 +20,7 @@ class SpriteDrawer;
 class SoundManager;
 class Camera;
 class RendererManager;
+class FileSystem;
 
 class Dx12Wrapper
 {
@@ -69,8 +71,12 @@ public:
 	/// <summary>
 	/// 3D描画管理クラスの取得
 	/// </summary>
-	/// <returns></returns>
 	RendererManager& GetRendererManager();
+
+	/// <summary>
+	/// ファイル読み込み管理クラスの取得
+	/// </summary>
+	FileSystem& GetFileSystem();
 	
 	/// <summary>
 	/// 現在の裏画面ハンドルの取得
@@ -107,6 +113,7 @@ private:
 	std::shared_ptr<SoundManager> soundManager_;
 	std::shared_ptr<Camera> camera_;
 	std::shared_ptr<RendererManager> rendererManager_;
+	std::shared_ptr<FileSystem> fileSystem_;
 
 	void CreateSwapChain();
 };

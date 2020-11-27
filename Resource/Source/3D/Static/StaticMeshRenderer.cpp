@@ -1,4 +1,4 @@
-#include "PrimitiveRenderer.h"
+#include "StaticMeshRenderer.h"
 #include "System/Dx12Wrapper.h"
 #include "System/TexLoader.h"
 #include "PlaneMesh.h"
@@ -14,7 +14,7 @@
 using namespace std;
 using namespace DirectX;
 
-bool PrimitiveRenderer::CreatePipelineState()
+bool StaticMeshRenderer::CreatePipelineState()
 {
 	auto& sl = Application::Instance().GetShaderLoader();
 	ComPtr<ID3DBlob> vertexShader = sl.GetShader(L"Resource/Source/Shader/3D/PrimitiveVS.hlsl", "VS",	("vs_" + sl.GetShaderModel()).c_str());
@@ -75,7 +75,7 @@ bool PrimitiveRenderer::CreatePipelineState()
 	gpsd.DepthStencilState.StencilEnable = false;
 	gpsd.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
-	for (int i = 1; i < gpsd.NumRenderTargets; ++i)
+	for (unsigned int i = 1; i < gpsd.NumRenderTargets; ++i)
 	{
 		gpsd.RTVFormats[i] = gpsd.RTVFormats[0];
 		gpsd.BlendState.RenderTarget[i] = gpsd.BlendState.RenderTarget[0];
@@ -131,7 +131,7 @@ bool PrimitiveRenderer::CreatePipelineState()
 	return true;
 }
 
-PrimitiveRenderer::PrimitiveRenderer(Dx12Wrapper& dx12):dx12_(dx12)
+StaticMeshRenderer::StaticMeshRenderer(Dx12Wrapper& dx12):dx12_(dx12)
 {
 	if(!CreatePipelineState())
 	{
@@ -140,11 +140,11 @@ PrimitiveRenderer::PrimitiveRenderer(Dx12Wrapper& dx12):dx12_(dx12)
 }
 
 
-PrimitiveRenderer::~PrimitiveRenderer()
+StaticMeshRenderer::~StaticMeshRenderer()
 {
 }
 
-void PrimitiveRenderer::Draw(std::vector<std::shared_ptr<Mesh>>& models)
+void StaticMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 {
 	auto& cmdList = dx12_.GetCommand().CommandList();
 	auto& texLoader = dx12_.GetTexLoader();
@@ -156,22 +156,23 @@ void PrimitiveRenderer::Draw(std::vector<std::shared_ptr<Mesh>>& models)
 	dx12_.GetCamera().SetCameraDescriptorHeap(1);
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
-	for (auto& mesh : models)
+	for (auto& mesh : meshs)
 	{
 		mesh->Draw();
 	}
 }
 
-void PrimitiveRenderer::DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)
+void StaticMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 {
 	auto& cmdList = dx12_.GetCommand().CommandList();
 	auto& texLoader = dx12_.GetTexLoader();
 
 	cmdList.SetPipelineState(primShadowPL_.Get());
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
-	dx12_.GetCamera().SetCameraDescriptorHeap(0);
 
-	for (auto& mesh : models)
+	dx12_.GetCamera().SetCameraDescriptorHeap(1);
+
+	for (auto& mesh : meshs)
 	{
 		mesh->Draw();
 	}

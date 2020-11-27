@@ -4,7 +4,6 @@
 #include <DirectXMath.h>
 
 class Command;
-class ID3D12Device;
 
 class Camera
 {

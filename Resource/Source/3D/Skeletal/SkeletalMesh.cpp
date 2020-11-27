@@ -19,6 +19,7 @@
 #include "Material/ModelMaterial.h"
 #include "Utility/Cast.h"
 #include "3D/Actor.h"
+#include "System/FileSystem.h"
 
 using namespace std;
 using namespace DirectX; 
@@ -58,19 +59,20 @@ namespace
 	}
 }
 
-SkeletalMesh::SkeletalMesh(std::shared_ptr<Actor> owner, 
-	std::string modelPath, Dx12Wrapper& dx12, VMDMotion& vmd)
-	:dx12_(dx12), vmdMotion_(vmd), 
-	Mesh(Mesh::Type::skeletal_mesh, owner)
+SkeletalMesh::SkeletalMesh(std::weak_ptr<Actor> owner,
+	Dx12Wrapper& dx12, const std::wstring& modelPath, const std::wstring& motionPath)
+	:vmdMotion_(dx12.GetFileSystem().GetVMDMotion(motionPath)),
+	modelData_(dx12.GetFileSystem().GetSkeletalMeshData(modelPath)),
+	Mesh(dx12, owner, Mesh::Type::skeletal_mesh)
 {
 	if (!Init(modelPath))
 	{
 		assert(false);
 	}
 	noiseThresholdTL_ = make_unique<TimeLine<float>>(true);
-	noiseThresholdTL_->AddKey(0.0f, 1.0f);
-	noiseThresholdTL_->AddKey(2.0f, 0.0f);
-	noiseThresholdTL_->AddKey(4.0f, 1.0f);
+	noiseThresholdTL_->AddKey(0.0f, 0.0f);
+	noiseThresholdTL_->AddKey(2.0f, 1.0f);
+	noiseThresholdTL_->AddKey(4.0f, 0.0f);
 }
 
 SkeletalMesh::~SkeletalMesh()
@@ -78,22 +80,9 @@ SkeletalMesh::~SkeletalMesh()
 }
 
 
-bool SkeletalMesh::Init(std::string modelPath)
+bool SkeletalMesh::Init(std::wstring modelPath)
 {
-	auto ext = GetExtension(modelPath);
-	if (ext == "pmx")
-	{
-		modelData_ = make_shared<PMXData>(modelPath);
-	}
-	else if (ext == "pmd")
-	{
-		modelData_ = make_shared<PMDData>(modelPath);
-	}
-	else
-	{
-		assert(false);
-	}
-
+	modelData_ = dx12_.GetFileSystem().GetSkeletalMeshData(modelPath);
 	CreateBoneHierarchy();
 
 	// 頂点バッファの作成
@@ -132,7 +121,7 @@ bool SkeletalMesh::Init(std::string modelPath)
 
 bool SkeletalMesh::CreateBoneHierarchy()
 {
-	auto bones = modelData_->GetBoneData();
+	auto bones = modelData_.GetBoneData();
 	boneMats_.resize(bones.size());
 
 	for (int idx = 0; idx < static_cast<int>(bones.size()); ++idx)
@@ -263,7 +252,7 @@ void SkeletalMesh::Update()
 	noiseThresholdTL_->Update();
 	auto value = noiseThresholdTL_->GetValue();
 	modelMaterial_->SetConstFloat(
-		modelData_->GetMaterialData().size(), value);
+		modelData_.GetMaterialData().size(), value);
 }
 
 void SkeletalMesh::Draw()
@@ -289,7 +278,7 @@ void SkeletalMesh::Draw()
 	commandList.IASetVertexBuffers(0, 1, &vbView_);
 
 	// 描画コマンドの生成
-	commandList.DrawIndexedInstanced(Uint32(modelData_->GetIndexData().size()), 1, 0, 0, 0);
+	commandList.DrawIndexedInstanced(Uint32(modelData_.GetIndexData().size()), 1, 0, 0, 0);
 }
 
 void SkeletalMesh::StartAnimation()
@@ -300,7 +289,7 @@ void SkeletalMesh::StartAnimation()
 // 頂点バッファの作成
 bool SkeletalMesh::CreateVertexBuffer()
 {
-	auto vertices = modelData_->GetVertexData();
+	auto vertices = modelData_.GetVertexData();
 
 	D3D12_HEAP_PROPERTIES heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 
@@ -345,7 +334,7 @@ bool SkeletalMesh::CreateVertexBuffer()
 
 bool SkeletalMesh::CreateIndexBuffer()
 {
-	auto indices = modelData_->GetIndexData();
+	auto indices = modelData_.GetIndexData();
 
 	auto bufferSize = sizeof(indices[0]) * indices.size();
 	if (FAILED(dx12_.GetDevice().CreateCommittedResource(
@@ -388,9 +377,9 @@ bool SkeletalMesh::CreateIndexBuffer()
 bool SkeletalMesh::CreateMaterial()
 {
 	auto& dev = dx12_.GetDevice();
-	auto materials = modelData_->GetMaterialData();
+	auto materials = modelData_.GetMaterialData();
 
-	auto texPaths = modelData_->GetTexturePaths();
+	auto texPaths = modelData_.GetTexturePaths();
 
 	std::vector<MaterialBase> meterialBaseVec(materials.size());
 

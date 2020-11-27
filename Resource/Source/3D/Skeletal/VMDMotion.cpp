@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
+#include "Utility/Tool.h"
 
 using namespace std;
 using namespace DirectX;
@@ -71,9 +72,9 @@ bool VMDMotion::LoadVMDMotion(std::string filePath)
 	return true;
 }
 
-VMDMotion::VMDMotion(std::string filePath)
+VMDMotion::VMDMotion(std::wstring filePath)
 {
-	LoadVMDMotion(filePath);
+	LoadVMDMotion(StringFromWString(filePath));
 }
 
 

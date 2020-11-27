@@ -1,4 +1,4 @@
-#include "PrimitiveMesh.h"
+#include "StaticMesh.h"
 #include "System/Dx12Wrapper.h"
 #include "d3dx12.h"
 #include "System/TexLoader.h"
@@ -10,7 +10,7 @@
 using namespace DirectX;
 using namespace std;
 
-void PrimitiveMesh::CreateVertexBufferAndView(std::vector<PrimVertex> vertices)
+void StaticMesh::CreateVertexBufferAndView(std::vector<PrimVertex> vertices)
 {
 	auto& dev = dx12_.GetDevice();
 	CreateUploadBuffer(&dev, vbuffer_, sizeof(vertices[0]) * vertices.size(), true);
@@ -26,7 +26,7 @@ void PrimitiveMesh::CreateVertexBufferAndView(std::vector<PrimVertex> vertices)
 	vbv_.BufferLocation = vbuffer_->GetGPUVirtualAddress();
 }
 
-void PrimitiveMesh::CreateIndexBufferAndView(std::vector<uint16_t> indices)
+void StaticMesh::CreateIndexBufferAndView(std::vector<uint16_t> indices)
 {
 	auto& dev = dx12_.GetDevice();
 	CreateUploadBuffer(&dev, ibuffer_, sizeof(indices[0]) * indices.size(), true);
@@ -43,7 +43,7 @@ void PrimitiveMesh::CreateIndexBufferAndView(std::vector<uint16_t> indices)
 	indexNum_ = ibv_.SizeInBytes / sizeof(uint16_t);
 }
 
-void PrimitiveMesh::CalNormalVertex(std::vector<PrimVertex>& vertices, const std::vector<uint16_t>& indices)
+void StaticMesh::CalNormalVertex(std::vector<PrimVertex>& vertices, const std::vector<uint16_t>& indices)
 {
 	for (int j = 0; j < vertices.size(); j++)
 	{
@@ -64,7 +64,7 @@ void PrimitiveMesh::CalNormalVertex(std::vector<PrimVertex>& vertices, const std
 	}
 }
 
-XMVECTOR PrimitiveMesh::GetSurfaceNormal(const XMVECTOR & v0, const XMVECTOR & v1, const XMVECTOR & v2)
+XMVECTOR StaticMesh::GetSurfaceNormal(const XMVECTOR & v0, const XMVECTOR & v1, const XMVECTOR & v2)
 {
 	auto vv1 = v1 - v0;
 	auto vv2 = v2 - v1;
@@ -72,7 +72,7 @@ XMVECTOR PrimitiveMesh::GetSurfaceNormal(const XMVECTOR & v0, const XMVECTOR & v
 	return XMVector3Normalize(norm);
 }
 
-void PrimitiveMesh::CalNormalVertex2(std::vector<PrimVertex>& vertices, XMFLOAT3 center)
+void StaticMesh::CalNormalVertex2(std::vector<PrimVertex>& vertices, XMFLOAT3 center)
 {
 	for (auto& vert : vertices)
 	{
@@ -82,9 +82,9 @@ void PrimitiveMesh::CalNormalVertex2(std::vector<PrimVertex>& vertices, XMFLOAT3
 	}
 }
 
-PrimitiveMesh::PrimitiveMesh(std::shared_ptr<Actor>owner, 
-	Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):dx12_(dx12), 
-	Mesh(Mesh::Type::skeletal_mesh, owner)
+StaticMesh::StaticMesh(std::weak_ptr<Actor>owner,
+	Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath):
+	Mesh(dx12, owner, Mesh::Type::static_mesh)
 {
 	animCnt_ = 0;
 	vbv_ = {};
@@ -96,15 +96,15 @@ PrimitiveMesh::PrimitiveMesh(std::shared_ptr<Actor>owner,
 	actor->SetTransform(trans);
 }
 
-PrimitiveMesh::~PrimitiveMesh()
+StaticMesh::~StaticMesh()
 {
 }
 
-void PrimitiveMesh::Update()
+void StaticMesh::Update()
 {
 }
 
-void PrimitiveMesh::Draw()
+void StaticMesh::Draw()
 {
 	// 座標行列用デスクリプタヒープのセット
 	auto& cmdList = dx12_.GetCommand().CommandList();

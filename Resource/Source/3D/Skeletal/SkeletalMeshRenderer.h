@@ -11,24 +11,35 @@ class SkeletalMesh;
 class Dx12Wrapper;
 class Mesh;
 
+/// <summary>
+/// SkeletalMesh‚Ì•`‰æƒNƒ‰ƒX
+/// </summary>
 class SkeletalMeshRenderer : 
 	public Renderer
 {
 public:
+	/// <param name="dx12">IrectXŠÇ—ƒNƒ‰ƒX</param>
 	SkeletalMeshRenderer(Dx12Wrapper& dx12);
 	~SkeletalMeshRenderer();
 
-	// ‰Šú‰»
+	/// <summary>
+	/// ‰Šú‰»
+	/// </summary>
+	/// <returns>¬”Û</returns>
 	bool Init();
-	// •`‰æ
-	void Draw(std::vector<std::shared_ptr<Mesh>>& models)override;
-	// ‰e•`‰æ
-	void DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)override;
 
-	// RootSignature‚Ìİ’è
-	void SetModelRS();
-	// PipelineState‚Ìİ’è
-	void SetModelPL();
+	/// <summary>
+	/// ’Êí•`‰æ
+	/// </summary>
+	/// <param name="meshs">•`‰æ‚·‚éƒƒbƒVƒ…</param>
+	void Draw(std::vector<Mesh*>& meshs)override;
+
+	/// <summary>
+	/// ‰e•`‰æ
+	/// </summary>
+	/// <param name="meshs">•`‰æ‚·‚éƒƒbƒVƒ…</param>
+	void DrawShadow(std::vector<Mesh*>& meshs)override;
+
 
 private:
 	Dx12Wrapper& dx12_;
@@ -40,5 +51,7 @@ private:
 	ComPtr<ID3D12PipelineState> shadowPL_ = nullptr;
 
 	bool CreateModelPL();
+	void SetModelRS();
+	void SetModelPL();
 };
 

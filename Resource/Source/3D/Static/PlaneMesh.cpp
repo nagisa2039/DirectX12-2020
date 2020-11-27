@@ -7,9 +7,9 @@
 using namespace std;
 using namespace DirectX;
 
-PlaneMesh::PlaneMesh(std::shared_ptr<Actor>owner, 
+PlaneMesh::PlaneMesh(std::weak_ptr<Actor>owner,
 	Dx12Wrapper& dx12, const XMFLOAT3& pos, const float width, const float depth, std::wstring texPath)
-	:PrimitiveMesh(owner, dx12, pos, texPath), width_(width), depth_(depth)
+	:StaticMesh(owner, dx12, pos, texPath), width_(width), depth_(depth)
 {
 	vector<PrimVertex> vertices
 	{

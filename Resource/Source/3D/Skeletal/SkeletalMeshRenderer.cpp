@@ -107,7 +107,7 @@ bool SkeletalMeshRenderer::CreateModelPL()
 	gpsd.BlendState.RenderTarget[0].LogicOpEnable = false;
 	gpsd.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
-	for (int i = 1; i < gpsd.NumRenderTargets; ++i)
+	for (unsigned int i = 1; i < gpsd.NumRenderTargets; ++i)
 	{
 		gpsd.RTVFormats[i] = gpsd.RTVFormats[0];
 		gpsd.BlendState.RenderTarget[i] = gpsd.BlendState.RenderTarget[0];
@@ -165,7 +165,7 @@ bool SkeletalMeshRenderer::Init()
 	return true;
 }
 
-void SkeletalMeshRenderer::Draw(std::vector<std::shared_ptr<Mesh>>& models)
+void SkeletalMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 {
 	auto& texLoader = dx12_.GetTexLoader();
 	auto& commandList = dx12_.GetCommand().CommandList();
@@ -184,13 +184,13 @@ void SkeletalMeshRenderer::Draw(std::vector<std::shared_ptr<Mesh>>& models)
 	// [“x
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
-	for (auto& mesh : models)
+	for (auto& mesh : meshs)
 	{
 		mesh->Draw();
 	}
 }
 
-void SkeletalMeshRenderer::DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)
+void SkeletalMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 {
 	auto& texLoader = dx12_.GetTexLoader();
 	auto& commandList = dx12_.GetCommand().CommandList();
@@ -201,7 +201,7 @@ void SkeletalMeshRenderer::DrawShadow(std::vector<std::shared_ptr<Mesh>>& models
 	dx12_.GetCamera().SetCameraDescriptorHeap(1); 
 	texLoader.SetTextureDescriptorHeap(0);
 
-	for (auto& mesh : models)
+	for (auto& mesh : meshs)
 	{
 		mesh->Draw();
 	}

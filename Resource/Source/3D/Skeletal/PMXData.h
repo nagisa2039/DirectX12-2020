@@ -1,22 +1,25 @@
 #pragma once
 #include "SkeletalMeshData.h"
-class PMDData :
+#include <string>
+
+class PMXData :
 	public SkeletalMeshData
 {
 public:
 	// (モデルファイルパス)
-	PMDData(std::string modelPath);
-	~PMDData();
+	PMXData(std::wstring modelPath);
+	~PMXData();
 
 private:
-	std::vector<int> toonIndexVec_;
-
+	std::vector<uint8_t> info_;
 	// pmdモデルの読み込み
-	bool LoadFromPMD(std::string modelPath);
+	bool LoadFromPMX(std::string modelPath);
 
 	void LoadVertexIndex(FILE * fp);
 
 	void LoadVertex(FILE * fp);
+
+	void ReadTextBuf(std::wstring& wstrBuf, FILE * fp);
 
 	// マテリアルの読み込み
 	void LoadMaterial(FILE * fp, std::string &modelPath);

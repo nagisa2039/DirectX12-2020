@@ -49,20 +49,8 @@
     <Filter Include="ソース ファイル\3D">
       <UniqueIdentifier>{dfbaf55d-0212-4152-8cc5-803164e8073a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\3D\Primitive">
-      <UniqueIdentifier>{54103241-6ab7-4709-830a-f1cb650b4249}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\3D\Model">
-      <UniqueIdentifier>{9740aae3-9cd3-4dd4-9d5e-c33c4733d3e5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\3D">
       <UniqueIdentifier>{1f6836cd-3747-4649-9874-f82862e75457}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\3D\Primitive">
-      <UniqueIdentifier>{c28ac6e2-6dc0-4cb4-b537-4c5a3eb78db6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\3D\Model">
-      <UniqueIdentifier>{3b006ebb-1c6c-4625-ac2e-fe2fb655b587}</UniqueIdentifier>
     </Filter>
     <Filter Include="ヘッダー ファイル\2D">
       <UniqueIdentifier>{37f47a93-0ca7-4ef7-983f-7aef596c7ae5}</UniqueIdentifier>
@@ -75,6 +63,18 @@
     </Filter>
     <Filter Include="ヘッダー ファイル\Material">
       <UniqueIdentifier>{68126f84-3a43-4ad7-8fdc-2ed7a012ae6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\3D\Skeletal">
+      <UniqueIdentifier>{9740aae3-9cd3-4dd4-9d5e-c33c4733d3e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\3D\Static">
+      <UniqueIdentifier>{54103241-6ab7-4709-830a-f1cb650b4249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\3D\Skeletal">
+      <UniqueIdentifier>{3b006ebb-1c6c-4625-ac2e-fe2fb655b587}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\3D\Static">
+      <UniqueIdentifier>{c28ac6e2-6dc0-4cb4-b537-4c5a3eb78db6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -141,24 +141,6 @@
     <ClInclude Include="Resource\Source\System\ShaderLoader.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Primitive\PlaneMesh.h">
-      <Filter>ヘッダー ファイル\3D\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Primitive\PrimitiveMesh.h">
-      <Filter>ヘッダー ファイル\3D\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Primitive\PrimitiveRenderer.h">
-      <Filter>ヘッダー ファイル\3D\Primitive</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\PMDData.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\PMXData.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\VMDMotion.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\3D\Renderer.h">
       <Filter>ヘッダー ファイル\3D</Filter>
     </ClInclude>
@@ -201,14 +183,35 @@
     <ClInclude Include="Resource\Source\3D\Component.h">
       <Filter>ヘッダー ファイル\3D</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\SkeletalMesh.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    <ClInclude Include="Resource\Source\System\FileSystem.h">
+      <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\SkeletalMeshRenderer.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    <ClInclude Include="Resource\Source\3D\Skeletal\PMDData.h">
+      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Model\SkeletalMeshData.h">
-      <Filter>ヘッダー ファイル\3D\Model</Filter>
+    <ClInclude Include="Resource\Source\3D\Skeletal\PMXData.h">
+      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMesh.h">
+      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshData.h">
+      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshRenderer.h">
+      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Skeletal\VMDMotion.h">
+      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Static\PlaneMesh.h">
+      <Filter>ヘッダー ファイル\3D\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Static\StaticMeshRenderer.h">
+      <Filter>ヘッダー ファイル\3D\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Static\StaticMesh.h">
+      <Filter>ヘッダー ファイル\3D\Static</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -257,24 +260,6 @@
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Primitive\PlaneMesh.cpp">
-      <Filter>ソース ファイル\3D\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Primitive\PrimitiveMesh.cpp">
-      <Filter>ソース ファイル\3D\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Primitive\PrimitiveRenderer.cpp">
-      <Filter>ソース ファイル\3D\Primitive</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\PMDData.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\PMXData.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\VMDMotion.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
-    </ClCompile>
     <ClCompile Include="Resource\Source\3D\RendererManager.cpp">
       <Filter>ソース ファイル\3D</Filter>
     </ClCompile>
@@ -305,14 +290,35 @@
     <ClCompile Include="Resource\Source\3D\Component.cpp">
       <Filter>ソース ファイル\3D</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\SkeletalMesh.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
+    <ClCompile Include="Resource\Source\System\FileSystem.cpp">
+      <Filter>ソース ファイル\System</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\SkeletalMeshRenderer.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
+    <ClCompile Include="Resource\Source\3D\Skeletal\PMDData.cpp">
+      <Filter>ソース ファイル\3D\Skeletal</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\Source\3D\Model\SkeletalMeshData.cpp">
-      <Filter>ソース ファイル\3D\Model</Filter>
+    <ClCompile Include="Resource\Source\3D\Skeletal\PMXData.cpp">
+      <Filter>ソース ファイル\3D\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Skeletal\SkeletalMesh.cpp">
+      <Filter>ソース ファイル\3D\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Skeletal\SkeletalMeshData.cpp">
+      <Filter>ソース ファイル\3D\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Skeletal\SkeletalMeshRenderer.cpp">
+      <Filter>ソース ファイル\3D\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Skeletal\VMDMotion.cpp">
+      <Filter>ソース ファイル\3D\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Static\PlaneMesh.cpp">
+      <Filter>ソース ファイル\3D\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Static\StaticMeshRenderer.cpp">
+      <Filter>ソース ファイル\3D\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Static\StaticMesh.cpp">
+      <Filter>ソース ファイル\3D\Static</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

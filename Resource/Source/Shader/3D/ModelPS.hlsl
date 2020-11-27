@@ -3,7 +3,7 @@ uint GetMaterialIndex(const uint primitiveID, const uint materialNum)
 {
 	float end = 0.0f;
 	float indicesNum = (float) primitiveID * 3.0f;
-	for (int i = 0; i < materialNum; ++i)
+	for (uint i = 0; i < materialNum; ++i)
 	{
 		end += constandFloat[i];
 		if (end > indicesNum)

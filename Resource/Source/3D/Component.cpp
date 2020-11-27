@@ -1,6 +1,6 @@
 #include "Component.h"
 
-Component::Component(std::shared_ptr<Actor> owner)
+Component::Component(std::weak_ptr<Actor> owner)
 	:owner_(owner)
 {
 }

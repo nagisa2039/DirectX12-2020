@@ -9,9 +9,9 @@
 using namespace std;
 using namespace DirectX;
 
-PMXData::PMXData(std::string modelPath)
+PMXData::PMXData(std::wstring modelPath)
 {
-	LoadFromPMX(modelPath);
+	LoadFromPMX(StringFromWString(modelPath));
 }
 
 

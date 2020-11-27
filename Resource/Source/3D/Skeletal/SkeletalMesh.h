@@ -14,20 +14,26 @@
 #include "SkeletalMeshData.h"
 
 class VMDMotion;
-class Dx12Wrapper;
 class ModelMaterial;
 using Microsoft::WRL::ComPtr;
 
+/// <summary>
+/// ボーン有モデル
+/// </summary>
 class SkeletalMesh:
 	public Mesh
 {
 public:
-	SkeletalMesh(std::shared_ptr<Actor> owner, 
-		std::string modelPath, Dx12Wrapper& dx12, VMDMotion& vmd);
+	/// <param name="owner">所有者</param>
+	/// <param name="dx12">DirectX管理クラス</param>
+	/// <param name="modelPath">モデルファイルパス</param>
+	/// <param name="motionPath">モーションファイルパス</param>
+	SkeletalMesh(std::weak_ptr<Actor> owner,
+		Dx12Wrapper& dx12, const std::wstring& modelPath, const std::wstring& motionPath);
 	~SkeletalMesh();
 
 	// 初期化(モデルのファイルパス)
-	bool Init(std::string modelPath);
+	bool Init(std::wstring modelPath);
 	// 更新
 	void Update();
 	// 描画(影として描画するか)
@@ -36,9 +42,7 @@ public:
 	void StartAnimation();
 
 private:
-	Dx12Wrapper& dx12_;
-
-	std::shared_ptr<SkeletalMeshData> modelData_;
+	SkeletalMeshData& modelData_;
 
 	// 頂点バッファ
 	ComPtr<ID3D12Resource> vertexBuffer_ = nullptr;

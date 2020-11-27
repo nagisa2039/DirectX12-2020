@@ -11,14 +11,17 @@
 #include "Utility/Input.h"
 #include "Game/Player.h"
 #include "Material/StanderedMaterial.h"
+#include "3D/Actor.h"
+#include "3D/Skeletal/SkeletalMesh.h"
+#include "3D/Static/PlaneMesh.h"
+#include "Utility/Cast.h"
 
 using namespace std;
+using namespace DirectX;
 
 PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 {
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
-	//cameraH_ = texLoader.LoadGraph(L"Resource/Image/camera.png");
-	//hitoshashiH_ = texLoader.LoadGraph(L"Resource/Image/hitoshashi.png");
 
 	auto wsize = Application::Instance().GetWindowSize();
 	d3dH_ = texLoader.GetGraphHandle(D3D_CAMERA_VIEW_SCREEN);
@@ -33,6 +36,41 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 
 	raymarchingMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Raymarching.hlsl");
 	mosaicMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Mosaic.hlsl");
+
+	actors_.reserve(10);
+	auto AddPlaneActor = [&]()
+	{
+		auto actor = make_shared<Actor>();
+		auto mesh = make_shared<PlaneMesh>(actor, dx12, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f / 536.0f) * 80.0f, 80.0f, L"image/fiona.png");
+		actor->AddComponent(mesh);
+		actors_.emplace_back(actor);
+	};
+
+	auto AddMMDActor = [&](const std::wstring& modelFilePath, const std::wstring& motionFilePath)
+	{
+		auto actor = make_shared<Actor>();
+		auto mesh = make_shared<SkeletalMesh>(actor, dx12, modelFilePath, motionFilePath);
+		actor->AddComponent(mesh);
+		actors_.emplace_back(actor);
+	};
+
+	AddMMDActor(L"Resource/Model/ぽんぷ長式神風/ぽんぷ長式神風.pmx", L"Resource/VMD/swing2.vmd");
+	AddMMDActor(L"Resource/Model/ぽんぷ長式村雨/ぽんぷ長式村雨.pmx", L"Resource/VMD/ヤゴコロダンス.vmd");
+	AddMMDActor(L"Resource/Model/葛城/葛城.pmd", L"Resource/VMD/ヤゴコロダンス.vmd");
+	AddMMDActor(L"Resource/Model/桜ミク/雪ミク.pmd", L"Resource/VMD/swing2.vmd");
+	AddMMDActor(L"Resource/Model/桜ミク/mikuXS桜ミク.pmd", L"Resource/VMD/swing2.vmd");
+	for (int i = 0; auto & actor : actors_)
+	{
+		int moveZ = (i + 1) / 2;
+		int moveX = moveZ * ((i % 2) * 2 - 1);
+
+		auto trans = actor->GetTransform();
+		trans.pos = XMFLOAT3(8.0f * moveX, 0.0f, 5.0f * moveZ);
+		actor->SetTransform(trans);
+		i++;
+	}
+
+	AddPlaneActor();
 }
 
 PlayScene::~PlayScene()
@@ -52,6 +90,11 @@ void PlayScene::Update()
 		//soundManager.PlayWave(BGMH_);	}
 	}
 	player_->Update();
+
+	for (auto& actor : actors_)
+	{
+		actor->Update();
+	}
 }
 
 void PlayScene::Draw()
@@ -69,27 +112,28 @@ void PlayScene::Draw()
 
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
-	spriteDrawer.SetMaterial(raymarchingMat_);
-	spriteDrawer.DrawGraph(0, 0, d3dH_);
+	// レイマーチング
+	//spriteDrawer.SetMaterial(raymarchingMat_);
+	//spriteDrawer.DrawGraph(0, 0, d3dH_);
 
-	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
+	// 3D描画
+	//spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	//spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
+	//spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	//spriteDrawer.DrawRotaGraph(1200, 300, 0.5f, 0.0f, cameraH_);
 	//spriteDrawer.DrawRotaGraph(1200, 500, 0.5f, 0.0f, hitoshashiH_);
 
-	OutputDebugString("");
-
-	int size = 100;
 	float aspect = wsize.w / static_cast<float>(wsize.h);
-	spriteDrawer.DrawExtendGraph(0, 200, aspect * size, 200 + size, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
-	spriteDrawer.DrawExtendGraph(0, 300, aspect * size, 300 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
-	spriteDrawer.DrawExtendGraph(0, 400, aspect * size, 400 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_NORMAL));
-	spriteDrawer.DrawExtendGraph(0, 500, aspect * size, 500 + size, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
+	XMINT2 size = XMINT2(Int32(100 * aspect), 100);
+	spriteDrawer.DrawExtendGraph(0, 200, size.x, 200 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
+	spriteDrawer.DrawExtendGraph(0, 300, size.x, 300 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
+	spriteDrawer.DrawExtendGraph(0, 400, size.x, 400 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_NORMAL));
+	spriteDrawer.DrawExtendGraph(0, 500, size.x, 500 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
 	
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	player_->Draw();
+	//player_->Draw();
 
 	spriteDrawer.End();
 

@@ -3,12 +3,12 @@
 float3 GetBulr(const Texture2D tex, const float dx, const float dy, const float2 uv)
 {
 	float3 ret = float3(0.0f, 0.0f, 0.0f);
-	const int lapCnt = 1;
-	const int cnt = 1 + 2 * lapCnt;
-	const int totalCnt = cnt * cnt;
-	for (int i = 0; i < totalCnt; ++i)
+	const uint lapCnt = 1;
+	const uint cnt = 1 + 2 * lapCnt;
+	const uint totalCnt = cnt * cnt;
+	for (uint i = 0; i < totalCnt; ++i)
 	{
-		ret += tex.Sample(smp, uv + float2( dx * fmod(i, cnt), dy * int(i / cnt) ) -float2(dx, dy) * int(cnt / 2) );
+		ret += tex.Sample(smp, uv + float2( dx * fmod(i, cnt), dy * int(i / cnt) ) -float2(dx, dy) * int(cnt / 2) ).rgb;
 	}
 	ret /= totalCnt;
 	return ret;

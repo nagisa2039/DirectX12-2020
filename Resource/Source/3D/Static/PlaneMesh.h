@@ -1,12 +1,12 @@
 #pragma once
-#include "PrimitiveMesh.h"
+#include "StaticMesh.h"
 
 class PlaneMesh :
-	public PrimitiveMesh
+	public StaticMesh
 {
 public:
 	// (dx12管理クラス, 座標, 幅, 奥行, テクスチャパス)
-	PlaneMesh(std::shared_ptr<Actor>owner, Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos,
+	PlaneMesh(std::weak_ptr<Actor>owner, Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos,
 		const float width, const float depth, std::wstring texPath = L"");
 	~PlaneMesh(); 
 

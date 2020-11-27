@@ -174,7 +174,6 @@ bool TexLoader::CreateScreenBuffer(Resource& resource, const UINT width, const U
 	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height);
 	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-	// ランダムカラー画像の作成
 	resource.state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
 	D3D12_CLEAR_VALUE clearValue = { DXGI_FORMAT_R8G8B8A8_UNORM , { 0.0f, 0.0f, 0.0f, 0.0f } };
@@ -535,7 +534,7 @@ void TexLoader::SetDrawScreen(const std::list<int>& screenHList, const DepthType
 		rendetTargetCPUHandles[i] = texResources_[handle].cpuHandleForRtv;
 		i++;
 	}
-	cmd_.CommandList().OMSetRenderTargets(screenHList.size(), rendetTargetCPUHandles.data(), false, depthH);
+	cmd_.CommandList().OMSetRenderTargets(Uint32(screenHList.size()), rendetTargetCPUHandles.data(), false, depthH);
 	renderTergetHandleList_ = screenHList;
 }
 
@@ -664,7 +663,7 @@ bool TexLoader::CreateDepthBuffer()
 
 		D3D12_RESOURCE_DESC depthResDesc =
 			CD3DX12_RESOURCE_DESC::Tex2D(depthTexRes.imageInf.format,
-				depthTexRes.imageInf.width, depthTexRes.imageInf.height);
+				Uint32(depthTexRes.imageInf.width), Uint32(depthTexRes.imageInf.height));
 		depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
 		if (FAILED(dev.CreateCommittedResource(
@@ -683,7 +682,7 @@ bool TexLoader::CreateDepthBuffer()
 
 	// 深度バッファの作成
 	auto wsize = Application::Instance().GetWindowSize();
-	CreateTexResourceInf(DepthType::camera, wsize.w, wsize.h);
+	CreateTexResourceInf(DepthType::camera, Uint64(wsize.w), Uint64(wsize.h));
 
 	// シャドウマップ用
 	CreateTexResourceInf(DepthType::light, SHADOW_RESOLUTION, SHADOW_RESOLUTION);

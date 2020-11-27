@@ -8,6 +8,7 @@
 #include "2D/SpriteDrawer.h"
 #include "SoundManager.h"
 #include "3D/Camera.h"
+#include "System/FileSystem.h"
 #include "3D/RendererManager.h"
 
 #pragma comment(lib,"d3d12.lib")
@@ -58,6 +59,7 @@ bool Dx12Wrapper::Init()
 
 	camera_ = make_shared<Camera>(*cmd_, *dev_.Get());
 	rendererManager_ = std::make_shared<RendererManager>(*this);
+	fileSystem_ = std::make_shared<FileSystem>();
 
 	return true;
 }
@@ -75,6 +77,11 @@ Command& Dx12Wrapper::GetCommand()
 RendererManager& Dx12Wrapper::GetRendererManager()
 {
 	return *rendererManager_;
+}
+
+FileSystem& Dx12Wrapper::GetFileSystem()
+{
+	return *fileSystem_;
 }
 
 int Dx12Wrapper::GetBackScreenHandle()

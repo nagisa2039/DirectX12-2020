@@ -10,7 +10,16 @@ class Mesh;
 class Renderer
 {
 public:
-	virtual void Draw(std::vector<std::shared_ptr<Mesh>>& models) = 0;
-	virtual void DrawShadow(std::vector<std::shared_ptr<Mesh>>& models)=0;
+	/// <summary>
+	/// ’Êí•`‰æ
+	/// </summary>
+	/// <param name="meshs">•`‰æ‚·‚éƒƒbƒVƒ…</param>
+	virtual void Draw(std::vector<Mesh*>& meshs) = 0;
+
+	/// <summary>
+	/// ‰e•`‰æ
+	/// </summary>
+	/// <param name="meshs">•`‰æ‚·‚éƒƒbƒVƒ…</param>
+	virtual void DrawShadow(std::vector<Mesh*>& meshs)=0;
 };
 

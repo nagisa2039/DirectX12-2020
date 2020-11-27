@@ -36,6 +36,12 @@ namespace
 		return path.substr(Uint64(idx) + 1, path.length() - idx - 1);
 	}
 
+	std::wstring GetExtension(const std::wstring& path)
+	{
+		int idx = static_cast<int>(path.find_last_of('.'));
+		return path.substr(Uint64(idx) + 1, path.length() - idx - 1);
+	}
+
 	// 1ƒoƒCƒgstring‚ðwstring‚É•ÏŠ·‚·‚é
 	std::wstring WStringFromString(const std::string& str)
 	{

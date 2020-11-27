@@ -1,10 +1,12 @@
 #pragma once
 #include <memory>
+#include <vector>
 #include "Scene.h"
 
 class RendererManager;
 class Player;
 class Material;
+class Actor;
 
 class PlayScene :
 	public Scene
@@ -27,6 +29,7 @@ private:
 	int se2_;
 
 	std::unique_ptr<Player> player_;
+	std::vector<std::shared_ptr<Actor>> actors_;
 
 	std::shared_ptr<Material> raymarchingMat_;
 	std::shared_ptr<Material> mosaicMat_;

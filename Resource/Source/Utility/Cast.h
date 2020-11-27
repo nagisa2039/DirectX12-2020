@@ -14,3 +14,5 @@
 
 #define Float(X)	static_cast<float> (X)
 #define Double(X)	static_cast<double>(X)
+
+#define Cast(X, Y)	static_cast<X>(Y)

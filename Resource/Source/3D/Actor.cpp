@@ -67,6 +67,7 @@ void Actor::SetTransformHeap(const UINT rootParamatorIndex)
 
 void Actor::AddComponent(std::shared_ptr<Component> component)
 {
+	component->Init();
 	components_.emplace_back(component);
 }
 
