@@ -13,14 +13,24 @@ FPSManager::FPSManager(const int fps): fixedFPS_(fps)
 void FPSManager::Wait()
 {
 	auto tickCount = GetTickCount64();
-	int elapsedTime = Int32(tickCount - prevFrameStartTime_);
+	int time = Int32(tickCount - prevFrameStartTime_);
 	int targetTime = 1000 / fixedFPS_;
-	//Sleep(max(targetTime - elapsedTime,0));
+
+	if (time < targetTime)
+	{
+		Sleep(targetTime - time);
+	}
 
 	tickCount = GetTickCount64();
 	deltaTime_ = (tickCount - prevFrameStartTime_) / 1000.0f;
 
 	prevFrameStartTime_ = Uint32(GetTickCount64());
+
+#ifdef _DEBUG
+	char buf[256];
+	sprintf_s(buf, 256, "%f\n", GetFPS());
+	OutputDebugString(buf);
+#endif
 }
 
 int FPSManager::FixedFPS()
