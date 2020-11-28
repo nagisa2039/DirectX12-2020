@@ -2,9 +2,15 @@
 
 float4 GetMosaicColor(Texture2D tex, float2 uv, float div, float2 aspect)
 {
-	float fmodNum = 1.0f / div;
-	float2 mosaicUV = uv - fmod(uv, float2(fmodNum * aspect.y, fmodNum * aspect.x));
-	return tex.Sample(smp, mosaicUV);
+    float2 space = float2(aspect.y, aspect.x) / div;
+    float2 fraction = fmod(uv, space) + space / 2.0f;
+    float2 mosaicUV = uv - fraction;
+	
+    float toCenterLen
+	= length(float2(0.5f, 0.5f) - fmod(uv * div, float2(1.0f, 1.0f)) * aspect);
+
+    float mask = step(toCenterLen, 0.4f);
+	return tex.Sample(smp, mosaicUV) * mask;
 }
 
 [RootSignature(RS)]
@@ -15,6 +21,6 @@ float4 PS(Output input) : SV_TARGET
 	tex[pinf.texIndex].GetDimensions(0, w, h, level);
 	float2 aspect = float2(w / h, 1.0f);
 	
-	float4 color = GetMosaicColor(tex[pinf.texIndex], input.uv, 100.0f, aspect);
+	float4 color = GetMosaicColor(tex[pinf.texIndex], input.uv, 200.0f, aspect);
 	return float4(color.rgb * pinf.bright, color.a * pinf.alpha);
 }

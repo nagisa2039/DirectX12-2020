@@ -113,12 +113,12 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	// レイマーチング
-	spriteDrawer.SetMaterial(raymarchingMat_);
-	spriteDrawer.DrawGraph(0, 0, d3dH_);
+	/*spriteDrawer.SetMaterial(raymarchingMat_);
+	spriteDrawer.DrawGraph(0, 0, d3dH_);*/
 
 	// 3D描画
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	//spriteDrawer.SetMaterial(mosaicMat_);
+	spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 	//spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
