@@ -44,15 +44,7 @@
 
 Texture2D tex[512] : register(t0, space0);
 Texture2D<float> depthTex[2] : register(t0, space1);
-cbuffer cameraBuffer : register(b0, space0)
-{
-	matrix view;
-	matrix proj;
-	matrix invProj;
-	matrix lightCamera;
-	matrix shadow;
-	float3 eye; // 視点
-};
+ConstantBuffer<SceneStruct> scene : register(b0, space0);
 StructuredBuffer<Utility> utility : register(t2, space1);
 
 StructuredBuffer<MaterialBase> materialBase : register(t0, space2);
@@ -104,17 +96,24 @@ SamplerComparisonState shadowSmp : register(s2);
 // 頂点出力
 struct VertexOut
 {
-	float4 svpos : SV_POSITION; // Pipelineに投げるためにはSV_POSITIONが必要	カメラからの座標
-	float4 pos : POSITION; // ワールド座標
-	float4 tpos : POSITION1; // 頂点変換後の座標
-	float4 normal : NORMAL; // 法線情報
-	float2 uv : TEXCOORD; // UV情報
+	float4 svpos	: SV_POSITION; // Pipelineに投げるためにはSV_POSITIONが必要	カメラからの座標
+	float4 pos		: POSITION; // ワールド座標
+	float4 tpos		: POSITION1; // 頂点変換後の座標
+	float4 normal	: NORMAL; // 法線情報
+	float2 uv		: TEXCOORD; // UV情報
+};
+
+// 影用頂点出力
+struct ShadowVertexOut
+{
+	float4 svpos	: SV_POSITION;
+	float2 uv		: TEXCOORD;
 };
 
 // Pixel出力
 struct PixelOut
 {
-	float4 color : SV_Target0; //カラー値を出力
+	float4 color  : SV_Target0; //カラー値を出力
 	float4 normal : SV_Target1; //法線を出力
 	float4 bright : SV_Target2; // 輝度出力
 };

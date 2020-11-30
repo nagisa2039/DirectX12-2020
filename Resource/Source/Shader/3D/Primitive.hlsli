@@ -34,15 +34,7 @@
 // 7,À•W
 
 Texture2D tex[512] : register(t0, space0);
-cbuffer cameraBuffer : register(b0, space0)
-{
-	matrix view;
-	matrix proj;
-	matrix invProj;
-	matrix lightCamera;
-	matrix shadow;
-	float3 eye; // ‹“_
-};
+ConstantBuffer<SceneStruct> scene : register(b0, space0);
 Texture2D<float> depthTex[2] : register(t0, space1);
 StructuredBuffer<Utility> utility : register(t2, space1);
 

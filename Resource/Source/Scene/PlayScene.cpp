@@ -26,7 +26,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto wsize = Application::Instance().GetWindowSize();
 	d3dH_ = texLoader.GetGraphHandle(D3D_CAMERA_VIEW_SCREEN);
 
-	int tmpH = texLoader.MakeScreen(L"tmp", 1280, 720);
+	mosaicH_ = texLoader.MakeScreen(L"mosaic", 1280, 720);
 
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& soundManager = dx12.GetSoundManager();
@@ -106,6 +106,11 @@ void PlayScene::Draw()
 
 	dx12.GetRendererManager().Draw();
 
+	// mosaicâÊëúê∂ê¨
+	spriteDrawer.SetDrawScreen(mosaicH_);
+	spriteDrawer.SetMaterial(mosaicMat_);
+	spriteDrawer.DrawGraph(0, 0, d3dH_);
+
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();
 	spriteDrawer.SetDrawBright(255, 255, 255);
@@ -117,15 +122,15 @@ void PlayScene::Draw()
 	spriteDrawer.DrawGraph(0, 0, d3dH_);*/
 
 	// 3Dï`âÊ
-	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	spriteDrawer.SetMaterial(mosaicMat_);
-	spriteDrawer.DrawGraph(0, 0, d3dH_);
-	//spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
-	//spriteDrawer.DrawRotaGraph(1200, 300, 0.5f, 0.0f, cameraH_);
-	//spriteDrawer.DrawRotaGraph(1200, 500, 0.5f, 0.0f, hitoshashiH_);
 
 	float aspect = wsize.w / static_cast<float>(wsize.h);
+	/*spriteDrawer.DrawRectExtendGraph(0, 0, 1280, 720,
+		300, 300, 300 + 300 * aspect, 300 + 300, mosaicH_);*/
+
+	//spriteDrawer.DrawGraph(0, 0, mosaicH_);
+	spriteDrawer.DrawGraph(0, 0, d3dH_);
+
 	XMINT2 size = XMINT2(Int32(100 * aspect), 100);
 	spriteDrawer.DrawExtendGraph(0, 200, size.x, 200 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
 	spriteDrawer.DrawExtendGraph(0, 300, size.x, 300 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));

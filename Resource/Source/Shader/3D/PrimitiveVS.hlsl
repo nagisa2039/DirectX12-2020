@@ -5,9 +5,9 @@ VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD
 {
 	VertexOut o;
 	pos = mul(world, pos);
-	matrix camera = mul(proj, view);
+	matrix camera = mul(scene.proj, scene.view);
 	o.svpos = mul(camera, pos);
-	o.tpos = mul(lightCamera, pos);
+	o.tpos = mul(scene.lightCamera, pos);
 	o.pos = pos;
 
 	normal.w = 0;
@@ -22,5 +22,5 @@ VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD
 float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD)
 :SV_Position
 {
-	return mul(lightCamera, mul(world, pos));
+	return mul(scene.lightCamera, mul(world, pos));
 }

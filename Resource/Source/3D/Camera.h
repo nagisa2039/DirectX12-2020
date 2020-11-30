@@ -3,6 +3,7 @@
 #include <d3d12.h>
 #include <DirectXMath.h>
 
+struct SceneStruct;
 class Command;
 
 class Camera
@@ -30,6 +31,11 @@ public:
 	DirectX::XMFLOAT3 GetCameraTarget()const;
 
 	/// <summary>
+	/// ライトの向きを取得
+	/// </summary>
+	DirectX::XMFLOAT3 GetLightVec()const;
+
+	/// <summary>
 	/// カメラの座標設定
 	/// </summary>
 	/// <param name="pos">カメラ座標</param>
@@ -55,21 +61,9 @@ private:
 	// transCBを入れるヒープ
 	ComPtr<ID3D12DescriptorHeap> cameraHeap_ = nullptr;
 
-	// GPUに渡す行列をまとめた構造体
-	struct Scene
-	{
-		//DirectX::XMMATRIX world;	// 合成前ワールド
-		DirectX::XMMATRIX view;	//
-		DirectX::XMMATRIX proj;	//
-		DirectX::XMMATRIX invProj;	// プロジェクションの逆行列
-		DirectX::XMMATRIX lightCamera;	//ライドから見たビュープロジェクション
-		DirectX::XMMATRIX shadow;
-		DirectX::XMFLOAT3 eye;	// 視点
-	};
-
 	// 定数バッファのアドレスを格納	
 	// _cameraCBの内容を変更したいときはこいつを通じて変更してね
-	Scene* mappedCam_;
+	SceneStruct* mappedScene_;
 
 	DirectX::XMFLOAT3 eye_;
 	DirectX::XMFLOAT3 target_;

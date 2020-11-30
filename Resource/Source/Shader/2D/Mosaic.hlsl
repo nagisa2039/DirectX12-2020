@@ -9,8 +9,8 @@ float4 GetMosaicColor(Texture2D tex, float2 uv, float div, float2 aspect)
     float toCenterLen
 	= length(float2(0.5f, 0.5f) - fmod(uv * div, float2(1.0f, 1.0f)) * aspect);
 
-    float mask = step(toCenterLen, 0.4f);
-	return tex.Sample(smp, mosaicUV) * mask;
+    float mask = step(toCenterLen, 0.5f);
+	return saturate(tex.Sample(smp, mosaicUV) * mask * 1.5f);
 }
 
 [RootSignature(RS)]

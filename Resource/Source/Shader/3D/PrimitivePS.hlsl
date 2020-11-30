@@ -9,9 +9,9 @@ PixelOut PS(VertexOut input)
 	
 	MaterialBase mat = materialBase[0];
 	float4 texColor = tex[mat.textureIndex].Sample(smp, input.uv);
-	float3 light = normalize(float3(1, -1, 1));
+	float3 light = normalize(scene.lightVec);
 	float3 rLight = reflect(light, input.normal.xyz);
-	float3 eyeRay = normalize(input.pos.xyz - eye);
+	float3 eyeRay = normalize(input.pos.xyz - scene.eye);
 	
 	float specB = saturate(dot(rLight, -eyeRay));
 	specB = pow(max(specB, 0), 20);
@@ -44,5 +44,5 @@ PixelOut PS(VertexOut input)
 
 float4 ShadowPS(float4 pos : SV_POSITION) : SV_TARGET
 {
-	return float4(1, 0, 1, 1);
+	return float4(1, 1, 1, 1);
 }

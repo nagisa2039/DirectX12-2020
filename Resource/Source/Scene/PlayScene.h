@@ -28,6 +28,8 @@ private:
 	int se1_;
 	int se2_;
 
+	int mosaicH_;
+
 	std::unique_ptr<Player> player_;
 	std::vector<std::shared_ptr<Actor>> actors_;
 

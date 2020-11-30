@@ -37,11 +37,11 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	
 	//return float4(input.normal.xyz,1);
 	// 光源ベクトルの反射ベクトル
-	float3 lightDirNormal = normalize( /*light_dir*/float3(1.0f, -1.0f, 1.0f));
+	float3 lightDirNormal = normalize(scene.lightVec);
 	float3 rLight = reflect(lightDirNormal, input.normal.rgb);
 
 	// 視線ベクトル
-	float3 eyeRay = normalize(input.pos.rgb - eye);
+	float3 eyeRay = normalize(input.pos.rgb - scene.eye);
 	// 光源ベクトルの反射ベクトル
 	float3 rEye = reflect(eyeRay, input.normal.xyz);
 
@@ -90,13 +90,27 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	//po.bright = float4(b, b, b, 1);
 	//po.bright = float4(po.color.rgb * b, 1);
 	float mask = step(noiseValue, noiseThreshold)*step(noiseThreshold, noiseValue+0.05f);
-	po.bright = float4(float3(1.0f, 0.1f, 0.1f) * mask, 1.0f);
+	po.bright = saturate(float4((float3(1.0f, 0.1f, 0.1f)) * mask, 1.0f));
 
 	return po;
 }
 
 //ピクセルシェーダ
-float4 ShadowPS(float4 pos : SV_POSITION) : SV_TARGET
+float4 ShadowPS(ShadowVertexOut input, uint primitiveID : SV_PrimitiveID) : SV_TARGET
 {
-	return float4(0, 1, 1, 1);
+	uint matNum, stride;
+	materialBase.GetDimensions(matNum, stride);
+	uint matIdx = GetMaterialIndex(primitiveID, matNum);
+	MaterialBase mat = materialBase[matIdx];
+	Texture2D<float4> noiseTex = tex[addTexIndex[matNum * 4]];
+	float4 noiseColor = noiseTex.Sample(smp, input.uv);
+	float noiseThreshold = constandFloat[matNum];
+	float noiseValue = dot(noiseColor.rgb, float3(0.33f, 0.34f, 0.33));
+	
+	if (step(noiseThreshold, noiseValue) == 0.0f)
+	{
+		discard;
+	}
+	
+	return float4(1, 1, 1, 1);
 }

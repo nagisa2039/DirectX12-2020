@@ -12,6 +12,11 @@
 using namespace DirectX;
 using namespace std;
 
+namespace
+{
+	constexpr float EMMISION_RATE = 10.0f;
+}
+
 SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 {
 	drawBright_ = XMFLOAT3(1.0f, 1.0f, 1.0f);
@@ -42,6 +47,7 @@ SpriteDrawer::SpriteDrawer(Dx12Wrapper& dx12):dx12_(dx12)
 
 	CreateStructuredBufferAndHeap(&dev, utility_.mapped,
 		utility_.resource.buffer, utilityHeap_, sizeof(*utility_.mapped), 1);
+	utility_.mapped->emmisionRate = EMMISION_RATE;
 
 	drawImages_.clear();
 

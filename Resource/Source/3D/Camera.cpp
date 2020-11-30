@@ -3,6 +3,7 @@
 #include "System/Application.h"
 #include "System/Command.h"
 #include "Utility/Input.h"
+#include "Utility/UtilityShaderStruct.h"
 
 using namespace std;
 using namespace DirectX;
@@ -13,7 +14,7 @@ Camera::Camera(Command& cmd, ID3D12Device& dev):cmd_(cmd), dev_(dev)
 	target_ = { 0, 10, 0 };
 	up_ = { 0, 1, 0 };
 	fov_ = XMConvertToRadians(50.0f);
-	mappedCam_ = nullptr;
+	mappedScene_ = nullptr;
 	CreateCameraConstantBufferAndView();
 	UpdateCamera();
 }
@@ -70,6 +71,11 @@ DirectX::XMFLOAT3 Camera::GetCameraTarget() const
 	return DirectX::XMFLOAT3(target_.x, target_.y, target_.z);
 }
 
+DirectX::XMFLOAT3 Camera::GetLightVec() const
+{
+	return mappedScene_->lightVec;
+}
+
 void Camera::SetCameraPosision(const DirectX::XMFLOAT3& pos)
 {
 	eye_ = pos;
@@ -82,8 +88,9 @@ void Camera::SetCameraTarget(const DirectX::XMFLOAT3& target)
 
 bool Camera::CreateCameraConstantBufferAndView()
 {
-	CreateUploadBuffer(&dev_, cameraCB_, sizeof(*mappedCam_));
-	cameraCB_->Map(0, nullptr, (void**)&mappedCam_);
+	CreateUploadBuffer(&dev_, cameraCB_, sizeof(*mappedScene_));
+	cameraCB_->Map(0, nullptr, (void**)&mappedScene_);
+	mappedScene_->lightVec = XMFLOAT3(1.0f, -1.0f, 1.0f);
 
 	CreateDescriptorHeap(&dev_, cameraHeap_);
 
@@ -100,9 +107,7 @@ void Camera::UpdateCamera()
 	XMVECTOR eyePos = XMLoadFloat3(&eye_);
 	XMVECTOR targetPos = XMLoadFloat3(&target_);
 	XMVECTOR upVec = XMLoadFloat3(&up_);
-	//XMVECTOR lightVec = XMLoadFloat3(&_mappedSetting->light_dir);
-	auto lightDir = XMFLOAT3(1.0f, -1.0f, 1.0f);
-	XMVECTOR lightVec = XMLoadFloat3(&lightDir);
+	XMVECTOR lightVec = XMLoadFloat3(&mappedScene_->lightVec);
 	lightVec = XMVector3Normalize(lightVec);
 
 	auto cameraArmLength = XMVector3Length(XMVectorSubtract(targetPos, eyePos)).m128_f32[0];
@@ -119,9 +124,9 @@ void Camera::UpdateCamera()
 	auto lightView = XMMatrixLookAtLH(lightCamPos, targetPos, upVec);
 	auto lightProj = XMMatrixOrthographicLH(80, 80, 0.05f, 1000.0f);
 
-	mappedCam_->view = view;
-	mappedCam_->proj = proj;
-	mappedCam_->eye = eye_;
-	mappedCam_->invProj = XMMatrixInverse(nullptr, proj);
-	mappedCam_->lightCamera = lightView * lightProj;
+	mappedScene_->view = view;
+	mappedScene_->proj = proj;
+	mappedScene_->eye = eye_;
+	mappedScene_->invProj = XMMatrixInverse(nullptr, proj);
+	mappedScene_->lightCamera = lightView * lightProj;
 }

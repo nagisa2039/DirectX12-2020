@@ -27,12 +27,12 @@ VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD
 	pos.z += 5 * instanceID;
 	pos = mul(transform, pos);
 
-	matrix camera = mul(proj, view);
+	matrix camera = mul(scene.proj, scene.view);
 	o.svpos = mul(camera, pos);
 
 	o.pos = pos;
 
-	o.tpos = mul(lightCamera, pos);
+	o.tpos = mul(scene.lightCamera, pos);
 
 	normal.w = 0;
 	o.normal = mul(transform, normal);
@@ -44,9 +44,13 @@ VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD
 
 // âeópç¿ïWïœä∑
 [RootSignature(RS)]
-float4 ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
-	int4 boneno : BONENO, float4 weight : WEIGHT) : SV_POSITION
+ShadowVertexOut ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
+	int4 boneno : BONENO, float4 weight : WEIGHT)
 {
+	ShadowVertexOut vo;
 	matrix transform = GetTransform(boneno, weight);
-	return mul(lightCamera, mul(transform, pos));
+	vo.svpos = mul(scene.lightCamera, mul(transform, pos));
+	vo.uv = uv;
+	
+	return vo;
 }
