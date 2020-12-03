@@ -9,7 +9,6 @@
 using Microsoft::WRL::ComPtr;
 class SkeletalMesh;
 class Dx12Wrapper;
-class Mesh;
 
 /// <summary>
 /// SkeletalMeshの描画クラス
@@ -18,8 +17,9 @@ class SkeletalMeshRenderer :
 	public Renderer
 {
 public:
-	/// <param name="dx12">IrectX管理クラス</param>
-	SkeletalMeshRenderer(Dx12Wrapper& dx12);
+	/// <param name="dx12">DirectX管理クラス</param>
+	/// <param name="camera">カメラクラス</param>
+	SkeletalMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<Camera>& camera);
 	~SkeletalMeshRenderer();
 
 	/// <summary>

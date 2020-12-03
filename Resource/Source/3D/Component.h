@@ -21,7 +21,7 @@ public:
 	/// <summary>
 	/// Š—LÒ‚ÌActoræ“¾
 	/// </summary>
-	std::weak_ptr<Actor> GetOwner();
+	std::weak_ptr<Actor> GetOwner()const;
 
 	/// <summary>
 	/// ‰Šú‰»

@@ -16,21 +16,26 @@ struct Transform
 	DirectX::XMFLOAT3 rotate	= DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 	// 拡大
 	DirectX::XMFLOAT3 scale		= DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+
+	DirectX::XMMATRIX GetMatrix()const;
+	DirectX::XMMATRIX GetRotateMatrix()const;
+	DirectX::XMFLOAT3 GetForwerd()const;
 };
 
 /// <summary>
 /// 3Dオブジェクト基底クラス
 /// </summary>
 class Actor
+	: public std::enable_shared_from_this<Actor>
 {
 public:
 	Actor();
-	~Actor();
+	virtual ~Actor();
 
 	/// <summary>
 	/// 更新
 	/// </summary>
-	void Update();
+	virtual void Update();
 
 	/// <summary>
 	/// トランスフォームの取得

@@ -17,7 +17,8 @@
 using namespace std;
 using namespace DirectX;
 
-SkeletalMeshRenderer::SkeletalMeshRenderer(Dx12Wrapper& dx12): dx12_(dx12)
+SkeletalMeshRenderer::SkeletalMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<Camera>& camera)
+	: dx12_(dx12), Renderer(camera)
 {
 	Init();
 }
@@ -179,7 +180,7 @@ void SkeletalMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 	commandList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
 
 	// ÉJÉÅÉâ
-	dx12_.GetCamera().SetCameraDescriptorHeap(1);
+	camera_->SetCameraDescriptorHeap(1);
 
 	// ê[ìx
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
@@ -198,7 +199,7 @@ void SkeletalMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 	commandList.SetPipelineState(shadowPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
-	dx12_.GetCamera().SetCameraDescriptorHeap(1); 
+	camera_->SetCameraDescriptorHeap(1);
 	texLoader.SetTextureDescriptorHeap(0);
 
 	for (auto& mesh : meshs)

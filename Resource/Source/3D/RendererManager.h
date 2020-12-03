@@ -10,6 +10,7 @@ class Renderer;
 class Dx12Wrapper;
 class ModelEndRendering;
 class Mesh;
+class CameraObject;
 
 /// <summary>
 /// 3Dメッシュの描画管理クラス
@@ -66,6 +67,7 @@ private:
 	std::array<int, static_cast<uint64_t>(RenderTargetType::max)> rendetTargetHandles_;
 
 	std::shared_ptr<ModelEndRendering> modelEndrendering_;
+	std::shared_ptr<CameraObject> camera_;
 
 	void CreateRenderTargetHeap();
 };

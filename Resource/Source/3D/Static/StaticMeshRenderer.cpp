@@ -131,7 +131,8 @@ bool StaticMeshRenderer::CreatePipelineState()
 	return true;
 }
 
-StaticMeshRenderer::StaticMeshRenderer(Dx12Wrapper& dx12):dx12_(dx12)
+StaticMeshRenderer::StaticMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<Camera>& camera)
+	: dx12_(dx12), Renderer(camera)
 {
 	if(!CreatePipelineState())
 	{
@@ -153,7 +154,7 @@ void StaticMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
 
 	texLoader.SetTextureDescriptorHeap(0);
-	dx12_.GetCamera().SetCameraDescriptorHeap(1);
+	camera_->SetCameraDescriptorHeap(1);
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
 	for (auto& mesh : meshs)
@@ -170,7 +171,7 @@ void StaticMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 	cmdList.SetPipelineState(primShadowPL_.Get());
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
 
-	dx12_.GetCamera().SetCameraDescriptorHeap(1);
+	camera_->SetCameraDescriptorHeap(1);
 
 	for (auto& mesh : meshs)
 	{

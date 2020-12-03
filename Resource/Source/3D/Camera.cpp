@@ -8,11 +8,15 @@
 using namespace std;
 using namespace DirectX;
 
-Camera::Camera(Command& cmd, ID3D12Device& dev):cmd_(cmd), dev_(dev)
+namespace
 {
-	eye_ = { 0, 20, -30 };
+	constexpr DirectX::XMFLOAT3 UP = { 0.0f, 1.0f, 0.0f };
+}
+
+Camera::Camera(Command& cmd, ID3D12Device& dev, std::weak_ptr<Actor>owner)
+	:cmd_(cmd), dev_(dev), Component(owner)
+{
 	target_ = { 0, 10, 0 };
-	up_ = { 0, 1, 0 };
 	fov_ = XMConvertToRadians(50.0f);
 	mappedScene_ = nullptr;
 	CreateCameraConstantBufferAndView();
@@ -23,32 +27,12 @@ Camera::~Camera()
 {
 }
 
+void Camera::Init()
+{
+}
+
 void Camera::Update()
 {
-	auto& input = Application::Instance().GetInput();
-	float moveSpeed = 1.0f;
-	auto cameraMove = [&input = input](const char keycode, float& target, const float speed)
-	{
-		if (input.GetButton(keycode))
-		{
-			target += speed;
-		}
-	};
-
-	cameraMove(DIK_W, eye_.y, moveSpeed);
-	cameraMove(DIK_S, eye_.y, -moveSpeed);
-	cameraMove(DIK_D, eye_.x, moveSpeed);
-	cameraMove(DIK_A, eye_.x, -moveSpeed);
-	cameraMove(DIK_E, eye_.z, moveSpeed);
-	cameraMove(DIK_Q, eye_.z, -moveSpeed);
-
-	cameraMove(DIK_W, target_.y, moveSpeed);
-	cameraMove(DIK_S, target_.y, -moveSpeed);
-	cameraMove(DIK_D, target_.x, moveSpeed);
-	cameraMove(DIK_A, target_.x, -moveSpeed);
-	cameraMove(DIK_E, target_.z, moveSpeed);
-	cameraMove(DIK_Q, target_.z, -moveSpeed);
-
 	UpdateCamera();
 }
 
@@ -61,29 +45,20 @@ void Camera::SetCameraDescriptorHeap(const UINT rootParamIdx)
 		cameraHeap_->GetGPUDescriptorHandleForHeapStart());
 }
 
-DirectX::XMFLOAT3 Camera::GetCameraPosition() const
+DirectX::XMFLOAT3 Camera::GetTargetPos() const
 {
-	return DirectX::XMFLOAT3(eye_.x, eye_.y, eye_.z);
+	return target_;
 }
 
-DirectX::XMFLOAT3 Camera::GetCameraTarget() const
+void Camera::SetTargetPos(const DirectX::XMFLOAT3& tpos)
 {
-	return DirectX::XMFLOAT3(target_.x, target_.y, target_.z);
+	target_ = tpos;
 }
 
-DirectX::XMFLOAT3 Camera::GetLightVec() const
+DirectX::XMFLOAT3 Camera::GetTargetVec() const
 {
-	return mappedScene_->lightVec;
-}
-
-void Camera::SetCameraPosision(const DirectX::XMFLOAT3& pos)
-{
-	eye_ = pos;
-}
-
-void Camera::SetCameraTarget(const DirectX::XMFLOAT3& target)
-{
-	target_ = target;
+	auto pos = GetOwner().lock()->GetTransform().pos;
+	return XMFLOAT3(target_.x - pos.x, target_.y - pos.y, target_.z - pos.z);
 }
 
 bool Camera::CreateCameraConstantBufferAndView()
@@ -104,9 +79,10 @@ void Camera::UpdateCamera()
 {
 	// ƒJƒƒ‰‚ÌXV
 	auto wsize = Application::Instance().GetWindowSize();
-	XMVECTOR eyePos = XMLoadFloat3(&eye_);
+	auto eye = GetOwner().lock()->GetTransform().pos;
+	XMVECTOR eyePos = XMLoadFloat3(&eye);
 	XMVECTOR targetPos = XMLoadFloat3(&target_);
-	XMVECTOR upVec = XMLoadFloat3(&up_);
+	XMVECTOR upVec = XMLoadFloat3(&UP);
 	XMVECTOR lightVec = XMLoadFloat3(&mappedScene_->lightVec);
 	lightVec = XMVector3Normalize(lightVec);
 
@@ -126,7 +102,65 @@ void Camera::UpdateCamera()
 
 	mappedScene_->view = view;
 	mappedScene_->proj = proj;
-	mappedScene_->eye = eye_;
+	mappedScene_->eye = GetOwner().lock()->GetTransform().pos;
 	mappedScene_->invProj = XMMatrixInverse(nullptr, proj);
 	mappedScene_->lightCamera = lightView * lightProj;
+}
+
+CameraObject::CameraObject(Command& cmd, ID3D12Device& dev)
+	:cmd_(cmd), dev_(dev)
+{
+	auto trans = GetTransform();
+	trans.pos = { 0, 20, -30 };
+	SetTransform(trans);
+	camera_ = nullptr;
+}
+
+CameraObject::~CameraObject()
+{
+}
+
+void CameraObject::Update()
+{
+	if (!camera_)
+	{
+		camera_ = make_shared<Camera>(cmd_, dev_, shared_from_this());
+		AddComponent(camera_);
+		camera_->SetTargetPos(XMFLOAT3(0, 10, 0));
+	}
+
+	auto& input = Application::Instance().GetInput();
+	float moveSpeed = 1.0f;
+	auto cameraMove = [&input = input](const char keycode, float& target, const float speed)
+	{
+		if (input.GetButton(keycode))
+		{
+			target += speed;
+		}
+	};
+
+	auto transform = GetTransform();
+	cameraMove(DIK_W, transform.pos.y, moveSpeed);
+	cameraMove(DIK_S, transform.pos.y, -moveSpeed);
+	cameraMove(DIK_D, transform.pos.x, moveSpeed);
+	cameraMove(DIK_A, transform.pos.x, -moveSpeed);
+	cameraMove(DIK_E, transform.pos.z, moveSpeed);
+	cameraMove(DIK_Q, transform.pos.z, -moveSpeed);
+	SetTransform(transform);
+
+	auto targetPos = camera_->GetTargetPos();
+	cameraMove(DIK_W, targetPos.y, moveSpeed);
+	cameraMove(DIK_S, targetPos.y, -moveSpeed);
+	cameraMove(DIK_D, targetPos.x, moveSpeed);
+	cameraMove(DIK_A, targetPos.x, -moveSpeed);
+	cameraMove(DIK_E, targetPos.z, moveSpeed);
+	cameraMove(DIK_Q, targetPos.z, -moveSpeed);
+	camera_->SetTargetPos(targetPos);
+
+	Actor::Update();
+}
+
+std::shared_ptr<Camera>& CameraObject::GetCamera()
+{
+	return camera_;
 }

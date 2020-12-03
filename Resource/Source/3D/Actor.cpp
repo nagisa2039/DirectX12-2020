@@ -51,11 +51,7 @@ void Actor::SetTransform(const Transform& transform)
 
 void Actor::UpdateTransform()
 {
-	const float deg2rad = (XM_PI / 180.0f);
-	*mappedTrans_ =
-		XMMatrixRotationRollPitchYaw(trans_.rotate.x * deg2rad, trans_.rotate.y * deg2rad, trans_.rotate.z * deg2rad)
-		* XMMatrixScaling(trans_.scale.x, trans_.scale.y, trans_.scale.z)
-		* XMMatrixTranslation(trans_.pos.x, trans_.pos.y, trans_.pos.z);
+	*mappedTrans_ = trans_.GetMatrix();
 }
 
 void Actor::SetTransformHeap(const UINT rootParamatorIndex)
@@ -74,4 +70,25 @@ void Actor::AddComponent(std::shared_ptr<Component> component)
 const ComPtr<ID3D12DescriptorHeap>& Actor::GetTransformHeap() const
 {
 	return transHeap_;
+}
+
+DirectX::XMMATRIX Transform::GetMatrix() const
+{
+	return GetRotateMatrix()
+		* XMMatrixScaling(scale.x, scale.y, scale.z)
+		* XMMatrixTranslation(pos.x, pos.y, pos.z);
+}
+
+DirectX::XMMATRIX Transform::GetRotateMatrix() const
+{
+	const float deg2rad = (XM_PI / 180.0f);
+	return XMMatrixRotationRollPitchYaw(rotate.x * deg2rad, rotate.y * deg2rad, rotate.z * deg2rad);
+}
+
+XMFLOAT3 Transform::GetForwerd() const
+{
+	XMVECTOR forwerdVec = XMVector3Transform({0.0f, 1.0f, 0.0f}, GetRotateMatrix());
+	XMFLOAT3 forwerd;
+	XMStoreFloat3(&forwerd, forwerdVec);
+	return forwerd;
 }

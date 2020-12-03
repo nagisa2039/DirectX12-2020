@@ -3,6 +3,7 @@
 #include <memory>
 
 class Mesh;
+class Camera;
 
 /// <summary>
 /// 3D描画クラスのインターフェース
@@ -10,6 +11,9 @@ class Mesh;
 class Renderer
 {
 public:
+	/// <param name="camera">カメラクラス</param>
+	Renderer(std::shared_ptr<Camera>& camera);
+
 	/// <summary>
 	/// 通常描画
 	/// </summary>
@@ -21,5 +25,8 @@ public:
 	/// </summary>
 	/// <param name="meshs">描画するメッシュ</param>
 	virtual void DrawShadow(std::vector<Mesh*>& meshs)=0;
+
+protected:
+	std::shared_ptr<Camera>& camera_;
 };
 

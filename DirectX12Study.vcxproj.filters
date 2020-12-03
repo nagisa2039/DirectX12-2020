@@ -320,6 +320,9 @@
     <ClCompile Include="Resource\Source\3D\Static\StaticMesh.cpp">
       <Filter>ソース ファイル\3D\Static</Filter>
     </ClCompile>
+    <ClCompile Include="Resource\Source\3D\Renderer.cpp">
+      <Filter>ソース ファイル\3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\2D\2DStanderdPS.hlsl">

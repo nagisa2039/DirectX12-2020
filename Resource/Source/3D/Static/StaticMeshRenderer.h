@@ -5,7 +5,6 @@
 #include "Utility/ComPtr.h"
 #include "3D/Renderer.h"
 
-class Mesh;
 class Dx12Wrapper;
 
 /// <summary>
@@ -15,8 +14,9 @@ class StaticMeshRenderer :
 	public Renderer
 {
 public:
-	// (dx12管理クラス)
-	StaticMeshRenderer(Dx12Wrapper& dx12);
+	/// <param name="dx12">DirectX管理クラス</param>
+	/// <param name="camera">カメラクラス</param>
+	StaticMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<Camera>& camera);
 	~StaticMeshRenderer();
 
 	/// <summary>

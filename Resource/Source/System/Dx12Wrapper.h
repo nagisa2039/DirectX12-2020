@@ -18,7 +18,6 @@ class Command;
 class TexLoader;
 class SpriteDrawer;
 class SoundManager;
-class Camera;
 class RendererManager;
 class FileSystem;
 
@@ -64,11 +63,6 @@ public:
 	SpriteDrawer& GetSpriteDrawer();
 
 	/// <summary>
-	/// カメラクラスの取得
-	/// </summary>
-	Camera& GetCamera();
-
-	/// <summary>
 	/// 3D描画管理クラスの取得
 	/// </summary>
 	RendererManager& GetRendererManager();
@@ -111,7 +105,6 @@ private:
 	std::shared_ptr<SpriteDrawer> spriteDrawer_;
 	std::shared_ptr<Command> cmd_;
 	std::shared_ptr<SoundManager> soundManager_;
-	std::shared_ptr<Camera> camera_;
 	std::shared_ptr<RendererManager> rendererManager_;
 	std::shared_ptr<FileSystem> fileSystem_;
 

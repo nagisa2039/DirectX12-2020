@@ -21,9 +21,11 @@ namespace
 
 RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 {
+	camera_ = make_shared<CameraObject>(dx12.GetCommand(), dx12.GetDevice());
+
 	meshRenderers_.resize(Uint64(Mesh::Type::max));
-	meshRenderers_[Uint64(Mesh::Type::static_mesh)].renderer	= make_shared<StaticMeshRenderer>(dx12_);
-	meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)].renderer	= make_shared<SkeletalMeshRenderer>(dx12_);
+	meshRenderers_[Uint64(Mesh::Type::static_mesh)].renderer	= make_shared<StaticMeshRenderer>(dx12_, camera_->GetCamera());
+	meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)].renderer	= make_shared<SkeletalMeshRenderer>(dx12_, camera_->GetCamera());
 
 	auto wsize = Application::Instance().GetWindowSize();
 	auto& texLoader = dx12_.GetTexLoader();
@@ -50,7 +52,7 @@ RendererManager::~RendererManager()
 
 void RendererManager::Update()
 {
-	dx12_.GetCamera().Update();
+	camera_->Update();
 }
 
 void RendererManager::Draw()

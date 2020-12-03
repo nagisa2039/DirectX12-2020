@@ -56,8 +56,6 @@ bool Dx12Wrapper::Init()
 	spriteDrawer_ = make_shared<SpriteDrawer>(*this);
 
 	texLoader_->SetDrawScreen(GetBackScreenHandle());
-
-	camera_ = make_shared<Camera>(*cmd_, *dev_.Get());
 	rendererManager_ = std::make_shared<RendererManager>(*this);
 	fileSystem_ = std::make_shared<FileSystem>();
 
@@ -126,11 +124,6 @@ SoundManager& Dx12Wrapper::GetSoundManager()
 SpriteDrawer& Dx12Wrapper::GetSpriteDrawer()
 {
 	return *spriteDrawer_;
-}
-
-Camera& Dx12Wrapper::GetCamera()
-{
-	return *camera_;
 }
 
 void Dx12Wrapper::SetDefaultViewAndScissor()

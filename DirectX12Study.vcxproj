@@ -66,6 +66,7 @@
     <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resource\Source\3D\Renderer.cpp" />
     <ClCompile Include="Resource\Source\System\FileSystem.cpp" />
     <ClCompile Include="Resource\Source\3D\Component.cpp" />
     <ClCompile Include="Resource\Source\3D\Mesh.cpp" />

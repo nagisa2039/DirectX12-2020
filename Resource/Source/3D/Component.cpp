@@ -5,7 +5,7 @@ Component::Component(std::weak_ptr<Actor> owner)
 {
 }
 
-std::weak_ptr<Actor> Component::GetOwner()
+std::weak_ptr<Actor> Component::GetOwner()const
 {
 	return owner_;
 }
