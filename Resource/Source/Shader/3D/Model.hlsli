@@ -96,11 +96,11 @@ SamplerComparisonState shadowSmp : register(s2);
 // 頂点出力
 struct VertexOut
 {
-	float4 svpos	: SV_POSITION; // Pipelineに投げるためにはSV_POSITIONが必要	カメラからの座標
-	float4 pos		: POSITION; // ワールド座標
-	float4 tpos		: POSITION1; // 頂点変換後の座標
-	float4 normal	: NORMAL; // 法線情報
-	float2 uv		: TEXCOORD; // UV情報
+	float4 svpos		: SV_POSITION; // Pipelineに投げるためにはSV_POSITIONが必要	カメラからの座標
+	float4 pos			: POSITION; // ワールド座標
+	float4 posFromLight : POSITION1; // ライトからとった場合の座標の座標
+	float4 normal		: NORMAL; // 法線情報
+	float2 uv			: TEXCOORD; // UV情報
 };
 
 // 影用頂点出力

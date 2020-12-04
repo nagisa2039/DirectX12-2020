@@ -32,7 +32,7 @@ VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD
 
 	o.pos = pos;
 
-	o.tpos = mul(scene.lightCamera, pos);
+	o.posFromLight = mul(scene.lightCamera, pos);
 
 	normal.w = 0;
 	o.normal = mul(transform, normal);

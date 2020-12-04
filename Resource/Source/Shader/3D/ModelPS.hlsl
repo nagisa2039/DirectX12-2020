@@ -69,10 +69,11 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	float4 baseColor = saturate(mat.diffuse * texColor);
 	float4 ret = float4(saturate(float3(baseColor.rgb * toonColor.rgb * sphColor.rgb + specColor.rgb + spaColor.rgb + ambientColor.rgb)), baseColor.a);
 	
-	float3 posFromLight = input.tpos.xyz / input.tpos.w;
+	float3 posFromLight = input.posFromLight.xyz / input.posFromLight.w;
 	float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
-	float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z - 0.005f);
+	float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z);
 	float shadowWeight = 1.0f - 0.3f * step(shadowZ + 0.0005f, posFromLight.z);
+
 	float edge = abs(dot(eyeRay, input.normal.xyz)) < edgeWidth ? 1 - edgePower : 1;
 	float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
 	lim = pow(lim, limColor.a);
