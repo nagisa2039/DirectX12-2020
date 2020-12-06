@@ -352,6 +352,9 @@
     <FxCompile Include="Resource\Source\Shader\2D\Mosaic.hlsl">
       <Filter>ソース ファイル\Shader\2D</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Source\Shader\3D\ModelCS.hlsl">
+      <Filter>ソース ファイル\Shader\3D</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Source\Shader\2D\2DStanderd.hlsli">

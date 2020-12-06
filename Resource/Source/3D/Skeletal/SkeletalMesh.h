@@ -34,18 +34,36 @@ public:
 
 	// 初期化(モデルのファイルパス)
 	bool Init(std::wstring modelPath);
-	// 更新
-	void Update();
-	// 描画(影として描画するか)
-	void Draw();
-	// アニメーションを開始する
+
+	/// <summary>
+	/// 更新
+	/// </summary>
+	void Update()override;
+
+	/// <summary>
+	/// Computeによる更新
+	/// Rendererから呼ぶためにUpdateから分離
+	/// </summary>
+	void ComputeUpdate()override;
+
+	/// <summary>
+	/// 通常描画
+	/// </summary>
+	void Draw()override;
+	
+	/// <summary>
+	/// アニメーションの開始
+	/// </summary>
 	void StartAnimation();
 
 private:
 	SkeletalMeshData& modelData_;
+	ComPtr<ID3D12DescriptorHeap> heap_ = nullptr;
 
 	// 頂点バッファ
-	ComPtr<ID3D12Resource> vertexBuffer_ = nullptr;
+	ResourceBindHeap vertexBufferUA_ = {};
+	ResourceBindHeap vertexBufferSB_ = {};
+	SkeletalMeshData::Vertex* mappedVertexCB_ = nullptr;
 	// 頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vbView_ = {};
 
@@ -68,10 +86,8 @@ private:
 	std::vector<DirectX::XMMATRIX> boneMats_;	// 各ボーンのtransform情報を格納
 	std::unordered_map<std::wstring, BoneNode> boneMap_;	// ボーン名からboneMatsのインデックスをとる
 
-	ComPtr<ID3D12Resource> boneCB_ = nullptr;
+	ResourceBindHeap boneCB_ = {};
 	DirectX::XMMATRIX* mappedBones_ = nullptr;
-
-	ComPtr<ID3D12DescriptorHeap> boneHeap_ = nullptr;
 
 	//vmd
 	VMDMotion& vmdMotion_;
@@ -98,7 +114,7 @@ private:
 	void RotateBone(std::wstring boneName, DirectX::XMVECTOR location, DirectX::XMFLOAT4& q1, DirectX::XMFLOAT4& q2, float t);
 
 	// 座標とボーン用のバッファとビュー作成
-	bool CreateConstanteBuffers();
+	bool CreateHeapAndBuffers();
 
 	// アニメーションの更新
 	void MotionUpdate(const unsigned int motionFrame);

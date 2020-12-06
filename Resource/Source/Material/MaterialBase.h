@@ -3,6 +3,8 @@
 #include <DirectXMath.h>
 using float3 = DirectX::XMFLOAT3;
 using float4 = DirectX::XMFLOAT4;
+using int4	 = DirectX::XMINT4;
+using matrix = DirectX::XMMATRIX;
 #endif
 
 struct MaterialBase

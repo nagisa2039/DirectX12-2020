@@ -28,8 +28,8 @@ public :
 
 	struct Vertex
 	{
-		DirectX::XMFLOAT3 pos;
-		DirectX::XMFLOAT3 normal;
+		DirectX::XMFLOAT4 pos;
+		DirectX::XMFLOAT4 normal;
 		DirectX::XMFLOAT2 uv;
 		DirectX::XMINT4 boneIdx;
 		DirectX::XMFLOAT4 weight;
@@ -47,15 +47,15 @@ public :
 	~SkeletalMeshData();
 
 	// 頂点情報の取得
-	std::vector<Vertex>& GetVertexData();
+	const std::vector<Vertex>& GetVertexData();
 	// インデックス情報の取得
-	std::vector<uint32_t>& GetIndexData();
+	const std::vector<uint32_t>& GetIndexData();
 	// テクスチャパス情報の取得
-	std::vector<MultiTexturePath>& GetTexturePaths();
+	const std::vector<MultiTexturePath>& GetTexturePaths();
 	// マテリアル情報の取得
-	std::vector<Material>& GetMaterialData();
+	const std::vector<Material>& GetMaterialData();
 	// ボーン情報の取得
-	std::vector<Bone>& GetBoneData();
+	const std::vector<Bone>& GetBoneData();
 
 protected:
 

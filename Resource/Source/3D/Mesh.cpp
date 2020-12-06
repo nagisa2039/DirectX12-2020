@@ -17,6 +17,10 @@ void Mesh::Init()
     dx12_.GetRendererManager().AddMesh(this);
 }
 
+void Mesh::ComputeUpdate()
+{
+}
+
 Mesh::Type Mesh::GetMeshType() const
 {
     return type_;

@@ -228,15 +228,21 @@ void PMDData::LoadVertex(FILE * fp)
 	fread(t_VertexVec.data(), sizeof(t_VertexVec[0]) * t_VertexVec.size(), 1, fp);
 
 	vertexData_.resize(vertNum);
+
+	auto XMFloat4FromXMFloat3 = [](const XMFLOAT3& f3, const float w)
+	{
+		return XMFLOAT4(f3.x, f3.y, f3.z, w);
+	};
+
 	for (int idx = 0; idx < vertNum; idx++)
 	{
-		vertexData_[idx].pos = t_VertexVec[idx].pos;
-		vertexData_[idx].normal = t_VertexVec[idx].normal_vec;
-		vertexData_[idx].uv = t_VertexVec[idx].uv;
-		vertexData_[idx].boneIdx.x = t_VertexVec[idx].bone_num[0];
-		vertexData_[idx].boneIdx.y = t_VertexVec[idx].bone_num[1];
-		vertexData_[idx].weight.x = t_VertexVec[idx].bone_weight/100.0f;
-		vertexData_[idx].weight.y = 1.0f - vertexData_[idx].weight.x;
+		vertexData_[idx].pos		= XMFloat4FromXMFloat3(t_VertexVec[idx].pos, 1.0f);
+		vertexData_[idx].normal		= XMFloat4FromXMFloat3(t_VertexVec[idx].normal_vec, 0.0f);
+		vertexData_[idx].uv			= t_VertexVec[idx].uv;
+		vertexData_[idx].boneIdx.x	= t_VertexVec[idx].bone_num[0];
+		vertexData_[idx].boneIdx.y	= t_VertexVec[idx].bone_num[1];
+		vertexData_[idx].weight.x	= t_VertexVec[idx].bone_weight/100.0f;
+		vertexData_[idx].weight.y	= 1.0f - vertexData_[idx].weight.x;
 	}
 }
 void PMDData::LoadMaterial(FILE * fp, std::string &modelPath)

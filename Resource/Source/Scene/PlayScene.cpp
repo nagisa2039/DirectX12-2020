@@ -31,7 +31,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& soundManager = dx12.GetSoundManager();
 
-	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/–ì—Ç”L‚Í‰F’ˆ‚ð–ÚŽw‚µ‚½.wav", true);
+	//BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/–ì—Ç”L‚Í‰F’ˆ‚ð–ÚŽw‚µ‚½.wav", true);
 	player_ = make_unique<Player>();
 
 	raymarchingMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Raymarching.hlsl");
@@ -82,7 +82,6 @@ void PlayScene::Update()
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& input = Application::Instance().GetInput();
 
-	dx12.GetRendererManager().Update();
 
 	if (input.GetButtonDown(DIK_SPACE))
 	{
@@ -95,6 +94,8 @@ void PlayScene::Update()
 	{
 		actor->Update();
 	}
+
+	dx12.GetRendererManager().Update();
 }
 
 void PlayScene::Draw()

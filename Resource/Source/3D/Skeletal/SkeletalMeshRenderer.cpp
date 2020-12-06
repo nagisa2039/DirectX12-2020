@@ -145,7 +145,8 @@ bool SkeletalMeshRenderer::CreateModelPL()
 	gpsd.NumRenderTargets = 1;
 	gpsd.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	if (FAILED(dev.CreateGraphicsPipelineState(&gpsd, IID_PPV_ARGS(shadowPL_.ReleaseAndGetAddressOf()))))
+	if (FAILED(dev.CreateGraphicsPipelineState(&gpsd, 
+		IID_PPV_ARGS(shadowPL_.ReleaseAndGetAddressOf()))))
 	{
 		assert(false);
 		return false;
@@ -154,16 +155,45 @@ bool SkeletalMeshRenderer::CreateModelPL()
 	return true;
 }
 
+bool SkeletalMeshRenderer::CreateCompute()
+{
+	auto& dev = dx12_.GetDevice();
+	D3D12_COMPUTE_PIPELINE_STATE_DESC desc{};
+	auto& sl = Application::Instance().GetShaderLoader();
+	auto cs = sl.GetShader(L"Resource/Source/Shader/3D/ModelCS.hlsl", 
+		"CS", ("cs_" + sl.GetShaderModel()).c_str());
+	
+	CreateRootSignatureFromShader(&dev, computeRS_, cs);
+	
+	desc.CS = CD3DX12_SHADER_BYTECODE(cs.Get());;
+	desc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	desc.NodeMask = 0;
+	desc.pRootSignature = computeRS_.Get();
+
+	H_ASSERT(dev.CreateComputePipelineState(&desc, 
+		IID_PPV_ARGS(computePL_.ReleaseAndGetAddressOf())));
+	return true;
+}
+
 bool SkeletalMeshRenderer::Init()
 {
 	// pmxパイプラインステートの作成
-	if (!CreateModelPL())
-	{
-		assert(false);
-		return false;
-	}
+	CreateModelPL();
+
+	CreateCompute();
 
 	return true;
+}
+
+void SkeletalMeshRenderer::ComputeUpdate(std::vector<Mesh*>& meshs)
+{
+	auto& commandList = dx12_.GetCommand().CommandList();
+	commandList.SetComputeRootSignature(computeRS_.Get());
+	commandList.SetPipelineState(computePL_.Get());
+	for (auto& mesh : meshs)
+	{
+		mesh->ComputeUpdate();
+	}
 }
 
 void SkeletalMeshRenderer::Draw(std::vector<Mesh*>& meshs)

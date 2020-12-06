@@ -15,6 +15,12 @@ public:
 	Renderer(std::shared_ptr<Camera>& camera);
 
 	/// <summary>
+	/// Computeによる更新
+	/// Rendererから呼ぶためにUpdateから分離
+	/// </summary>
+	virtual void ComputeUpdate(std::vector<Mesh*>& meshs);
+
+	/// <summary>
 	/// 通常描画
 	/// </summary>
 	/// <param name="meshs">描画するメッシュ</param>

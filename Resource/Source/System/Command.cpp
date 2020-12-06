@@ -62,7 +62,6 @@ void Command::WaitFence()
 void Command::Execute()
 {
 	cmdList_->Close();
-
 	ID3D12CommandList* cmds{ cmdList_.Get() };
 	cmdQue_->ExecuteCommandLists(1, &cmds);
 	cmdQue_->Signal(fence_.Get(), ++fenceValue_);

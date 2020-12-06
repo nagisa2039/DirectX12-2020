@@ -56,7 +56,8 @@ public:
 	/// CommandListにtrans情報を追加(セット)する
 	/// </summary>
 	/// <param name="rootParamatorIndex">rootParamatorのインデックス</param>
-	void SetTransformHeap(const UINT rootParamatorIndex);
+	/// <param name="compute">Compute用か</param>
+	void SetTransformHeap(const UINT rootParamatorIndex, const bool compute = false);
 
 	/// <summary>
 	/// コンポーネントの追加

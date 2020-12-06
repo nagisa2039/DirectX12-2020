@@ -11,3 +11,10 @@ struct Resource
 
 	bool Barrier(Command& cmd, const D3D12_RESOURCE_STATES changeState);
 };
+
+struct ResourceBindHeap
+{
+	Resource resource = {};
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuH = {};
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuH = {};
+};

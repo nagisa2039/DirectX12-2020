@@ -54,11 +54,20 @@ void Actor::UpdateTransform()
 	*mappedTrans_ = trans_.GetMatrix();
 }
 
-void Actor::SetTransformHeap(const UINT rootParamatorIndex)
+void Actor::SetTransformHeap(const UINT rootParamatorIndex, const bool compute)
 {
 	auto& commandList = Application::Instance().GetDx12().GetCommand().CommandList();
 	commandList.SetDescriptorHeaps(1, transHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(7, transHeap_->GetGPUDescriptorHandleForHeapStart());
+	if (compute)
+	{
+		commandList.SetComputeRootDescriptorTable(rootParamatorIndex,
+			transHeap_->GetGPUDescriptorHandleForHeapStart());
+	}
+	else
+	{
+		commandList.SetGraphicsRootDescriptorTable(rootParamatorIndex, 
+			transHeap_->GetGPUDescriptorHandleForHeapStart());
+	}
 }
 
 void Actor::AddComponent(std::shared_ptr<Component> component)

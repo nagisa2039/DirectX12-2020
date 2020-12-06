@@ -85,6 +85,9 @@ bool SkeletalMesh::Init(std::wstring modelPath)
 	modelData_ = dx12_.GetFileSystem().GetSkeletalMeshData(modelPath);
 	CreateBoneHierarchy();
 
+	// ヒープ作成 0,vertUAV 1,vertCBV 2,boneCBV
+	CreateDescriptorHeap(&dx12_.GetDevice(), heap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 3);
+
 	// 頂点バッファの作成
 	if (!CreateVertexBuffer())
 	{
@@ -104,7 +107,7 @@ bool SkeletalMesh::Init(std::wstring modelPath)
 	}
 
 	// 座標変換用とボーンのバッファやビューの作成
-	if (!CreateConstanteBuffers())
+	if (!CreateHeapAndBuffers())
 	{
 		assert(false);
 	}
@@ -213,7 +216,6 @@ void SkeletalMesh::MotionUpdate(const unsigned int motionFrame)
 	copy(boneMats_.begin(), boneMats_.end(), mappedBones_);
 
 	return;
-
 }
 
 void SkeletalMesh::Update()
@@ -249,15 +251,31 @@ void SkeletalMesh::Update()
 	// 座標更新
 	owner->SetTransform(trans);
 
-	noiseThresholdTL_->Update();
+	//noiseThresholdTL_->Update();
 	auto value = noiseThresholdTL_->GetValue();
 	modelMaterial_->SetConstFloat(
 		modelData_.GetMaterialData().size(), value);
 }
 
+void SkeletalMesh::ComputeUpdate()
+{
+	auto& cmd = dx12_.GetCommand().CommandList();
+	cmd.SetDescriptorHeaps(1, heap_.GetAddressOf());
+
+	cmd.SetComputeRootDescriptorTable(0, vertexBufferUA_.gpuH);
+	cmd.SetComputeRootDescriptorTable(1, vertexBufferSB_.gpuH);
+	cmd.SetComputeRootDescriptorTable(2, boneCB_.gpuH);
+
+	GetOwner().lock()->SetTransformHeap(3, true);
+
+	//コンピュートシェーダーの実行(今回は256個のスレッドグループを指定)
+	cmd.Dispatch(modelData_.GetVertexData().size(), 1, 1);
+}
+
 void SkeletalMesh::Draw()
 {
-	auto& commandList = dx12_.GetCommand().CommandList();
+	auto& cmd = dx12_.GetCommand();
+	auto& commandList = cmd.CommandList();
 	auto& dev = dx12_.GetDevice();
 
 	// マテリアルのセット
@@ -267,18 +285,20 @@ void SkeletalMesh::Draw()
 	GetOwner().lock()->SetTransformHeap(7);
 
 	// ボーン用デスクリプタヒープのセット
-	commandList.SetDescriptorHeaps(1, boneHeap_.GetAddressOf());
-	commandList.SetGraphicsRootDescriptorTable(8, boneHeap_->GetGPUDescriptorHandleForHeapStart());
+	commandList.SetDescriptorHeaps(1, heap_.GetAddressOf());
+	commandList.SetGraphicsRootDescriptorTable(8, boneCB_.gpuH);
 
 	// 設定
 
 	// インデックスバッファのセット
+	vertexBufferUA_.resource.Barrier(cmd, D3D12_RESOURCE_STATE_GENERIC_READ);
 	commandList.IASetIndexBuffer(&ibView_);
 	// 頂点バッファビューの設定
 	commandList.IASetVertexBuffers(0, 1, &vbView_);
 
 	// 描画コマンドの生成
 	commandList.DrawIndexedInstanced(Uint32(modelData_.GetIndexData().size()), 1, 0, 0, 0);
+	vertexBufferUA_.resource.Barrier(cmd, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 }
 
 void SkeletalMesh::StartAnimation()
@@ -291,43 +311,64 @@ bool SkeletalMesh::CreateVertexBuffer()
 {
 	auto vertices = modelData_.GetVertexData();
 
-	D3D12_HEAP_PROPERTIES heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	D3D12_HEAP_PROPERTIES prop{};
+	prop.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+	prop.CreationNodeMask = 1;
+	prop.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+	prop.Type = D3D12_HEAP_TYPE_CUSTOM;
+	prop.VisibleNodeMask = 1;
 
 	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(vertices[0]) * vertices.size());
+	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
-	if (FAILED(dx12_.GetDevice().CreateCommittedResource(
-		&heapProp,
+	auto& dev = dx12_.GetDevice();
+
+	vertexBufferUA_.resource.state = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	if (FAILED(dev.CreateCommittedResource(
+		&prop,
 		D3D12_HEAP_FLAG_NONE,
 		&resDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
+		vertexBufferUA_.resource.state,
 		nullptr,
-		IID_PPV_ARGS(vertexBuffer_.ReleaseAndGetAddressOf()))))
+		IID_PPV_ARGS(vertexBufferUA_.resource.buffer.ReleaseAndGetAddressOf()))))
 	{
 		return false;
 	}
-
-	// データ転送
-	// vertexBufferにverMapの内容を書き込む
-	// 頂点書き込み
-	SkeletalMeshData::Vertex* verMap = nullptr;
-	if (FAILED(vertexBuffer_->Map(0, nullptr, (void**)&verMap)))
-	{
-		return false;
-	}
-	copy(vertices.begin(), vertices.end(), verMap);
-	// 終了したのでアンマップ
-	vertexBuffer_->Unmap(0, nullptr);
-
 
 	// 頂点バッファビューの設定
 	// 頂点バッファのGPUにおけるアドレスを記録
-	vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress();
+	vbView_.BufferLocation = vertexBufferUA_.resource.buffer->GetGPUVirtualAddress();
 
 	// データ全体のサイズ指定
 	vbView_.SizeInBytes = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
 
 	// 1頂点当たりのバイト数指定	(全体のバイト数 / 頂点数)
 	vbView_.StrideInBytes = static_cast<UINT>(vbView_.SizeInBytes / vertices.size());
+
+	// 頂点UAV作成
+	D3D12_UNORDERED_ACCESS_VIEW_DESC desc{};
+	desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+	desc.Format = DXGI_FORMAT_UNKNOWN;
+	desc.Buffer.NumElements = vertices.size();
+	desc.Buffer.StructureByteStride = vbView_.StrideInBytes;
+
+	auto stride = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	auto cHandle = heap_->GetCPUDescriptorHandleForHeapStart();
+	auto gHandle = heap_->GetGPUDescriptorHandleForHeapStart();
+
+	vertexBufferUA_.cpuH = cHandle;
+	vertexBufferUA_.gpuH = gHandle;
+
+	dev.CreateUnorderedAccessView(vertexBufferUA_.resource.buffer.Get(), 
+		nullptr, &desc, vertexBufferUA_.cpuH);
+
+	cHandle.ptr += stride;
+	gHandle.ptr += stride;
+	vertexBufferSB_.cpuH = cHandle;
+	vertexBufferSB_.gpuH = gHandle;
+	SkeletalMeshData::Vertex* mappedVert = nullptr;
+	CreateStructuredBuffer(&dev, vertexBufferSB_.resource.buffer, vertexBufferSB_.cpuH,
+		vertices, mappedVert, true);
 
 	return true;
 }
@@ -462,18 +503,22 @@ void SkeletalMesh::RotateBone(std::wstring boneName, DirectX::XMVECTOR location,
 	boneMats_[bone.boneIdx] *= mat;
 }
 
-bool SkeletalMesh::CreateConstanteBuffers()
+bool SkeletalMesh::CreateHeapAndBuffers()
 {
 	auto& dev = dx12_.GetDevice();
-	// ボーンヒープ作成
-	CreateDescriptorHeap(&dev, boneHeap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
-
 	// ボーンの定数バッファの作成
-	CreateUploadBuffer(&dev, boneCB_, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
-	boneCB_->Map(0, nullptr, (void**)&mappedBones_);
+	CreateUploadBuffer(&dev, boneCB_.resource.buffer, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
+	boneCB_.resource.buffer->Map(0, nullptr, (void**)&mappedBones_);
 
 	// 定数バッファビューの作成
-	CreateConstantBufferView(&dev, boneCB_, boneHeap_->GetCPUDescriptorHandleForHeapStart());
+	auto stride = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	auto cHandle = heap_->GetCPUDescriptorHandleForHeapStart();
+	auto gHandle = heap_->GetGPUDescriptorHandleForHeapStart();
+	cHandle.ptr += stride*2;
+	gHandle.ptr += stride*2;
+	boneCB_.cpuH = cHandle;
+	boneCB_.gpuH = gHandle;
+	CreateConstantBufferView(&dev, boneCB_.resource.buffer, boneCB_.cpuH);
 
 	return true;
 }

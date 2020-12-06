@@ -42,6 +42,15 @@
 // 8,ƒ{[ƒ“
 // 9,İ’è
 
+struct Vertex
+{
+    float4 pos;
+    float4 normal;
+    float2 uv;
+    int4 boneIdx;
+    float4 weight;
+};
+
 Texture2D tex[512] : register(t0, space0);
 Texture2D<float> depthTex[2] : register(t0, space1);
 ConstantBuffer<SceneStruct> scene : register(b0, space0);

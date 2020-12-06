@@ -42,6 +42,12 @@ public:
 	virtual void Update()=0;
 
 	/// <summary>
+	/// Compute‚É‚æ‚éXV
+	/// Renderer‚©‚çŒÄ‚Ô‚½‚ß‚ÉUpdate‚©‚ç•ª—£
+	/// </summary>
+	virtual void ComputeUpdate();
+
+	/// <summary>
 	/// ’Êí•`‰æ
 	/// </summary>
 	virtual void Draw()=0;

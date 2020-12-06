@@ -53,6 +53,11 @@ RendererManager::~RendererManager()
 void RendererManager::Update()
 {
 	camera_->Update();
+	for (auto& meshRenderer : meshRenderers_)
+	{
+		meshRenderer.renderer->ComputeUpdate(meshRenderer.meshs_);
+	}
+	dx12_.GetCommand().Execute();
 }
 
 void RendererManager::Draw()

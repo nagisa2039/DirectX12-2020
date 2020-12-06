@@ -159,8 +159,10 @@ void PMXData::LoadVertex(FILE * fp)
 
 	for (int j = 0; j < vertNum; j++)
 	{
-		fread(&vertexData_[j].pos, sizeof(vertexData_[j].pos), 1, fp);
-		fread(&vertexData_[j].normal, sizeof(vertexData_[j].normal), 1, fp);
+		fread(&vertexData_[j].pos, sizeof(XMFLOAT3), 1, fp);
+		vertexData_[j].pos.w = 1.0f;
+		fread(&vertexData_[j].normal, sizeof(XMFLOAT3), 1, fp);
+		vertexData_[j].normal.w = 0.0f;
 		fread(&vertexData_[j].uv, sizeof(vertexData_[j].uv), 1, fp);
 
 		std::vector<DirectX::XMFLOAT3> adduv;

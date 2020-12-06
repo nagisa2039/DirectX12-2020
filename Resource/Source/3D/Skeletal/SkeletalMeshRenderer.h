@@ -29,6 +29,12 @@ public:
 	bool Init();
 
 	/// <summary>
+	/// Computeによる更新
+	/// Rendererから呼ぶためにUpdateから分離
+	/// </summary>
+	void ComputeUpdate(std::vector<Mesh*>& meshs)override;
+
+	/// <summary>
 	/// 通常描画
 	/// </summary>
 	/// <param name="meshs">描画するメッシュ</param>
@@ -50,7 +56,12 @@ private:
 	// 影用パイプラインステート
 	ComPtr<ID3D12PipelineState> shadowPL_ = nullptr;
 
+	// Compute用
+	ComPtr<ID3D12RootSignature> computeRS_ = nullptr;
+	ComPtr<ID3D12PipelineState> computePL_ = nullptr;
+
 	bool CreateModelPL();
+	bool CreateCompute();
 	void SetModelRS();
 	void SetModelPL();
 };
