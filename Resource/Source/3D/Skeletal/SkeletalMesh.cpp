@@ -269,7 +269,8 @@ void SkeletalMesh::ComputeUpdate()
 	GetOwner().lock()->SetTransformHeap(3, true);
 
 	//コンピュートシェーダーの実行(今回は256個のスレッドグループを指定)
-	cmd.Dispatch(modelData_.GetVertexData().size(), 1, 1);
+	auto x = Uint32(ceil(modelData_.GetVertexData().size() / 32.0f));
+	cmd.Dispatch(x, 1, 1);
 }
 
 void SkeletalMesh::Draw()

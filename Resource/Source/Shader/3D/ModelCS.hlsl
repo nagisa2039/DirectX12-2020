@@ -45,10 +45,10 @@ matrix GetTransform(const int4 boneno, const float4 weight)
 }
 
 [RootSignature(RS)]
-[numthreads(1, 1, 1)]
-void CS(uint3 groupID : SV_GroupID)
+[numthreads(32, 1, 1)]
+void CS(uint3 groupID : SV_GroupID, uint3 groupThreadID : SV_GroupThreadID)
 {
-    uint index = groupID.x;
+	uint index = groupID.x * 32 + groupThreadID.x;
     Vertex baseVert = baseVertex[index];
     
     matrix trans = GetTransform(baseVert.boneIdx, baseVert.weight);
