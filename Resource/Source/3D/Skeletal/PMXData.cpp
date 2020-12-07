@@ -94,8 +94,8 @@ void PMXData::LoadVertex(FILE * fp)
 		SDEF = 3,
 	};
 
-	function<void(FILE*, int, SkeletalMeshData::Vertex&)> weightFun[4];
-	weightFun[BDEF1] = [](FILE * fp, int boneIdexSize, SkeletalMeshData::Vertex& vert)
+	function<void(FILE*, int, SkeletalMeshVertex&)> weightFun[4];
+	weightFun[BDEF1] = [](FILE * fp, int boneIdexSize, SkeletalMeshVertex& vert)
 	{
 		int boneNum = 0;
 		fread(&boneNum, boneIdexSize, 1, fp);
@@ -104,7 +104,7 @@ void PMXData::LoadVertex(FILE * fp)
 	};
 
 
-	weightFun[BDEF2] = [](FILE * fp, int boneIdexSize, SkeletalMeshData::Vertex& vert)
+	weightFun[BDEF2] = [](FILE * fp, int boneIdexSize, SkeletalMeshVertex& vert)
 	{
 		int boneNum1 = 0;
 		fread(&boneNum1, boneIdexSize, 1, fp);
@@ -120,7 +120,7 @@ void PMXData::LoadVertex(FILE * fp)
 		vert.weight.y = 1.0f - weight;
 	};
 
-	weightFun[BDEF4] = [](FILE * fp, int boneIdexSize, SkeletalMeshData::Vertex& vert)
+	weightFun[BDEF4] = [](FILE * fp, int boneIdexSize, SkeletalMeshVertex& vert)
 	{
 		int cnt = 4;
 		vector<int> boneIdx(cnt);
@@ -144,7 +144,7 @@ void PMXData::LoadVertex(FILE * fp)
 		vert.weight.w = boneWeight[3] / total;
 	};
 
-	weightFun[SDEF] = [weightFun = weightFun](FILE * fp, int boneIdexSize, SkeletalMeshData::Vertex& vert)
+	weightFun[SDEF] = [weightFun = weightFun](FILE * fp, int boneIdexSize, SkeletalMeshVertex& vert)
 	{
 		weightFun[BDEF2](fp, boneIdexSize, vert);
 
@@ -160,9 +160,7 @@ void PMXData::LoadVertex(FILE * fp)
 	for (int j = 0; j < vertNum; j++)
 	{
 		fread(&vertexData_[j].pos, sizeof(XMFLOAT3), 1, fp);
-		vertexData_[j].pos.w = 1.0f;
 		fread(&vertexData_[j].normal, sizeof(XMFLOAT3), 1, fp);
-		vertexData_[j].normal.w = 0.0f;
 		fread(&vertexData_[j].uv, sizeof(vertexData_[j].uv), 1, fp);
 
 		std::vector<DirectX::XMFLOAT3> adduv;

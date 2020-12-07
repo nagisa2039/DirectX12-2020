@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resource\Source\Utility\ComvertCplusHLSL.h" />
     <ClInclude Include="Resource\Source\System\FileSystem.h" />
     <ClInclude Include="Resource\Source\3D\Component.h" />
     <ClInclude Include="Resource\Source\3D\Mesh.h" />
@@ -64,6 +65,7 @@
     <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h" />
     <ClInclude Include="Resource\Source\Material\Material.h" />
     <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
+    <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshVertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\3D\Renderer.cpp" />

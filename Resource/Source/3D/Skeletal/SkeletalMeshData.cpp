@@ -10,7 +10,7 @@ SkeletalMeshData::~SkeletalMeshData()
 {
 }
 
-const std::vector<SkeletalMeshData::Vertex>& SkeletalMeshData::GetVertexData()
+const std::vector<SkeletalMeshVertex>& SkeletalMeshData::GetVertexData()
 {
 	return vertexData_;
 }

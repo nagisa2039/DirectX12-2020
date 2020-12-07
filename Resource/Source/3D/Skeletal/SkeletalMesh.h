@@ -63,7 +63,7 @@ private:
 	// 頂点バッファ
 	ResourceBindHeap vertexBufferUA_ = {};
 	ResourceBindHeap vertexBufferSB_ = {};
-	SkeletalMeshData::Vertex* mappedVertexCB_ = nullptr;
+	SkeletalMeshVertex* mappedVertexCB_ = nullptr;
 	// 頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vbView_ = {};
 
@@ -114,7 +114,7 @@ private:
 	void RotateBone(std::wstring boneName, DirectX::XMVECTOR location, DirectX::XMFLOAT4& q1, DirectX::XMFLOAT4& q2, float t);
 
 	// 座標とボーン用のバッファとビュー作成
-	bool CreateHeapAndBuffers();
+	bool CreateBoneBuffer();
 
 	// アニメーションの更新
 	void MotionUpdate(const unsigned int motionFrame);

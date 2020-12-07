@@ -1,25 +1,18 @@
+#include "../../3D/Skeletal/SkeletalMeshVertex.h"
+
 // ルートシグネチャの宣言
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
-                    "DescriptorTable(UAV(u0, numDescriptors = 1, space = 0, flags = DESCRIPTORS_VOLATILE)),"\
+                    "DescriptorTable(UAV(u0, numDescriptors = unbounded, space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                     "DescriptorTable(SRV(t0, numDescriptors = unbounded, space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                     "DescriptorTable(CBV(b0, numDescriptors = 1, space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                     "DescriptorTable(CBV(b1, numDescriptors = 1, space = 0, flags = DESCRIPTORS_VOLATILE)),"\
                     "StaticSampler(s0)"\
 
-struct Vertex
-{
-    float4 pos;
-    float4 normal;
-    float2 uv;
-    int4 boneIdx;
-    float4 weight;
-};
-
 // 書き込み先
-RWStructuredBuffer<Vertex> vertexUAV : register(u0);//0
+RWStructuredBuffer<SkeletalMeshVertex> vertexUAV : register(u0);//0
 
 // 元の頂点データ
-StructuredBuffer<Vertex> baseVertex : register(t0);//1
+StructuredBuffer<SkeletalMeshVertex> baseVertex : register(t0); //1
 
 // ボーン行列
 cbuffer bones : register(b0)//2
@@ -45,15 +38,13 @@ matrix GetTransform(const int4 boneno, const float4 weight)
 }
 
 [RootSignature(RS)]
-[numthreads(32, 1, 1)]
+[numthreads(64, 1, 1)]
 void CS(uint3 groupID : SV_GroupID, uint3 groupThreadID : SV_GroupThreadID)
 {
-	uint index = groupID.x * 32 + groupThreadID.x;
-    Vertex baseVert = baseVertex[index];
-    
+	uint index = groupID.x * 64 + groupThreadID.x;
+    SkeletalMeshVertex baseVert = baseVertex[index];
     matrix trans = GetTransform(baseVert.boneIdx, baseVert.weight);
-    baseVert.pos = mul(trans, baseVert.pos);
-    baseVert.normal = mul(trans, baseVert.normal);
+    baseVert.pos    = mul(trans, float4(baseVert.pos,       1.0f)).xyz;
+    baseVert.normal = mul(trans, float4(baseVert.normal,    0.0f)).xyz;
     vertexUAV[index] = baseVert;
-    vertexUAV[index].uv = float2(1.0f, 0.5f);
 }

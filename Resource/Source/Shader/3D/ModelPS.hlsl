@@ -24,7 +24,6 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	uint matIdx = GetMaterialIndex(primitiveID, matNum);
 	MaterialBase mat = materialBase[matIdx];
 	
-	
 	Texture2D<float4> sphTex  = tex[addTexIndex[matIdx * 4 + 0]];
 	Texture2D<float4> spaTex  = tex[addTexIndex[matIdx * 4 + 1]];
 	Texture2D<float4> addTex  = tex[addTexIndex[matIdx * 4 + 2]];
@@ -35,36 +34,26 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	
 	Texture2D<float> lightDepthTex = depthTex[1];
 	
-	//return float4(input.normal.xyz,1);
 	// 光源ベクトルの反射ベクトル
 	float3 lightDirNormal = normalize(scene.lightVec);
 	float3 rLight = reflect(lightDirNormal, input.normal.rgb);
-
-	// 視線ベクトル
-	float3 eyeRay = normalize(input.pos.rgb - scene.eye);
-	// 光源ベクトルの反射ベクトル
-	float3 rEye = reflect(eyeRay, input.normal.xyz);
-
-	float2 sphUV = (input.normal.xy * float2(1.0f, -1.0f) + float2(1.0f, 1.0f)) / 2.0f;
-	float2 normalUV = (input.normal.xy + float2(1, -1)) * float2(0.5, -0.5);
-
-	// スペキュラ
-	float specB = saturate(dot(rLight, -eyeRay));
-	specB = pow(max(specB, 0), max(mat.power, 0));
 
 	float bright = saturate(dot(input.normal.xyz, -lightDirNormal));
 	float4 toonColor = float4(toonTex.Sample(toomSmp, float2(0, 1.0 - bright)).rgb, 1.0f);
 
 	float4 texColor = tex[mat.textureIndex].Sample(smp, input.uv);
 	
+	float2 sphUV = (input.normal.xy * float2(1.0f, -1.0f) + float2(1.0f, 1.0f)) / 2.0f;
 	float4 sphColor = float4(sphTex.Sample(smp, sphUV).rgb, 1.0f);
 	float4 spaColor = spaTex.Sample(smp, sphUV);
 
+	// スペキュラ
+	// 視線ベクトル
+	float3 eyeRay = normalize(input.pos.rgb - scene.eye);
+	float specB = saturate(dot(rLight, -eyeRay));
+	specB = pow(max(specB, 0), max(mat.power, 0));
 	float4 specColor = float4(saturate(mat.specular * specB).rgb, 0);
 	float4 ambientColor = float4((mat.ambient * 0.005f).rgb, 0);
-	
-	float4 noiseColor = noiseTex.Sample(smp, input.uv);
-	float noiseValue = dot(noiseColor.rgb, float3(0.33f, 0.34f, 0.33));
 	
 	float4 baseColor = saturate(mat.diffuse * texColor);
 	float4 ret = float4(saturate(float3(baseColor.rgb * toonColor.rgb * sphColor.rgb + specColor.rgb + spaColor.rgb + ambientColor.rgb)), baseColor.a);
@@ -74,12 +63,10 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z);
 	float shadowWeight = 1.0f - 0.3f * step(shadowZ + 0.0005f, posFromLight.z);
 
-	float edge = abs(dot(eyeRay, input.normal.xyz)) < edgeWidth ? 1 - edgePower : 1;
-	float lim = saturate(1 - dot(-eyeRay, input.normal.xyz));
-	lim = pow(lim, limColor.a);
-
+	float4 noiseColor = noiseTex.Sample(smp, input.uv);
+	float noiseValue = dot(noiseColor.rgb, float3(0.33f, 0.34f, 0.33));
 	float alpha = ret.a * step(noiseThreshold, noiseValue);
-	ret = float4(saturate(ret.rgb * edge + lim * limColor.rgb) * shadowWeight, alpha);
+	ret = float4(ret.rgb * shadowWeight, alpha);
 	
 	po.color = ret;
 

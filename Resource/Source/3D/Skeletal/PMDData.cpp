@@ -236,8 +236,8 @@ void PMDData::LoadVertex(FILE * fp)
 
 	for (int idx = 0; idx < vertNum; idx++)
 	{
-		vertexData_[idx].pos		= XMFloat4FromXMFloat3(t_VertexVec[idx].pos, 1.0f);
-		vertexData_[idx].normal		= XMFloat4FromXMFloat3(t_VertexVec[idx].normal_vec, 0.0f);
+		vertexData_[idx].pos		= t_VertexVec[idx].pos;
+		vertexData_[idx].normal		= t_VertexVec[idx].normal_vec;
 		vertexData_[idx].uv			= t_VertexVec[idx].uv;
 		vertexData_[idx].boneIdx.x	= t_VertexVec[idx].bone_num[0];
 		vertexData_[idx].boneIdx.y	= t_VertexVec[idx].bone_num[1];

@@ -107,7 +107,7 @@ bool SkeletalMesh::Init(std::wstring modelPath)
 	}
 
 	// 座標変換用とボーンのバッファやビューの作成
-	if (!CreateHeapAndBuffers())
+	if (!CreateBoneBuffer())
 	{
 		assert(false);
 	}
@@ -251,7 +251,7 @@ void SkeletalMesh::Update()
 	// 座標更新
 	owner->SetTransform(trans);
 
-	//noiseThresholdTL_->Update();
+	noiseThresholdTL_->Update();
 	auto value = noiseThresholdTL_->GetValue();
 	modelMaterial_->SetConstFloat(
 		modelData_.GetMaterialData().size(), value);
@@ -269,7 +269,7 @@ void SkeletalMesh::ComputeUpdate()
 	GetOwner().lock()->SetTransformHeap(3, true);
 
 	//コンピュートシェーダーの実行(今回は256個のスレッドグループを指定)
-	auto x = Uint32(ceil(modelData_.GetVertexData().size() / 32.0f));
+	auto x = Uint32(ceil(modelData_.GetVertexData().size() / 64.0f));
 	cmd.Dispatch(x, 1, 1);
 }
 
@@ -310,19 +310,16 @@ void SkeletalMesh::StartAnimation()
 // 頂点バッファの作成
 bool SkeletalMesh::CreateVertexBuffer()
 {
-	auto vertices = modelData_.GetVertexData();
+	auto& dev = dx12_.GetDevice();
+	auto& vertices = modelData_.GetVertexData();
 
-	D3D12_HEAP_PROPERTIES prop{};
-	prop.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-	prop.CreationNodeMask = 1;
-	prop.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
-	prop.Type = D3D12_HEAP_TYPE_CUSTOM;
-	prop.VisibleNodeMask = 1;
+	D3D12_HEAP_PROPERTIES prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
+	auto resWidth = AlignmentValue(
+		sizeof(vertices[0]) * vertices.size(), 
+		D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(vertices[0]) * vertices.size());
 	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-
-	auto& dev = dx12_.GetDevice();
 
 	vertexBufferUA_.resource.state = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 	if (FAILED(dev.CreateCommittedResource(
@@ -336,22 +333,12 @@ bool SkeletalMesh::CreateVertexBuffer()
 		return false;
 	}
 
-	// 頂点バッファビューの設定
-	// 頂点バッファのGPUにおけるアドレスを記録
-	vbView_.BufferLocation = vertexBufferUA_.resource.buffer->GetGPUVirtualAddress();
-
-	// データ全体のサイズ指定
-	vbView_.SizeInBytes = static_cast<UINT>(sizeof(vertices[0]) * vertices.size());
-
-	// 1頂点当たりのバイト数指定	(全体のバイト数 / 頂点数)
-	vbView_.StrideInBytes = static_cast<UINT>(vbView_.SizeInBytes / vertices.size());
-
 	// 頂点UAV作成
 	D3D12_UNORDERED_ACCESS_VIEW_DESC desc{};
 	desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
 	desc.Format = DXGI_FORMAT_UNKNOWN;
 	desc.Buffer.NumElements = vertices.size();
-	desc.Buffer.StructureByteStride = vbView_.StrideInBytes;
+	desc.Buffer.StructureByteStride = static_cast<UINT>(sizeof(vertices[0]));
 
 	auto stride = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	auto cHandle = heap_->GetCPUDescriptorHandleForHeapStart();
@@ -367,9 +354,19 @@ bool SkeletalMesh::CreateVertexBuffer()
 	gHandle.ptr += stride;
 	vertexBufferSB_.cpuH = cHandle;
 	vertexBufferSB_.gpuH = gHandle;
-	SkeletalMeshData::Vertex* mappedVert = nullptr;
+	SkeletalMeshVertex* mappedVert = nullptr;
 	CreateStructuredBuffer(&dev, vertexBufferSB_.resource.buffer, vertexBufferSB_.cpuH,
 		vertices, mappedVert, true);
+
+	// 頂点バッファビューの設定
+	// 頂点バッファのGPUにおけるアドレスを記録
+	vbView_.BufferLocation = vertexBufferUA_.resource.buffer->GetGPUVirtualAddress();
+
+	// 1頂点当たりのバイト数指定	(全体のバイト数 / 頂点数)
+	vbView_.StrideInBytes = static_cast<UINT>(sizeof(vertices[0]));
+
+	// データ全体のサイズ指定
+	vbView_.SizeInBytes = static_cast<UINT>(vbView_.StrideInBytes * vertices.size());
 
 	return true;
 }
@@ -504,7 +501,7 @@ void SkeletalMesh::RotateBone(std::wstring boneName, DirectX::XMVECTOR location,
 	boneMats_[bone.boneIdx] *= mat;
 }
 
-bool SkeletalMesh::CreateHeapAndBuffers()
+bool SkeletalMesh::CreateBoneBuffer()
 {
 	auto& dev = dx12_.GetDevice();
 	// ボーンの定数バッファの作成

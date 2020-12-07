@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <DirectXMath.h>
+#include "SkeletalMeshVertex.h"
 
 class SkeletalMeshData
 {
@@ -25,16 +26,6 @@ public :
 		std::wstring toonPath;	// toonテクスチャパス
 	};
 
-
-	struct Vertex
-	{
-		DirectX::XMFLOAT4 pos;
-		DirectX::XMFLOAT4 normal;
-		DirectX::XMFLOAT2 uv;
-		DirectX::XMINT4 boneIdx;
-		DirectX::XMFLOAT4 weight;
-	};
-
 	struct Bone
 	{
 		std::wstring name;
@@ -47,7 +38,7 @@ public :
 	~SkeletalMeshData();
 
 	// 頂点情報の取得
-	const std::vector<Vertex>& GetVertexData();
+	const std::vector<SkeletalMeshVertex>& GetVertexData();
 	// インデックス情報の取得
 	const std::vector<uint32_t>& GetIndexData();
 	// テクスチャパス情報の取得
@@ -59,7 +50,7 @@ public :
 
 protected:
 
-	std::vector<Vertex> vertexData_;	// 頂点データ
+	std::vector<SkeletalMeshVertex> vertexData_;	// 頂点データ
 	std::vector<uint32_t> indexData_;	// 頂点インデックスデータ
 	std::vector<MultiTexturePath> texPaths_;		//テクスチャのパス(相対)
 	std::vector<Material> materials_;		// マテリアルデータ

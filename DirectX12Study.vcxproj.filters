@@ -213,6 +213,12 @@
     <ClInclude Include="Resource\Source\3D\Static\StaticMesh.h">
       <Filter>ヘッダー ファイル\3D\Static</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshVertex.h">
+      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Utility\ComvertCplusHLSL.h">
+      <Filter>ヘッダー ファイル\Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
