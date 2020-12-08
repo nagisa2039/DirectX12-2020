@@ -637,7 +637,8 @@ bool Resource::Barrier(Command& cmd, const D3D12_RESOURCE_STATES changeState)
 {
 	if (state == changeState) return false;
 
-	cmd.CommandList().ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(buffer.Get(), state, changeState));
+	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(buffer.Get(), state, changeState);
+	cmd.CommandList().ResourceBarrier(1, &barrier);
 	state = changeState;
 	return true;
 }

@@ -376,10 +376,12 @@ bool SkeletalMesh::CreateIndexBuffer()
 	auto indices = modelData_.GetIndexData();
 
 	auto bufferSize = sizeof(indices[0]) * indices.size();
+	auto heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	auto desc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
 	if (FAILED(dx12_.GetDevice().CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		&heapProp,
 		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+		&desc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(indexBuffer_.ReleaseAndGetAddressOf()))))
