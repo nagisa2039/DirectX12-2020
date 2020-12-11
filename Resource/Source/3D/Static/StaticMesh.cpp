@@ -13,7 +13,7 @@ using namespace std;
 void StaticMesh::CreateVertexBufferAndView(std::vector<PrimVertex> vertices)
 {
 	auto& dev = dx12_.GetDevice();
-	CreateUploadBuffer(&dev, vbuffer_, sizeof(vertices[0]) * vertices.size(), true);
+	CreateBuffer(&dev, vbuffer_, D3D12_HEAP_TYPE_UPLOAD, sizeof(vertices[0]) * vertices.size());
 
 	PrimVertex* verMap = nullptr;
 	H_ASSERT(vbuffer_->Map(0, nullptr, (void**)&verMap));
@@ -29,7 +29,7 @@ void StaticMesh::CreateVertexBufferAndView(std::vector<PrimVertex> vertices)
 void StaticMesh::CreateIndexBufferAndView(std::vector<uint16_t> indices)
 {
 	auto& dev = dx12_.GetDevice();
-	CreateUploadBuffer(&dev, ibuffer_, sizeof(indices[0]) * indices.size(), true);
+	CreateBuffer(&dev, ibuffer_, D3D12_HEAP_TYPE_UPLOAD, sizeof(indices[0]) * indices.size());
 	uint16_t* indMap = nullptr;
 	H_ASSERT(ibuffer_->Map(0, nullptr, (void**)&indMap));
 	copy(indices.begin(), indices.end(), indMap);

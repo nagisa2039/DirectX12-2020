@@ -152,7 +152,7 @@ void SpriteDrawer::CreateVertextBuffer()
 	};
 
 	auto size = sizeof(vertices);
-	CreateUploadResource(&dx12_.GetDevice(), vertResource_, size);
+	CreateBuffer(&dx12_.GetDevice(), vertResource_.buffer, D3D12_HEAP_TYPE_UPLOAD, size);
 
 	Vertex_t* vertMap = nullptr;
 	MapAndCopy(vertMap, vertResource_, begin(vertices), end(vertices));
@@ -167,7 +167,7 @@ void SpriteDrawer::CreateIndexBuffer()
 {
 	std::vector<uint16_t> indices = { 0, 2, 1, 1, 2, 3 };
 	auto size = Uint64(sizeof(indices[0]) * indices.size());
-	CreateUploadResource(&dx12_.GetDevice(), indexResource_, size);
+	CreateBuffer(&dx12_.GetDevice(), indexResource_.buffer, D3D12_HEAP_TYPE_UPLOAD, size);
 
 	uint16_t* indexMap = nullptr;
 	MapAndCopy(indexMap, indexResource_, indices.begin(), indices.end());

@@ -52,7 +52,8 @@ void Material::SetConstFloat(const size_t index, const float& value)
 
 void Material::CreateEachDataBuffer()
 {
-	auto& dev = Application::Instance().GetDx12().GetDevice();
+	auto& dx12 = Application::Instance().GetDx12();
+	auto& dev = dx12.GetDevice();
 
 	CreateDescriptorHeap(&dev, heap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 3);
 
@@ -61,19 +62,19 @@ void Material::CreateEachDataBuffer()
 	auto stride = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	auto CreateSB = 
-		[&dev = dev, &GHandle = GPUHandle, &CHandle = CPUHandle, &stride = stride](auto& matResource)
+		[&](auto& matResource)
 	{
 		if (matResource.elements.size() <= 0)
 		{
 			matResource.elements.resize(1);
 		}
-		CreateStructuredBuffer(&dev, matResource.resource.buffer, CHandle,
+		CreateStructuredBuffer(&dev, dx12.GetCommand(), matResource.resource.buffer, CPUHandle,
 			matResource.elements, matResource.mapped, false);
 
-		matResource.handle = GHandle;
+		matResource.handle = GPUHandle;
 
-		GHandle.ptr += stride;
-		CHandle.ptr += stride;
+		GPUHandle.ptr += stride;
+		CPUHandle.ptr += stride;
 	};
 	
 	CreateSB(materialBaseResource_);

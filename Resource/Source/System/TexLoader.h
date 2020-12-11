@@ -110,6 +110,6 @@ private:
 	// 深度ステンシルビューの作成
 	bool CreateDSVAndSRV();
 
-	void CreateSRV(TextureResorce& texRes);
+	void CreateView(TextureResorce& texRes);
 	bool CreateSwapChainBuffer(IDXGISwapChain4& swapChain);
 };

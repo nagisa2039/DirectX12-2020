@@ -354,8 +354,9 @@ bool SkeletalMesh::CreateVertexBuffer()
 	gHandle.ptr += stride;
 	vertexBufferSB_.cpuH = cHandle;
 	vertexBufferSB_.gpuH = gHandle;
+
 	SkeletalMeshVertex* mappedVert = nullptr;
-	CreateStructuredBuffer(&dev, vertexBufferSB_.resource.buffer, vertexBufferSB_.cpuH,
+	CreateStructuredBuffer(&dev, dx12_.GetCommand(), vertexBufferSB_.resource.buffer, vertexBufferSB_.cpuH,
 		vertices, mappedVert, true);
 
 	// 頂点バッファビューの設定
@@ -507,7 +508,7 @@ bool SkeletalMesh::CreateBoneBuffer()
 {
 	auto& dev = dx12_.GetDevice();
 	// ボーンの定数バッファの作成
-	CreateUploadBuffer(&dev, boneCB_.resource.buffer, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
+	CreateBuffer(&dev, boneCB_.resource.buffer, D3D12_HEAP_TYPE_UPLOAD, static_cast<UINT>(sizeof(boneMats_[0]) * boneMats_.size()));
 	boneCB_.resource.buffer->Map(0, nullptr, (void**)&mappedBones_);
 
 	// 定数バッファビューの作成

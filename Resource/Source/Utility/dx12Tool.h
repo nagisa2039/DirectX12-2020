@@ -5,6 +5,7 @@
 #include <d3dcompiler.h>
 #include "Tool.h"
 #include "Utility/DirectXStruct.h"
+#include "System/Command.h"
 #include <algorithm>
 
 
@@ -25,33 +26,37 @@ namespace
 	}
 
 	/// <summary>
-	/// upload用バッファの作成
+	/// バッファにバリアを行う
+	/// </summary>
+	/// <param name="cmdList">コマンドリスト</param>
+	/// <param name="buff">対象のバッファ</param>
+	/// <param name="before">今までの状態</param>
+	/// <param name="after">遷移する状態</param>
+	void ResourceBarrier(ID3D12GraphicsCommandList* cmdList, Microsoft::WRL::ComPtr<ID3D12Resource>& buff,
+		const D3D12_RESOURCE_STATES before, const D3D12_RESOURCE_STATES after)
+	{
+		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(buff.Get(), before, after);
+		cmdList->ResourceBarrier(1, &barrier);
+	}
+
+	/// <summary>
+	/// バッファの作成
 	/// </summary>
 	/// <param name="dev">I3D12Deviceのポインタ</param>
 	/// <param name="pBuffer">格納するバッファ</param>
+	/// <param name="heapType">ヒープの種類を指定</param>
 	/// <param name="resourceSize">リソースのサイズ</param>
 	/// <param name="ajustAligment">resourceSizeのアライメントを揃えるか</param>
-	void CreateUploadBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, const UINT64& resourceSize, const bool ajustAligment = true)
+	void CreateBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, 
+		const D3D12_HEAP_TYPE heapType, const UINT64& resourceSize, 
+		const D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_GENERIC_READ, const bool ajustAligment = true)
 	{
-		auto heapPro = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+		auto heapPro = CD3DX12_HEAP_PROPERTIES(heapType);
 		auto resWidth = ajustAligment ? AlignmentValue(resourceSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT) : resourceSize;
 		D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(resWidth);
 
 		H_ASSERT(dev->CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &resDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(pBuffer.ReleaseAndGetAddressOf())));
-	}
-
-	/// <summary>
-	/// upload用バッファの作成
-	/// </summary>
-	/// <param name="dev">I3D12Deviceのポインタ</param>
-	/// <param name="resource">格納するリソース</param>
-	/// <param name="resourceSize">リソースのサイズ</param>
-	/// <param name="ajustAligment">resourceSizeのアライメントを揃えるか</param>
-	void CreateUploadResource(ID3D12Device* dev, Resource& resource, const UINT64& resourceSize, const bool ajustAligment = true)
-	{
-		resource.state = D3D12_RESOURCE_STATE_GENERIC_READ;
-		CreateUploadBuffer(dev, resource.buffer, resourceSize, ajustAligment);
+			state, nullptr, IID_PPV_ARGS(pBuffer.ReleaseAndGetAddressOf())));
 	}
 
 	/// <summary>
@@ -155,7 +160,7 @@ namespace
 	{
 		assert(elementSize > 0 && elementNum > 0);
 
-		CreateUploadBuffer(dev, buff, static_cast<uint64_t>(elementSize) * elementNum);
+		CreateBuffer(dev, buff, D3D12_HEAP_TYPE_UPLOAD, static_cast<uint64_t>(elementSize) * elementNum);
 		H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
 		// デスクリプタヒープの作成
 		CreateDescriptorHeap(dev, heap);
@@ -174,50 +179,35 @@ namespace
 	/// <param name="heap">格納するヒープ</param>
 	/// <param name="elements">送る構造体配列</param>
 	template<class T>
-	void CreateStructuredBufferAndHeap(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const std::vector<T>& elements, T* mapped, const bool unmap)
-	{
-		mapped = nullptr;
-		const UINT elementNum = Uint32(elements.size());
-		assert(elementNum > 0);
-		const UINT elementSize = sizeof(elements[0]);
-		CreateUploadBuffer(dev, buff, Uint64(elementSize) * elementNum, false);
-		H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
-		std::copy(elements.begin(), elements.end(), mapped);
-		if (unmap)
-		{
-			buff->Unmap(0, nullptr);
-		}
-		// デスクリプタヒープの作成
-		CreateDescriptorHeap(dev, heap);
-
-		// 定数バッファビューの作成
-		auto handle = heap->GetCPUDescriptorHandleForHeapStart();
-		CreateShaderResourceBufferView(dev, buff, handle, elementSize, elementNum);
-	}
-
-	/// <summary>
-	/// StructuredBufferの作成
-	/// </summary>
-	/// <typeparam name="T">Structの型</typeparam>
-	/// <param name="dev">I3D12Deviceのポインタ</param>
-	/// <param name="buff">格納するバッファ</param>
-	/// <param name="heap">格納するヒープ</param>
-	/// <param name="elements">送る構造体配列</param>
-	template<class T>
-	void CreateStructuredBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
+	void CreateStructuredBuffer(ID3D12Device* dev, Command& cmd, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
 		D3D12_CPU_DESCRIPTOR_HANDLE& handle, const std::vector<T>& elements, T*& mapped, const bool unmap)
 	{
-		mapped = nullptr;
 		const UINT elementNum = Uint32(elements.size());
 		assert(elementNum > 0);
-		const UINT elementSize = sizeof(elements[0]);
-		CreateUploadBuffer(dev, buff, Uint64(elementSize) * elementNum, false);
-		H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
-		std::copy(elements.begin(), elements.end(), mapped);
+		const UINT elementSize = sizeof(T);
+		auto elementBytes = Uint64(elementSize) * elementNum;
+		mapped = nullptr;
+
 		if (unmap)
 		{
-			buff->Unmap(0, nullptr);
+			Microsoft::WRL::ComPtr<ID3D12Resource> source;
+			T* sourceMap = nullptr;
+			auto& cmdList = cmd.CommandList();
+			CreateBuffer(dev, source, D3D12_HEAP_TYPE_UPLOAD,  elementBytes, D3D12_RESOURCE_STATE_GENERIC_READ, false);
+			H_ASSERT(source->Map(0, nullptr, (void**)&sourceMap));
+			std::copy(elements.begin(), elements.end(), sourceMap);
+			source->Unmap(0, nullptr);
+
+			CreateBuffer(dev, buff, D3D12_HEAP_TYPE_DEFAULT, elementBytes, D3D12_RESOURCE_STATE_COPY_DEST,	 false);
+			cmdList.CopyBufferRegion(buff.Get(), 0, source.Get(), 0, elementBytes);
+			ResourceBarrier(&cmdList, buff, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+			cmd.Execute();
+		}
+		else
+		{
+			CreateBuffer(dev, buff, D3D12_HEAP_TYPE_UPLOAD, elementBytes, D3D12_RESOURCE_STATE_GENERIC_READ,false);
+			H_ASSERT(buff->Map(0, nullptr, (void**)&mapped));
+			std::copy(elements.begin(), elements.end(), mapped);
 		}
 
 		// 定数バッファビューの作成

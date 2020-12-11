@@ -63,7 +63,7 @@ DirectX::XMFLOAT3 Camera::GetTargetVec() const
 
 bool Camera::CreateCameraConstantBufferAndView()
 {
-	CreateUploadBuffer(&dev_, cameraCB_, sizeof(*mappedScene_));
+	CreateBuffer(&dev_, cameraCB_, D3D12_HEAP_TYPE_UPLOAD, sizeof(*mappedScene_));
 	cameraCB_->Map(0, nullptr, (void**)&mappedScene_);
 	mappedScene_->lightVec = XMFLOAT3(1.0f, -1.0f, 1.0f);
 

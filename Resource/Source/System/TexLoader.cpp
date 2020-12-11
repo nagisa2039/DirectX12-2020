@@ -154,7 +154,7 @@ int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, co
 	texRes.imageInf.width = width;
 	texRes.imageInf.height = height;
 
-	CreateSRV(texRes);
+	CreateView(texRes);
 
 	texResources_.emplace_back(texRes);
 	handle = Int32(texResources_.size() - 1);
@@ -341,10 +341,6 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 
 	D3D12_HEAP_PROPERTIES heapProp = {};
 	heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
-	heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	heapProp.CreationNodeMask = 0;
-	heapProp.VisibleNodeMask = 0;
 
 	D3D12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(imgRowPitch * img->height);
 
@@ -415,7 +411,7 @@ int TexLoader::LoadGraph(const std::wstring& path)
 	}
 
 	// Resource‚ð‚à‚ÆSRV‚ð‚Éì¬
-	CreateSRV(texRes);
+	CreateView(texRes);
 
 	texResources_.emplace_back(texRes);
 	resourceHandleTable_[path] = Int32(texResources_.size() - 1);
@@ -423,7 +419,7 @@ int TexLoader::LoadGraph(const std::wstring& path)
 	return resourceHandleTable_[path];
 }
 
-void TexLoader::CreateSRV(TextureResorce& texRes)
+void TexLoader::CreateView(TextureResorce& texRes)
 {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -436,7 +432,6 @@ void TexLoader::CreateSRV(TextureResorce& texRes)
 	cpuHandle.ptr += texResources_.size() * incSize;
 	dev_.CreateShaderResourceView(texRes.resource.buffer.Get(), &srvDesc, cpuHandle);
 
-	texRes.cpuHandleForTex = cpuHandle;
 	texRes.gpuHandleForTex = texHeap_->GetGPUDescriptorHandleForHeapStart();
 	texRes.gpuHandleForTex.ptr += texResources_.size() * incSize;
 
@@ -449,8 +444,6 @@ void TexLoader::CreateSRV(TextureResorce& texRes)
 	cpuHandle.ptr += texResources_.size() * incSize;
 	dev_.CreateRenderTargetView(texRes.resource.buffer.Get(), &rtvDesc, cpuHandle);
 	texRes.cpuHandleForRtv = cpuHandle;
-	texRes.gpuHandleForRtv = rtvHeap_->GetGPUDescriptorHandleForHeapStart();
-	texRes.gpuHandleForRtv.ptr += texResources_.size() * incSize;
 }
 
 bool TexLoader::CreateSwapChainBuffer(IDXGISwapChain4& swapChain)
@@ -465,7 +458,7 @@ bool TexLoader::CreateSwapChainBuffer(IDXGISwapChain4& swapChain)
 		texRes.resource.state	= D3D12_RESOURCE_STATE_PRESENT;
 		texRes.imageInf.width	= swDesc.Width;
 		texRes.imageInf.height	= swDesc.Height;
-		CreateSRV(texRes);
+		CreateView(texRes);
 		texResources_.emplace_back(texRes);
 	}
 
@@ -637,8 +630,7 @@ bool Resource::Barrier(Command& cmd, const D3D12_RESOURCE_STATES changeState)
 {
 	if (state == changeState) return false;
 
-	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(buffer.Get(), state, changeState);
-	cmd.CommandList().ResourceBarrier(1, &barrier);
+	ResourceBarrier(&cmd.CommandList(), buffer, state, changeState);
 	state = changeState;
 	return true;
 }
@@ -719,7 +711,6 @@ bool TexLoader::CreateDSVAndSRV()
 		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 		auto DSV_CPUhandle = depthDSVHeap_->GetCPUDescriptorHandleForHeapStart();
-		auto DSV_GPUhandle = depthDSVHeap_->GetGPUDescriptorHandleForHeapStart();
 		const auto stride = dev_.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 		for (auto& depthTexRes : depthTexResources_)
@@ -729,9 +720,7 @@ bool TexLoader::CreateDSVAndSRV()
 				&dsvDesc,
 				DSV_CPUhandle);
 			depthTexRes.cpuHandleForRtv = DSV_CPUhandle;
-			depthTexRes.gpuHandleForRtv = DSV_GPUhandle;
 			DSV_CPUhandle.ptr += stride;
-			DSV_GPUhandle.ptr += stride;
 		}
 	}
 
@@ -766,7 +755,6 @@ bool TexLoader::CreateDSVAndSRV()
 				depthTexRes.resource.buffer.Get(),
 				&srvDesc,
 				SRV_CPUhandle);
-			depthTexRes.cpuHandleForTex = SRV_CPUhandle;
 			depthTexRes.gpuHandleForTex = SRV_GPUhandle;
 			SRV_CPUhandle.ptr += stride;
 			SRV_GPUhandle.ptr += stride;

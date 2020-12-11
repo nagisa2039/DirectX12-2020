@@ -10,7 +10,7 @@ Actor::Actor()
 {
 	// 座標の定数バッファの作成
 	auto& dev = Application::Instance().GetDx12().GetDevice();
-	CreateUploadBuffer(&dev, transCB_, sizeof(*mappedTrans_));
+	CreateBuffer(&dev, transCB_, D3D12_HEAP_TYPE_UPLOAD, sizeof(*mappedTrans_));
 	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
 
 	// 座標のヒープ作成
