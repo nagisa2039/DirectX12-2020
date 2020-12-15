@@ -251,7 +251,7 @@ void SkeletalMesh::Update()
 	// À•WXV
 	owner->SetTransform(trans);
 
-	noiseThresholdTL_->Update();
+	//noiseThresholdTL_->Update();
 	auto value = noiseThresholdTL_->GetValue();
 	modelMaterial_->SetConstFloat(
 		modelData_.GetMaterialData().size(), value);

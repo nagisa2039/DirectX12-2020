@@ -109,6 +109,7 @@ void PlayScene::Draw()
 
 	// mosaic画像生成
 	spriteDrawer.SetDrawScreen(mosaicH_);
+	texLoader.ClsDrawScreen();
 	spriteDrawer.SetMaterial(mosaicMat_);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
@@ -116,11 +117,10 @@ void PlayScene::Draw()
 	texLoader.ClsDrawScreen();
 	spriteDrawer.SetDrawBright(255, 255, 255);
 
-	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	// レイマーチング
-	/*spriteDrawer.SetMaterial(raymarchingMat_);
-	spriteDrawer.DrawGraph(0, 0, d3dH_);*/
+	spriteDrawer.SetMaterial(raymarchingMat_);
+	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	// 3D描画
 
@@ -130,6 +130,7 @@ void PlayScene::Draw()
 		300, 300, 300 + 300 * aspect, 300 + 300, mosaicH_);*/
 
 	//spriteDrawer.DrawGraph(0, 0, mosaicH_);
+	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	XMINT2 size = XMINT2(Int32(100 * aspect), 100);
@@ -141,7 +142,9 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	//player_->Draw();
 
+
 	spriteDrawer.End();
+	//dx12.DrawEfk();
 
 	dx12.ScreenFlip();
 }

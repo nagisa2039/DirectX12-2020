@@ -12,6 +12,9 @@
 #include "Utility/TextureStruct.h"
 #include "System/FileSystem.h"
 
+#include <Effekseer.h>
+#include <EffekseerRendererDX12.h>
+
 using Microsoft::WRL::ComPtr;
 
 class Command;
@@ -82,6 +85,8 @@ public:
 	/// </summary>
 	void ScreenFlip();
 
+	void DrawEfk();
+
 	/// <summary>
 	/// ‘S‰æ–Ê‚ÉViewport‚ÆScissor‚ğİ’è‚·‚é
 	/// </summary>
@@ -108,6 +113,14 @@ private:
 	std::shared_ptr<RendererManager> rendererManager_;
 	std::shared_ptr<FileSystem> fileSystem_;
 
+	EffekseerRenderer::Renderer* efkRenderer_;
+	Effekseer::Manager* efkManager_;
+	EffekseerRenderer::SingleFrameMemoryPool* efkMemoryPool_;
+	EffekseerRenderer::CommandList* efkCmdList_;
+	Effekseer::Effect* effect_;
+
 	void CreateSwapChain();
+
+	void InitEfk();
 };
 

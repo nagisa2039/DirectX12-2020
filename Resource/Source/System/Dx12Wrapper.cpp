@@ -10,12 +10,25 @@
 #include "3D/Camera.h"
 #include "System/FileSystem.h"
 #include "3D/RendererManager.h"
+#include "Utility/Input.h"
+
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"DirectXTex.lib")
 #pragma comment(lib,"DirectXTK12.lib")
 #pragma comment(lib,"d3dcompiler.lib")
+
+
+#ifdef _DEBUG
+#pragma comment(lib,"Effekseerd.lib")
+#pragma comment(lib,"EffekseerRendererDX12d.lib")
+#pragma comment(lib,"LLGId.lib")
+#else
+#pragma comment(lib,"Effekseer.lib")
+#pragma comment(lib,"EffekseerRendererDX12.lib")
+#pragma comment(lib,"LLGI.lib")
+#endif
 
 using namespace DirectX;
 using namespace std;
@@ -59,7 +72,42 @@ bool Dx12Wrapper::Init()
 	rendererManager_ = std::make_shared<RendererManager>(*this);
 	fileSystem_ = std::make_shared<FileSystem>();
 
+	//InitEfk();
+
 	return true;
+}
+
+void Dx12Wrapper::InitEfk()
+{
+	auto format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	efkRenderer_ = EffekseerRendererDX12::Create(dev_.Get(), &cmd_->CommandQueue(), 2, &format, 1, DXGI_FORMAT_D32_FLOAT, false, 2000);
+	efkManager_ = Effekseer::Manager::Create(2000);
+	// 描画用インスタンスから描画機能を設定
+	efkManager_->SetSpriteRenderer(efkRenderer_->CreateSpriteRenderer());
+	efkManager_->SetRibbonRenderer(efkRenderer_->CreateRibbonRenderer());
+	efkManager_->SetRingRenderer(efkRenderer_->CreateRingRenderer());
+	efkManager_->SetTrackRenderer(efkRenderer_->CreateTrackRenderer());
+	efkManager_->SetModelRenderer(efkRenderer_->CreateModelRenderer());
+	// 描画用インスタンスからテクスチャの読込機能を設定
+	// 独自拡張可能、現在はファイルから読み込んでいる。
+	efkManager_->SetTextureLoader(efkRenderer_->CreateTextureLoader());
+	efkManager_->SetModelLoader(efkRenderer_->CreateModelLoader());
+	//メモリプール
+	efkMemoryPool_ = EffekseerRendererDX12::CreateSingleFrameMemoryPool(efkRenderer_);
+	//コマンドリスト作成
+	efkCmdList_ = EffekseerRendererDX12::CreateCommandList(efkRenderer_, efkMemoryPool_);
+	//コマンドリストセット
+	efkRenderer_->SetCommandList(efkCmdList_);
+	// 投影行列を設定
+	efkRenderer_->SetProjectionMatrix(
+		::Effekseer::Matrix44().PerspectiveFovLH(90.0f / 180.0f * 3.14f, 1280.f / 720.f, 1.0f,
+			100.0f));
+	// カメラ行列を設定
+	efkRenderer_->SetCameraMatrix(
+		::Effekseer::Matrix44().LookAtLH(::Effekseer::Vector3D(0.0f, 0.0f, -
+			10.0f), ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
+	// エフェクトの読込
+	effect_ = Effekseer::Effect::Create(efkManager_, (const EFK_CHAR*)L"Resource/Laser01.efk");
 }
 
 ID3D12Device& Dx12Wrapper::GetDevice()
@@ -90,6 +138,20 @@ int Dx12Wrapper::GetBackScreenHandle()
 void Dx12Wrapper::ScreenFlip()
 {
 	texLoader_->ScreenFlip(*swapChain_.Get());
+}
+
+void Dx12Wrapper::DrawEfk()
+{
+	if (Application::Instance().GetInput().GetButtonDown(DIK_SPACE))
+	{
+		auto efkHandle = efkManager_->Play(effect_, Effekseer::Vector3D(0, 0, 0));
+	}
+	efkMemoryPool_->NewFrame();
+	EffekseerRendererDX12::BeginCommandList(efkCmdList_, &cmd_->CommandList());
+	efkRenderer_->BeginRendering();
+	efkManager_->Draw();
+	efkRenderer_->EndRendering();
+    EffekseerRendererDX12::EndCommandList(efkCmdList_);
 }
 
 void Dx12Wrapper::CreateSwapChain()
