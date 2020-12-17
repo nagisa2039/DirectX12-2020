@@ -96,6 +96,8 @@ void RendererManager::Draw()
 		meshRenderer.renderer->Draw(meshRenderer.meshs_);
 	}
 
+	dx12_.DrawEfk();
+
 	// 縮小バッファへの描画
 	auto& spriteDrawer = dx12_.GetSpriteDrawer();
 	spriteDrawer.SetDrawScreen(shrinkScreenH_);
@@ -139,6 +141,11 @@ void RendererManager::RemoveMesh(Mesh* mesh)
 
 	auto& vec = meshRenderers_[meshTypeIndex].meshs_;
 	std::erase_if(vec, [mesh](Mesh* m) {return m == mesh; });
+}
+
+CameraObject& RendererManager::GetCameraObject()
+{
+	return *camera_;
 }
 
 void RendererManager::CreateRenderTargetHeap()

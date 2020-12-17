@@ -113,11 +113,12 @@ private:
 	std::shared_ptr<RendererManager> rendererManager_;
 	std::shared_ptr<FileSystem> fileSystem_;
 
-	EffekseerRenderer::Renderer* efkRenderer_;
-	Effekseer::Manager* efkManager_;
-	EffekseerRenderer::SingleFrameMemoryPool* efkMemoryPool_;
-	EffekseerRenderer::CommandList* efkCmdList_;
-	Effekseer::Effect* effect_;
+	EffekseerRenderer::Renderer* efkRenderer_ = nullptr;
+	Effekseer::Manager* efkManager_ = nullptr;
+	EffekseerRenderer::SingleFrameMemoryPool* efkMemoryPool_ = nullptr;
+	EffekseerRenderer::CommandList* efkCmdList_ = nullptr;
+	Effekseer::Effect* effect_ = nullptr;
+	Effekseer::Handle efkHandle_ = {};
 
 	void CreateSwapChain();
 

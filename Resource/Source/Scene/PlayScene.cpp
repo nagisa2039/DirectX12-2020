@@ -117,22 +117,15 @@ void PlayScene::Draw()
 	texLoader.ClsDrawScreen();
 	spriteDrawer.SetDrawBright(255, 255, 255);
 
-
 	// レイマーチング
 	spriteDrawer.SetMaterial(raymarchingMat_);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	// 3D描画
-
-
-	float aspect = wsize.w / static_cast<float>(wsize.h);
-	/*spriteDrawer.DrawRectExtendGraph(0, 0, 1280, 720,
-		300, 300, 300 + 300 * aspect, 300 + 300, mosaicH_);*/
-
-	//spriteDrawer.DrawGraph(0, 0, mosaicH_);
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
+	float aspect = wsize.w / static_cast<float>(wsize.h);
 	XMINT2 size = XMINT2(Int32(100 * aspect), 100);
 	spriteDrawer.DrawExtendGraph(0, 200, size.x, 200 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
 	spriteDrawer.DrawExtendGraph(0, 300, size.x, 300 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
@@ -140,8 +133,6 @@ void PlayScene::Draw()
 	spriteDrawer.DrawExtendGraph(0, 500, size.x, 500 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
 	
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
-	//player_->Draw();
-
 
 	spriteDrawer.End();
 	//dx12.DrawEfk();

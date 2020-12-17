@@ -50,6 +50,12 @@ public:
 	/// <param name="mesh"></param>
 	void RemoveMesh(Mesh* mesh);
 
+	/// <summary>
+	/// ƒJƒƒ‰‚Ìæ“¾
+	/// </summary>
+	/// <returns></returns>
+	CameraObject& GetCameraObject();
+
 private:
 	Dx12Wrapper& dx12_;
 

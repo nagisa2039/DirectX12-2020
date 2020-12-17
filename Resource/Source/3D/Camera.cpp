@@ -61,6 +61,25 @@ DirectX::XMFLOAT3 Camera::GetTargetVec() const
 	return XMFLOAT3(target_.x - pos.x, target_.y - pos.y, target_.z - pos.z);
 }
 
+DirectX::XMMATRIX Camera::GetViewMatrix() const
+{
+	// カメラの更新
+	auto eye = GetOwner().lock()->GetTransform().pos;
+	XMVECTOR eyePos = XMLoadFloat3(&eye);
+	XMVECTOR targetPos = XMLoadFloat3(&target_);
+	XMVECTOR upVec = XMLoadFloat3(&UP);
+
+	// カメラ用
+	return XMMatrixLookAtLH(eyePos, targetPos, upVec);
+}
+
+DirectX::XMMATRIX Camera::GetProjMatrix() const
+{
+	auto wsize = Application::Instance().GetWindowSize();
+	return XMMatrixPerspectiveFovLH(
+		fov_, static_cast<float>(wsize.w) / static_cast<float>(wsize.h), 0.05f, 1000.0f);
+}
+
 bool Camera::CreateCameraConstantBufferAndView()
 {
 	CreateBuffer(&dev_, cameraCB_, D3D12_HEAP_TYPE_UPLOAD, sizeof(*mappedScene_));
@@ -77,33 +96,23 @@ bool Camera::CreateCameraConstantBufferAndView()
 
 void Camera::UpdateCamera()
 {
-	// カメラの更新
-	auto wsize = Application::Instance().GetWindowSize();
 	auto eye = GetOwner().lock()->GetTransform().pos;
 	XMVECTOR eyePos = XMLoadFloat3(&eye);
 	XMVECTOR targetPos = XMLoadFloat3(&target_);
 	XMVECTOR upVec = XMLoadFloat3(&UP);
 	XMVECTOR lightVec = XMLoadFloat3(&mappedScene_->lightVec);
-	lightVec = XMVector3Normalize(lightVec);
 
 	auto cameraArmLength = XMVector3Length(XMVectorSubtract(targetPos, eyePos)).m128_f32[0];
 	XMVECTOR lightCamPos = targetPos - lightVec * cameraArmLength;
-
-	// カメラ用
-	auto view = XMMatrixLookAtLH(eyePos, targetPos, upVec);
-	auto proj = XMMatrixPerspectiveFovLH(
-		fov_,
-		static_cast<float>(wsize.w) / static_cast<float>(wsize.h),
-		0.05f, 1000.0f);
 
 	// ライト用
 	auto lightView = XMMatrixLookAtLH(lightCamPos, targetPos, upVec);
 	auto lightProj = XMMatrixOrthographicLH(80, 80, 0.05f, 1000.0f);
 
-	mappedScene_->view = view;
-	mappedScene_->proj = proj;
+	mappedScene_->view = GetViewMatrix();
+	mappedScene_->proj = GetProjMatrix();
 	mappedScene_->eye = GetOwner().lock()->GetTransform().pos;
-	mappedScene_->invProj = XMMatrixInverse(nullptr, proj);
+	mappedScene_->invProj = XMMatrixInverse(nullptr, mappedScene_->proj);
 	mappedScene_->lightCamera = lightView * lightProj;
 }
 
@@ -148,14 +157,14 @@ void CameraObject::Update()
 	cameraMove(DIK_Q, transform.pos.z, -moveSpeed);
 	SetTransform(transform);
 
-	auto targetPos = camera_->GetTargetPos();
+	/*auto targetPos = camera_->GetTargetPos();
 	cameraMove(DIK_W, targetPos.y, moveSpeed);
 	cameraMove(DIK_S, targetPos.y, -moveSpeed);
 	cameraMove(DIK_D, targetPos.x, moveSpeed);
 	cameraMove(DIK_A, targetPos.x, -moveSpeed);
 	cameraMove(DIK_E, targetPos.z, moveSpeed);
 	cameraMove(DIK_Q, targetPos.z, -moveSpeed);
-	camera_->SetTargetPos(targetPos);
+	camera_->SetTargetPos(targetPos);*/
 
 	Actor::Update();
 }

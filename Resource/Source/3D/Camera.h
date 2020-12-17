@@ -50,6 +50,9 @@ public:
 	/// </summary>
 	DirectX::XMFLOAT3 GetTargetVec()const;
 
+	DirectX::XMMATRIX GetViewMatrix()const;
+	DirectX::XMMATRIX GetProjMatrix()const;
+
 private:
 	Command& cmd_;
 	ID3D12Device& dev_;

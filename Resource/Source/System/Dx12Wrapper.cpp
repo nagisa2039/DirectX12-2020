@@ -39,6 +39,11 @@ Dx12Wrapper::Dx12Wrapper(HWND hwnd): hwnd_(hwnd)
 
 Dx12Wrapper::~Dx12Wrapper()
 {
+	efkRenderer_->Release();
+	efkManager_->Release();
+	efkMemoryPool_->Release();
+	efkCmdList_->Release();
+	effect_->Release();
 }
 
 bool Dx12Wrapper::Init()
@@ -72,7 +77,7 @@ bool Dx12Wrapper::Init()
 	rendererManager_ = std::make_shared<RendererManager>(*this);
 	fileSystem_ = std::make_shared<FileSystem>();
 
-	//InitEfk();
+	InitEfk();
 
 	return true;
 }
@@ -80,34 +85,30 @@ bool Dx12Wrapper::Init()
 void Dx12Wrapper::InitEfk()
 {
 	auto format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	efkRenderer_ = EffekseerRendererDX12::Create(dev_.Get(), &cmd_->CommandQueue(), 2, &format, 1, DXGI_FORMAT_D32_FLOAT, false, 2000);
-	efkManager_ = Effekseer::Manager::Create(2000);
+	efkRenderer_ = EffekseerRendererDX12::Create(dev_.Get(), &cmd_->CommandQueue(), 2, &format, 1, DXGI_FORMAT_UNKNOWN, false, 8000);
+	efkManager_ = Effekseer::Manager::Create(8000);
 	// 描画用インスタンスから描画機能を設定
 	efkManager_->SetSpriteRenderer(efkRenderer_->CreateSpriteRenderer());
 	efkManager_->SetRibbonRenderer(efkRenderer_->CreateRibbonRenderer());
 	efkManager_->SetRingRenderer(efkRenderer_->CreateRingRenderer());
 	efkManager_->SetTrackRenderer(efkRenderer_->CreateTrackRenderer());
 	efkManager_->SetModelRenderer(efkRenderer_->CreateModelRenderer());
-	// 描画用インスタンスからテクスチャの読込機能を設定
-	// 独自拡張可能、現在はファイルから読み込んでいる。
 	efkManager_->SetTextureLoader(efkRenderer_->CreateTextureLoader());
 	efkManager_->SetModelLoader(efkRenderer_->CreateModelLoader());
+	efkManager_->SetMaterialLoader(efkRenderer_->CreateMaterialLoader());
 	//メモリプール
 	efkMemoryPool_ = EffekseerRendererDX12::CreateSingleFrameMemoryPool(efkRenderer_);
 	//コマンドリスト作成
 	efkCmdList_ = EffekseerRendererDX12::CreateCommandList(efkRenderer_, efkMemoryPool_);
 	//コマンドリストセット
 	efkRenderer_->SetCommandList(efkCmdList_);
-	// 投影行列を設定
-	efkRenderer_->SetProjectionMatrix(
-		::Effekseer::Matrix44().PerspectiveFovLH(90.0f / 180.0f * 3.14f, 1280.f / 720.f, 1.0f,
-			100.0f));
-	// カメラ行列を設定
-	efkRenderer_->SetCameraMatrix(
-		::Effekseer::Matrix44().LookAtLH(::Effekseer::Vector3D(0.0f, 0.0f, -
-			10.0f), ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
 	// エフェクトの読込
-	effect_ = Effekseer::Effect::Create(efkManager_, (const EFK_CHAR*)L"Resource/Laser01.efk");
+	effect_ = Effekseer::Effect::Create(efkManager_, u"Resource/Effect/Laser01.efk");
+	assert(effect_ != nullptr);
+	efkHandle_ = efkManager_->Play(
+		effect_,
+		Effekseer::Vector3D(0, 10, 0));
+	efkManager_->SetRotation(efkHandle_, { 0, 1, 0 }, 180.0f * XM_PI / 180.0f);
 }
 
 ID3D12Device& Dx12Wrapper::GetDevice()
@@ -142,15 +143,51 @@ void Dx12Wrapper::ScreenFlip()
 
 void Dx12Wrapper::DrawEfk()
 {
-	if (Application::Instance().GetInput().GetButtonDown(DIK_SPACE))
-	{
-		auto efkHandle = efkManager_->Play(effect_, Effekseer::Vector3D(0, 0, 0));
-	}
 	efkMemoryPool_->NewFrame();
 	EffekseerRendererDX12::BeginCommandList(efkCmdList_, &cmd_->CommandList());
+	efkRenderer_->SetCommandList(efkCmdList_);
+	auto& camera = rendererManager_->GetCameraObject().GetCamera();
+
+	auto XMView = camera->GetViewMatrix();
+	auto XMProj = camera->GetProjMatrix();
+	Effekseer::Matrix44 view, proj;
+
+	for (int j = 0; j < 4; ++j) 
+	{
+		for (int i = 0; i < 4; ++i) 
+		{
+			view.Values[j][i] = XMView.r[j].m128_f32[i];
+			proj.Values[j][i] = XMProj.r[j].m128_f32[i];
+		}
+	}
+
+	efkManager_->Update();
+	efkManager_->SetCoordinateSystem(Effekseer::CoordinateSystem::LH);
+
+	if (Application::Instance().GetInput().GetButtonDown(DIK_SPACE))
+	{
+		if (efkManager_->Exists(efkHandle_))
+		{
+			efkManager_->StopEffect(efkHandle_);
+		}
+		else
+		{
+			efkHandle_ = efkManager_->Play(
+				effect_,
+				Effekseer::Vector3D(0, 10, 0));
+			efkManager_->SetRotation(efkHandle_, { 0, 1, 0 }, 180.0f * XM_PI / 180.0f);
+		}
+	}
+	// 投影行列を設定
+	efkRenderer_->SetProjectionMatrix(proj);
+	// カメラ行列を設定
+	efkRenderer_->SetCameraMatrix(view);
+
 	efkRenderer_->BeginRendering();
 	efkManager_->Draw();
-	efkRenderer_->EndRendering();
+	efkRenderer_->EndRendering(); 
+
+	efkRenderer_->SetCommandList(nullptr);
     EffekseerRendererDX12::EndCommandList(efkCmdList_);
 }
 
