@@ -15,7 +15,13 @@
                                              "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                              "addressU = TEXTURE_ADDRESS_CLAMP,"\
                                              "addressV = TEXTURE_ADDRESS_CLAMP,"\
-                                             "addressW = TEXTURE_ADDRESS_CLAMP)"
+                                             "addressW = TEXTURE_ADDRESS_CLAMP),"\
+                         "StaticSampler(s1 ,"\
+                                             "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
+                                             "addressU = TEXTURE_ADDRESS_CLAMP,"\
+                                             "addressV = TEXTURE_ADDRESS_CLAMP,"\
+                                             "addressW = TEXTURE_ADDRESS_CLAMP,"\
+											 "comparisonFunc = COMPARISON_LESS_EQUAL)"
 
 // 0,テクスチャ配列
 // 1,カメラ
@@ -63,3 +69,4 @@ StructuredBuffer<VertInf> vertInf : register(t0, space5);
 StructuredBuffer<PixcelInf> pixcelInf : register(t0, space6);
 
 SamplerState smp : register(s0);
+SamplerComparisonState shadowSmp : register(s1);

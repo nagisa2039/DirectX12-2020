@@ -45,6 +45,9 @@ float4 PS(Output input) : SV_TARGET
 	Texture2D shrinkTex = tex[addTexIndex[3]];
 	
 	Texture2D baseTex = tex[pixcelInf[input.instanceID].texIndex];
+	Texture2D<float> cameraDepthTex = depthTex[1];
+	float depth = pow(1.0f - cameraDepthTex.Sample(smp, input.uv),10);
+	return float4(depth, depth, depth, 1.0f);
 	
 	float4 baseColor = colorTex.Sample(smp, input.uv);
 	float3 normal = (normalTex.Sample(smp, input.uv).rgb) * 2.0f - 1.0f;
