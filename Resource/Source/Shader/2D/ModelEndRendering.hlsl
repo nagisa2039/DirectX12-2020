@@ -36,6 +36,42 @@ float3 GetShrinkColor(const Texture2D shrinkTex, const float2 uv)
 	return ret;
 }
 
+float GetLaplacianDepth(const Texture2D<float> depthTex, const float2 uv)
+{
+	float ret = 0.0f;
+	
+	uint w, h;
+	depthTex.GetDimensions(w, h);
+	float dx = 1.0f / w;
+	float dy = 1.0f / h;
+	
+	ret += depthTex.Sample(smp, uv + float2(0.0f, -dy));
+	ret += depthTex.Sample(smp, uv + float2(dx * -1.0f, 0.0f));
+	ret += depthTex.Sample(smp, uv) * -4.0f;
+	ret += depthTex.Sample(smp, uv + float2(dx * 1.0f, 0.0f));
+	ret += depthTex.Sample(smp, uv + float2(0.0f, dy));
+	
+	return ret;
+}
+
+float GetLaplacianNormal(const Texture2D<float4> normalTex, const float2 uv)
+{
+	float4 ret = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	
+	uint w, h;
+	normalTex.GetDimensions(w, h);
+	float dx = 1.0f / w;
+	float dy = 1.0f / h;
+	
+	ret += normalTex.Sample(smp, uv + float2(0.0f, -dy));
+	ret += normalTex.Sample(smp, uv + float2(dx * -1.0f, 0.0f));
+	ret += normalTex.Sample(smp, uv) * -4.0f;
+	ret += normalTex.Sample(smp, uv + float2(dx * 1.0f, 0.0f));
+	ret += normalTex.Sample(smp, uv + float2(0.0f, dy));
+	
+	return dot(ret.rgb, float3(0.33f, 0.34f, 0.33f));
+}
+
 [RootSignature(RS)]
 float4 PS(Output input) : SV_TARGET
 {
@@ -45,9 +81,6 @@ float4 PS(Output input) : SV_TARGET
 	Texture2D shrinkTex = tex[addTexIndex[3]];
 	
 	Texture2D baseTex = tex[pixcelInf[input.instanceID].texIndex];
-	Texture2D<float> cameraDepthTex = depthTex[1];
-	float depth = pow(1.0f - cameraDepthTex.Sample(smp, input.uv),10);
-	return float4(depth, depth, depth, 1.0f);
 	
 	float4 baseColor = colorTex.Sample(smp, input.uv);
 	float3 normal = (normalTex.Sample(smp, input.uv).rgb) * 2.0f - 1.0f;
@@ -59,5 +92,13 @@ float4 PS(Output input) : SV_TARGET
 	float3 shrinkColor = GetShrinkColor(shrinkTex, input.uv);
 	float3 color = saturate(baseColor.rgb + shrinkColor * utility[0].emmisionRate) /** bright*/;
 	
-	return float4(color * pixcelInf[input.instanceID].bright, baseColor.a * pixcelInf[input.instanceID].alpha);
+	float4 ret = float4(color * pixcelInf[input.instanceID].bright, baseColor.a * pixcelInf[input.instanceID].alpha);
+	
+	float outline = step(GetLaplacianDepth(depthTex[0], input.uv), 0.0001f);
+	outline *= step(GetLaplacianNormal(normalTex, input.uv), 0.2f);
+	outline = saturate(outline);
+	
+	ret.rgb *= outline;
+	
+	return ret;
 }
