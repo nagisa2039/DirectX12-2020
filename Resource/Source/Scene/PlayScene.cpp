@@ -9,12 +9,12 @@
 #include "Utility/Constant.h"
 #include "System/SoundManager.h"
 #include "Utility/Input.h"
-#include "Game/Player.h"
 #include "Material/StanderedMaterial.h"
 #include "3D/Actor.h"
 #include "3D/Skeletal/SkeletalMesh.h"
 #include "3D/Static/PlaneMesh.h"
 #include "Utility/Cast.h"
+#include "Imgui/imgui.h"
 
 using namespace std;
 using namespace DirectX;
@@ -32,7 +32,6 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto& soundManager = dx12.GetSoundManager();
 
 	//BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/野良猫は宇宙を目指した.wav", true);
-	player_ = make_unique<Player>();
 
 	raymarchingMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Raymarching.hlsl");
 	mosaicMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Mosaic.hlsl");
@@ -43,6 +42,8 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 		auto actor = make_shared<Actor>();
 		auto mesh = make_shared<PlaneMesh>(actor, dx12, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f / 536.0f) * 80.0f, 80.0f, L"image/fiona.png");
 		actor->AddComponent(mesh);
+		actor->SetName("Plane");
+
 		actors_.emplace_back(actor);
 	};
 
@@ -51,6 +52,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 		auto actor = make_shared<Actor>();
 		auto mesh = make_shared<SkeletalMesh>(actor, dx12, modelFilePath, motionFilePath);
 		actor->AddComponent(mesh);
+		actor->SetName("MMDModel");
 		actors_.emplace_back(actor);
 	};
 
@@ -88,7 +90,6 @@ void PlayScene::Update()
 		//auto& soundManager = dx12.GetSoundManager();
 		//soundManager.PlayWave(BGMH_);	}
 	}
-	player_->Update();
 
 	for (auto& actor : actors_)
 	{
@@ -117,9 +118,9 @@ void PlayScene::Draw()
 	texLoader.ClsDrawScreen();
 	spriteDrawer.SetDrawBright(255, 255, 255);
 
-	// レイマーチング
-	spriteDrawer.SetMaterial(raymarchingMat_);
-	spriteDrawer.DrawGraph(0, 0, d3dH_);
+	//// レイマーチング
+	//spriteDrawer.SetMaterial(raymarchingMat_);
+	//spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	// 3D描画
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
@@ -135,7 +136,21 @@ void PlayScene::Draw()
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	spriteDrawer.End();
-	//dx12.DrawEfk();
+
+	dx12.BeginDrawImGui();
+
+	ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+	if (ImGui::TreeNode("Models"))
+	{
+		for (int num = 0; auto & actor : actors_)
+		{
+			actor->DrawImGui(num);
+			num++;
+		}
+		ImGui::TreePop();
+	}
+
+	dx12.EndDrawImGui();
 
 	dx12.ScreenFlip();
 }

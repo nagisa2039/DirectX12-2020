@@ -40,12 +40,6 @@
     <Filter Include="ヘッダー ファイル\System">
       <UniqueIdentifier>{064731e0-11f7-4b90-b643-6ff5d0546b46}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Game">
-      <UniqueIdentifier>{b2a4ae1d-dfa1-4e90-9e33-afc095e247cc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Game">
-      <UniqueIdentifier>{da7a3a3d-c328-46a4-9304-30aa5a2f5fdc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\3D">
       <UniqueIdentifier>{dfbaf55d-0212-4152-8cc5-803164e8073a}</UniqueIdentifier>
     </Filter>
@@ -75,6 +69,12 @@
     </Filter>
     <Filter Include="ヘッダー ファイル\3D\Static">
       <UniqueIdentifier>{c28ac6e2-6dc0-4cb4-b537-4c5a3eb78db6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Imgui">
+      <UniqueIdentifier>{b31ad7b3-47ae-45bf-adf7-66534949e7c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Imgui">
+      <UniqueIdentifier>{8b0f0204-129b-49d9-8e48-396e618eb484}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -128,12 +128,6 @@
     </ClInclude>
     <ClInclude Include="Resource\Source\Utility\Input.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Game\Player.h">
-      <Filter>ヘッダー ファイル\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Game\Animator.h">
-      <Filter>ヘッダー ファイル\Game</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\System\WAVFileReader.h">
       <Filter>ヘッダー ファイル\System</Filter>
@@ -216,6 +210,36 @@
     <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshVertex.h">
       <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imconfig.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imgui.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imgui_internal.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imstb_rectpack.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imstb_textedit.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imstb_truetype.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imgui_impl_dx12.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Imgui\imgui_impl_win32.h">
+      <Filter>ヘッダー ファイル\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Utility\ImGuiTool.h">
+      <Filter>ヘッダー ファイル\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Utility\SettingData.h">
+      <Filter>ヘッダー ファイル\Utility</Filter>
+    </ClInclude>
     <ClInclude Include="Resource\Source\Utility\ComvertCplusHLSL.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
@@ -253,12 +277,6 @@
     </ClCompile>
     <ClCompile Include="Resource\Source\Utility\Input.cpp">
       <Filter>ソース ファイル\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Game\Player.cpp">
-      <Filter>ソース ファイル\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Resource\Source\Game\Animator.cpp">
-      <Filter>ソース ファイル\Game</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Source\System\WAVFileReader.cpp">
       <Filter>ソース ファイル\System</Filter>
@@ -328,6 +346,27 @@
     </ClCompile>
     <ClCompile Include="Resource\Source\3D\Renderer.cpp">
       <Filter>ソース ファイル\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Imgui\imgui.cpp">
+      <Filter>ソース ファイル\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Imgui\imgui_demo.cpp">
+      <Filter>ソース ファイル\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Imgui\imgui_draw.cpp">
+      <Filter>ソース ファイル\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Imgui\imgui_tables.cpp">
+      <Filter>ソース ファイル\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Imgui\imgui_widgets.cpp">
+      <Filter>ソース ファイル\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Imgui\imgui_impl_win32.cpp">
+      <Filter>ソース ファイル\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\Imgui\imgui_impl_dx12.cpp">
+      <Filter>ソース ファイル\Imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

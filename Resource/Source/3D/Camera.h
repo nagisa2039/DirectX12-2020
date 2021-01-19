@@ -50,8 +50,20 @@ public:
 	/// </summary>
 	DirectX::XMFLOAT3 GetTargetVec()const;
 
+	/// <summary>
+	/// Views—ñ‚Ìæ“¾
+	/// </summary>
 	DirectX::XMMATRIX GetViewMatrix()const;
+
+	/// <summary>
+	/// Projections—ñ‚Ìæ“¾
+	/// </summary>
 	DirectX::XMMATRIX GetProjMatrix()const;
+
+	/// <summary>
+	/// ImGui‚Ì•`‰æ
+	/// </summary>
+	void DrawImGui()override;
 
 private:
 	Command& cmd_;

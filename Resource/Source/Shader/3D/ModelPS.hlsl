@@ -65,10 +65,9 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 
 	float4 noiseColor = noiseTex.Sample(smp, input.uv);
 	float noiseValue = dot(noiseColor.rgb, float3(0.33f, 0.34f, 0.33));
-	float alpha = ret.a * step(noiseThreshold, noiseValue);
+    float alpha = saturate(ret.a * step(noiseThreshold, noiseValue));
 	
-	
-	ret = float4(ret.rgb * shadowWeight, alpha);
+    ret = float4(ret.rgb * shadowWeight, lerp(ret.a, alpha, (float) settingData.dissolve));
 	
 	po.color = ret;
 
@@ -77,9 +76,9 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 
 	float b = step(0.9f, dot(po.color.rgb, float3(0.3f, 0.4f, 0.3f)));
 	float mask = step(noiseValue, noiseThreshold) * step(noiseThreshold, noiseValue + 0.05f);
-	po.bright = saturate(float4((float3(1.0f, 0.1f, 0.1f)) * mask, 1.0f));
+    po.bright = saturate(float4(settingData.emmisionColor * mask * settingData.emmision, 1.0f));
 	
-	if (alpha + mask <= 0.0f)
+    if (alpha + mask + 1.0f - settingData.dissolve <= 0.0f)
 	{
 		discard;
 	}
@@ -99,7 +98,7 @@ float4 ShadowPS(ShadowVertexOut input, uint primitiveID : SV_PrimitiveID) : SV_T
 	float noiseThreshold = constandFloat[matNum];
 	float noiseValue = dot(noiseColor.rgb, float3(0.33f, 0.34f, 0.33));
 	
-	if (step(noiseThreshold, noiseValue) == 0.0f)
+	if (step(noiseThreshold, noiseValue) + 1.0f - settingData.dissolve <= 0.0f)
 	{
 		discard;
 	}

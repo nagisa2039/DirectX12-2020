@@ -35,6 +35,12 @@ public:
 	/// </summary>
 	virtual void Update() = 0;
 
+	/// <summary>
+	/// ImGui‚Ì•`‰æ
+	/// Œp³•K{‚Å‚Í‚È‚¢
+	/// </summary>
+	virtual void DrawImGui();
+
 private:
 	std::weak_ptr<Actor> owner_;
 };

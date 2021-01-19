@@ -4,6 +4,7 @@
 #include <d3d12.h>
 #include <memory>
 #include <vector>
+#include <string>
 
 class Component;
 
@@ -38,6 +39,17 @@ public:
 	virtual void Update();
 
 	/// <summary>
+	/// 名前の取得
+	/// </summary>
+	const std::string& GetName()const;
+
+	/// <summary>
+	/// 名前の設定
+	/// </summary>
+	/// <param name="n">設定する名前</param>
+	void SetName(const std::string& n);
+
+	/// <summary>
 	/// トランスフォームの取得
 	/// </summary>
 	const Transform& GetTransform()const;
@@ -65,6 +77,12 @@ public:
 	/// <param name="component">対象のコンポーネント</param>
 	void AddComponent(std::shared_ptr<Component> component);
 
+	/// <summary>
+	/// ImGuiの描画
+	/// </summary>
+	/// <param name="num">Node識別番号</param>
+	virtual void DrawImGui(const int num);
+
 protected:
 	/// <summary>
 	/// トランスフォーム情報を格納したヒープの取得
@@ -81,5 +99,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> transHeap_ = nullptr;
 
 	std::vector<std::shared_ptr<Component>> components_;
+
+	std::string name_;
 };
 

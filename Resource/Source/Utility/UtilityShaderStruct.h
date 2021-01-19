@@ -9,7 +9,6 @@ using float3 = DirectX::XMFLOAT3;
 struct Utility
 {
 	float time;			// ŠÔ
-	float emmisionRate;	// ‹P“xo—Í‰ÁZ‚Ìæ”
 };
 
 struct SceneStruct

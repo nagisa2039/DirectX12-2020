@@ -145,15 +145,40 @@ namespace
 		viewDesc.Format = buff->GetDesc().Format;
 		dev->CreateShaderResourceView(buff.Get(), &viewDesc, handle);
 	}
-	
+
 	/// <summary>
-	/// StructuredBufferの作成
+	/// ConstantBufferとHeapの作成
 	/// </summary>
 	/// <typeparam name="T">Structの型</typeparam>
 	/// <param name="dev">I3D12Deviceのポインタ</param>
 	/// <param name="buff">格納するバッファ</param>
 	/// <param name="heap">格納するヒープ</param>
-	/// <param name="elements">送る構造体配列</param>
+	/// <param name="elementSize">要素サイズ</param>
+	/// <param name="elementNum">要素数</param>
+	template<class T>
+	void CreateConstantBufferAndHeap(ID3D12Device* dev, T& mapped, Microsoft::WRL::ComPtr<ID3D12Resource>& buff,
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const UINT elementSize, const UINT elementNum = 1)
+	{
+		assert(elementSize > 0 && elementNum > 0);
+		
+		CreateBuffer(dev, buff, D3D12_HEAP_TYPE_UPLOAD, static_cast<uint64_t>(elementSize) * elementNum);
+		buff->Map(0, nullptr, (void**)&mapped);
+
+		// 座標のヒープ作成
+		CreateDescriptorHeap(dev, heap, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, elementNum);
+
+		CreateConstantBufferView(dev, buff, heap->GetCPUDescriptorHandleForHeapStart());
+	}
+
+	/// <summary>
+	/// StructuredBufferとHeapの作成
+	/// </summary>
+	/// <typeparam name="T">Structの型</typeparam>
+	/// <param name="dev">I3D12Deviceのポインタ</param>
+	/// <param name="buff">格納するバッファ</param>
+	/// <param name="heap">格納するヒープ</param>
+	/// <param name="elementSize">要素サイズ</param>
+	/// <param name="elementNum">要素数</param>
 	template<class T>
 	void CreateStructuredBufferAndHeap(ID3D12Device* dev, T& mapped, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& heap, const UINT elementSize, const UINT elementNum)

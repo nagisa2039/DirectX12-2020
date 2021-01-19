@@ -24,6 +24,8 @@ class SoundManager;
 class RendererManager;
 class FileSystem;
 
+struct SettingData;
+
 class Dx12Wrapper
 {
 public:
@@ -85,7 +87,20 @@ public:
 	/// </summary>
 	void ScreenFlip();
 
+	/// <summary>
+	/// エフェクトの描画
+	/// </summary>
 	void DrawEfk();
+
+	/// <summary>
+	/// 開始時のImGuiの描画
+	/// </summary>
+	void BeginDrawImGui();
+
+	/// <summary>
+	/// 終了時ImGuiの描画
+	/// </summary>
+	void EndDrawImGui();
 
 	/// <summary>
 	/// 全画面にViewportとScissorを設定する
@@ -98,6 +113,12 @@ public:
 	/// <param name="width">画面幅</param>
 	/// <param name="height">画面高さ</param>
 	void SetViewAndScissor(const UINT width, const UINT height);
+
+	/// <summary>
+	/// 設定データをセットする
+	/// </summary>
+	/// <param name="rootPramIndex">ルートシグネチャインデックス</param>
+	void SetSettingData(const UINT rootPramIndex);
 
 private:
 	HWND hwnd_;
@@ -120,8 +141,20 @@ private:
 	Effekseer::Effect* effect_ = nullptr;
 	Effekseer::Handle efkHandle_ = {};
 
+	ComPtr<ID3D12DescriptorHeap> imguiHeap_;
+
+	ComPtr<ID3D12DescriptorHeap> settingHeap_;
+	ComPtr<ID3D12Resource> settingCB_;
+	SettingData* settingData_ = nullptr;
+
 	void CreateSwapChain();
 
 	void InitEfk();
+
+	void InitImGui();
+
+	void CreateSettingData();
+
+	void DrawImGuiForSetting();
 };
 

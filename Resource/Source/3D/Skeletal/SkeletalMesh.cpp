@@ -229,28 +229,6 @@ void SkeletalMesh::Update()
 	}
 	MotionUpdate(motionFrame);
 
-	auto& input = Application::Instance().GetInput();
-	auto Move = [&input = input](const unsigned char keycode, float& target, const float speed)
-	{
-		if (input.GetButton(keycode))
-		{
-			target += speed;
-		}
-	};
-
-	auto owner = GetOwner().lock();
-	auto trans = owner->GetTransform();
-	const float speed = 2.0f;
-	Move(DIK_LEFT,	trans.rotate.y, +speed*2.0f);
-	Move(DIK_RIGHT, trans.rotate.y, -speed*2.0f);
-	Move(DIK_DOWN,	trans.pos.y,	-speed);
-	Move(DIK_UP,	trans.pos.y,	+speed);
-	Move(DIK_O,		trans.pos.z,	-speed);
-	Move(DIK_I,		trans.pos.z,	+speed);
-
-	// 座標更新
-	owner->SetTransform(trans);
-
 	noiseThresholdTL_->Update();
 	auto value = noiseThresholdTL_->GetValue();
 	modelMaterial_->SetConstFloat(
@@ -278,6 +256,7 @@ void SkeletalMesh::Draw()
 	auto& cmd = dx12_.GetCommand();
 	auto& commandList = cmd.CommandList();
 	auto& dev = dx12_.GetDevice();
+	const int instanceNum = 1;
 
 	// マテリアルのセット
 	modelMaterial_->SetEachDescriptorHeap(commandList);
@@ -298,7 +277,9 @@ void SkeletalMesh::Draw()
 	commandList.IASetVertexBuffers(0, 1, &vbView_);
 
 	// 描画コマンドの生成
-	commandList.DrawIndexedInstanced(Uint32(modelData_.GetIndexData().size()), 1, 0, 0, 0);
+	commandList.DrawIndexedInstanced(
+		Uint32(modelData_.GetIndexData().size()), instanceNum, 0, 0, 0);
+
 	vertexBufferUA_.resource.Barrier(cmd, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 }
 

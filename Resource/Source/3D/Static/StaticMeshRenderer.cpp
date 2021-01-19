@@ -157,6 +157,8 @@ void StaticMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 	camera_->SetCameraDescriptorHeap(1);
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
+	dx12_.SetSettingData(8);
+
 	for (auto& mesh : meshs)
 	{
 		mesh->Draw();
@@ -172,6 +174,7 @@ void StaticMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
 
 	camera_->SetCameraDescriptorHeap(1);
+	dx12_.SetSettingData(8);
 
 	for (auto& mesh : meshs)
 	{

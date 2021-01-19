@@ -56,6 +56,11 @@ public:
 	/// <returns></returns>
 	CameraObject& GetCameraObject();
 
+	/// <summary>
+	/// ImGui‚Ì•`‰æ
+	/// </summary>
+	void ImGuiDraw();
+
 private:
 	Dx12Wrapper& dx12_;
 

@@ -13,3 +13,15 @@ using uint3 = DirectX::XMUINT3;
 using uint4 = DirectX::XMUINT4;
 using matrix = DirectX::XMMATRIX;
 #endif
+
+struct SettingData
+{
+	uint outline;
+	float3 outlineColor;
+
+	uint emmision;
+	float3 emmisionColor;
+
+	float emmisionRate;
+	uint dissolve;
+};

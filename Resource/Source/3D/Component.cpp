@@ -9,3 +9,7 @@ std::weak_ptr<Actor> Component::GetOwner()const
 {
 	return owner_;
 }
+
+void Component::DrawImGui()
+{
+}

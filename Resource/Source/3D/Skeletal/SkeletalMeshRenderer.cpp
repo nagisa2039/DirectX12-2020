@@ -215,6 +215,8 @@ void SkeletalMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 	// [“x
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
+	dx12_.SetSettingData(9);
+
 	for (auto& mesh : meshs)
 	{
 		mesh->Draw();
@@ -231,6 +233,7 @@ void SkeletalMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 
 	camera_->SetCameraDescriptorHeap(1);
 	texLoader.SetTextureDescriptorHeap(0);
+	dx12_.SetSettingData(9);
 
 	for (auto& mesh : meshs)
 	{

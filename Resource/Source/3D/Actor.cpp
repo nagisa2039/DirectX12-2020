@@ -3,6 +3,8 @@
 #include "System/Application.h"
 #include "System/Dx12Wrapper.h"
 #include "3D/Component.h"
+#include "Utility/ImGuiTool.h"
+#include <sstream>
 
 using namespace DirectX;
 
@@ -10,13 +12,7 @@ Actor::Actor()
 {
 	// 座標の定数バッファの作成
 	auto& dev = Application::Instance().GetDx12().GetDevice();
-	CreateBuffer(&dev, transCB_, D3D12_HEAP_TYPE_UPLOAD, sizeof(*mappedTrans_));
-	transCB_->Map(0, nullptr, (void**)&mappedTrans_);
-
-	// 座標のヒープ作成
-	CreateDescriptorHeap(&dev, transHeap_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
-
-	CreateConstantBufferView(&dev, transCB_, transHeap_->GetCPUDescriptorHandleForHeapStart());
+	CreateConstantBufferAndHeap(&dev, mappedTrans_, transCB_, transHeap_, sizeof(Transform));
 
 	trans_.pos		= { 0.0f, 0.0f, 0.0f };
 	trans_.rotate	= { 0.0f, 0.0f, 0.0f };
@@ -35,6 +31,17 @@ void Actor::Update()
 	{
 		component->Update();
 	}
+	UpdateTransform();
+}
+
+const std::string& Actor::GetName() const
+{
+	return name_;
+}
+
+void Actor::SetName(const std::string& n)
+{
+	name_ = n;
 }
 
 const Transform& Actor::GetTransform() const
@@ -45,8 +52,6 @@ const Transform& Actor::GetTransform() const
 void Actor::SetTransform(const Transform& transform)
 {
 	trans_ = transform;
-
-	UpdateTransform();
 }
 
 void Actor::UpdateTransform()
@@ -74,6 +79,30 @@ void Actor::AddComponent(std::shared_ptr<Component> component)
 {
 	component->Init();
 	components_.emplace_back(component);
+}
+
+void Actor::DrawImGui(const int num)
+{
+	std::stringstream ss;
+	ss << name_ << num;
+	if (ImGui::TreeNode(ss.str().c_str()))
+	{
+		ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+		if (ImGui::TreeNode("Transform"))
+		{
+			DragXMFLOAT3("Position", trans_.pos, 0.1f, -100, 100);
+			DragXMFLOAT3("Rotation", trans_.rotate, 1.0f, -360, 360);
+			DragXMFLOAT3("Scale", trans_.scale, 0.1f, -100, 100);
+			ImGui::TreePop();
+		}
+
+		for (auto& cmp : components_)
+		{
+			cmp->DrawImGui();
+		}
+
+		ImGui::TreePop();
+	}
 }
 
 const ComPtr<ID3D12DescriptorHeap>& Actor::GetTransformHeap() const

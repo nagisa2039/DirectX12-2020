@@ -4,6 +4,7 @@
 #include "System/Command.h"
 #include "Utility/Input.h"
 #include "Utility/UtilityShaderStruct.h"
+#include "Utility/ImGuiTool.h"
 
 using namespace std;
 using namespace DirectX;
@@ -17,7 +18,7 @@ Camera::Camera(Command& cmd, ID3D12Device& dev, std::weak_ptr<Actor>owner)
 	:cmd_(cmd), dev_(dev), Component(owner)
 {
 	target_ = { 0, 10, 0 };
-	fov_ = XMConvertToRadians(50.0f);
+	fov_ = 60.0f;
 	mappedScene_ = nullptr;
 	CreateCameraConstantBufferAndView();
 	UpdateCamera();
@@ -77,7 +78,13 @@ DirectX::XMMATRIX Camera::GetProjMatrix() const
 {
 	auto wsize = Application::Instance().GetWindowSize();
 	return XMMatrixPerspectiveFovLH(
-		fov_, static_cast<float>(wsize.w) / static_cast<float>(wsize.h), 0.05f, 1000.0f);
+		XMConvertToRadians(fov_), static_cast<float>(wsize.w) / static_cast<float>(wsize.h), 0.05f, 1000.0f);
+}
+
+void Camera::DrawImGui()
+{
+	DragXMFLOAT3("Target", target_, 0.1f, -100.0f, 100.0f);
+	ImGui::DragFloat("FOV", &fov_, 0.1f, 0.1f, 180.0f);
 }
 
 bool Camera::CreateCameraConstantBufferAndView()
@@ -123,6 +130,7 @@ CameraObject::CameraObject(Command& cmd, ID3D12Device& dev)
 	trans.pos = { 0, 20, -30 };
 	SetTransform(trans);
 	camera_ = nullptr;
+	SetName("Camera");
 }
 
 CameraObject::~CameraObject()
@@ -156,15 +164,6 @@ void CameraObject::Update()
 	cameraMove(DIK_E, transform.pos.z, moveSpeed);
 	cameraMove(DIK_Q, transform.pos.z, -moveSpeed);
 	SetTransform(transform);
-
-	/*auto targetPos = camera_->GetTargetPos();
-	cameraMove(DIK_W, targetPos.y, moveSpeed);
-	cameraMove(DIK_S, targetPos.y, -moveSpeed);
-	cameraMove(DIK_D, targetPos.x, moveSpeed);
-	cameraMove(DIK_A, targetPos.x, -moveSpeed);
-	cameraMove(DIK_E, targetPos.z, moveSpeed);
-	cameraMove(DIK_Q, targetPos.z, -moveSpeed);
-	camera_->SetTargetPos(targetPos);*/
 
 	Actor::Update();
 }

@@ -148,6 +148,11 @@ CameraObject& RendererManager::GetCameraObject()
 	return *camera_;
 }
 
+void RendererManager::ImGuiDraw()
+{
+	camera_->DrawImGui(0);
+}
+
 void RendererManager::CreateRenderTargetHeap()
 {
 	auto& dev = dx12_.GetDevice();

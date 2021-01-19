@@ -1,5 +1,6 @@
 #include "../../Utility/UtilityShaderStruct.h"
 #include "../../Material/MaterialBase.h"
+#include "../../Utility/SettingData.h"
 
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
 							"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
@@ -64,30 +65,7 @@ cbuffer bones : register(b2, space0)
 };
 
 // ê›íË
-cbuffer Setting : register(b3, space0)
-{
-	uint directional_light;
-	float3 light_dir;
-
-	float4 limColor;
-
-	float edgeWidth;
-	float edgePower;
-	uint antialiasing;
-	uint insNum;
-
-	uint dof;
-	uint ao;
-	float aoRadius;
-	float gomi;
-
-	float emissive;
-	float3 emissiveColor;
-
-	float time;
-	float divider;
-	uint debug;
-};
+ConstantBuffer<SettingData> settingData : register(b3, space0);
 
 SamplerState smp : register(s0);
 SamplerState toomSmp : register(s1);

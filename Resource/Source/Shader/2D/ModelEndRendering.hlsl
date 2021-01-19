@@ -8,7 +8,8 @@ float3 GetBulr(const Texture2D tex, const float dx, const float dy, const float2
 	const uint totalCnt = cnt * cnt;
 	for (uint i = 0; i < totalCnt; ++i)
 	{
-		ret += tex.Sample(smp, uv + float2( dx * fmod(i, cnt), dy * int(i / cnt) ) -float2(dx, dy) * int(cnt / 2) ).rgb;
+		ret += tex.Sample(smp, 
+			uv + float2( dx * fmod(i, cnt), dy * int(i / cnt) ) -float2(dx, dy) * int(cnt / 2) ).rgb;
 	}
 	ret /= totalCnt;
 	return ret;
@@ -54,7 +55,7 @@ float GetLaplacianDepth(const Texture2D<float> depthTex, const float2 uv)
 	return ret;
 }
 
-float GetLaplacianNormal(const Texture2D<float4> normalTex, const float2 uv)
+float GetLaplacianColor(const Texture2D<float4> normalTex, const float2 uv)
 {
 	float4 ret = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	
@@ -90,15 +91,16 @@ float4 PS(Output input) : SV_TARGET
 	
 	float bright = saturate(dot(-lightDirNormal, normal.rgb));
 	float3 shrinkColor = GetShrinkColor(shrinkTex, input.uv);
-	float3 color = saturate(baseColor.rgb + shrinkColor * utility[0].emmisionRate) /** bright*/;
+	float3 color = saturate(baseColor.rgb + shrinkColor * settingData.emmisionRate);
 	
 	float4 ret = float4(color * pixcelInf[input.instanceID].bright, baseColor.a * pixcelInf[input.instanceID].alpha);
 	
-	float outline = step(GetLaplacianDepth(depthTex[0], input.uv), 0.0001f);
-	outline *= step(GetLaplacianNormal(normalTex, input.uv), 0.2f);
-	outline = saturate(outline);
+    Texture2D<float> depthTex = depthTexVec[0];
 	
-	ret.rgb *= outline;
+    float outline = step(0.0001f, GetLaplacianDepth(depthTex, input.uv));
+    outline += step(0.2f, GetLaplacianColor(normalTex, input.uv));
+    saturate(outline);
+    ret.rgb = lerp(ret.rgb, settingData.outlineColor, outline * settingData.outline);
 	
 	return ret;
 }

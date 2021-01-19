@@ -4,7 +4,6 @@
 #include "Scene.h"
 
 class RendererManager;
-class Player;
 class Material;
 class Actor;
 
@@ -30,7 +29,6 @@ private:
 
 	int mosaicH_;
 
-	std::unique_ptr<Player> player_;
 	std::vector<std::shared_ptr<Actor>> actors_;
 
 	std::shared_ptr<Material> raymarchingMat_;

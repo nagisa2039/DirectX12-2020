@@ -1,5 +1,6 @@
 #include "../../Utility/UtilityShaderStruct.h"
 #include "../../Material/MaterialBase.h"
+#include "../../Utility/SettingData.h"
 
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
 						"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
@@ -10,6 +11,7 @@
 						"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 3, flags = DESCRIPTORS_VOLATILE)),"\
 						"DescriptorTable(SRV(t0,numDescriptors = unbounded,space = 4, flags = DESCRIPTORS_VOLATILE)),"\
 						"DescriptorTable(CBV(b1,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
+						"DescriptorTable(CBV(b2,numDescriptors = 1,space = 0, flags = DESCRIPTORS_VOLATILE)),"\
 						"StaticSampler(s0 ,"\
                                             "filter = FILTER_MIN_MAG_MIP_LINEAR,"\
                                             "addressU = TEXTURE_ADDRESS_CLAMP,"\
@@ -32,6 +34,7 @@
 // 6,í«â¡íËêî(float)
 
 // 7,ç¿ïW
+// 8,ê›íË
 
 Texture2D tex[512] : register(t0, space0);
 ConstantBuffer<SceneStruct> scene : register(b0, space0);
@@ -42,10 +45,13 @@ StructuredBuffer<MaterialBase> materialBase : register(t0, space2);
 StructuredBuffer<int> addTexIndex : register(t0, space3);
 StructuredBuffer<float> constandFloat : register(t0, space4);
 
-cbuffer worldBuffer : register(b1)
+cbuffer worldBuffer : register(b1, space0)
 {
 	matrix world;
 };
+
+// ê›íË
+ConstantBuffer<SettingData> settingData : register(b2, space0);
 
 SamplerState smp : register(s0);
 SamplerComparisonState shadowSmp : register(s1);

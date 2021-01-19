@@ -1,24 +1,25 @@
 #include "Dx12Wrapper.h"
 #include "Application.h"
 #include <DirectXTex.h>
-#include "Utility/Tool.h"
 #include "Command.h"
 #include "TexLoader.h"
-#include "Utility/dx12Tool.h"
 #include "2D/SpriteDrawer.h"
 #include "SoundManager.h"
 #include "3D/Camera.h"
 #include "System/FileSystem.h"
 #include "3D/RendererManager.h"
+#include "Utility/Tool.h"
+#include "Utility/dx12Tool.h"
 #include "Utility/Input.h"
-
+#include "Utility/SettingData.h"
+#include "Utility/Cast.h"
+#include "Utility/ImGuiTool.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"DirectXTex.lib")
 #pragma comment(lib,"DirectXTK12.lib")
 #pragma comment(lib,"d3dcompiler.lib")
-
 
 #ifdef _DEBUG
 #pragma comment(lib,"Effekseerd.lib")
@@ -29,6 +30,10 @@
 #pragma comment(lib,"EffekseerRendererDX12.lib")
 #pragma comment(lib,"LLGI.lib")
 #endif
+
+#include "Imgui/imgui.h"
+#include "Imgui/imgui_impl_win32.h"
+#include "Imgui/imgui_impl_dx12.h"
 
 using namespace DirectX;
 using namespace std;
@@ -48,7 +53,6 @@ Dx12Wrapper::~Dx12Wrapper()
 
 bool Dx12Wrapper::Init()
 {
-
 #ifdef _DEBUG
 	// デバッグレイヤーの有効化
 	ComPtr<ID3D12Debug> debuglayer;
@@ -78,6 +82,10 @@ bool Dx12Wrapper::Init()
 	fileSystem_ = std::make_shared<FileSystem>();
 
 	InitEfk();
+
+	InitImGui();
+
+	CreateSettingData();
 
 	return true;
 }
@@ -109,6 +117,38 @@ void Dx12Wrapper::InitEfk()
 		effect_,
 		Effekseer::Vector3D(0, 10, 0));
 	efkManager_->SetRotation(efkHandle_, { 0, 1, 0 }, 180.0f * XM_PI / 180.0f);
+}
+
+void Dx12Wrapper::InitImGui()
+{
+	CreateDescriptorHeap(dev_.Get(), imguiHeap_);
+
+	auto result = ImGui::CreateContext();
+	assert(result != nullptr);
+
+	bool bResult = ImGui_ImplWin32_Init(hwnd_);
+	assert(bResult);
+
+	bResult = ImGui_ImplDX12_Init(
+		dev_.Get(), 
+		3, 
+		DXGI_FORMAT_R8G8B8A8_UNORM, 
+		imguiHeap_.Get(), 
+		imguiHeap_->GetCPUDescriptorHandleForHeapStart(),
+		imguiHeap_->GetGPUDescriptorHandleForHeapStart());
+
+	assert(bResult);
+}
+
+void Dx12Wrapper::CreateSettingData()
+{
+	CreateConstantBufferAndHeap(dev_.Get(), settingData_, 
+		settingCB_, settingHeap_, sizeof(SettingData));
+	*settingData_ = SettingData();
+
+	settingData_->outlineColor = {0.0f, 1.0f, 0.0f};
+	settingData_->emmisionColor = { 1.0f, 0.1f, 0.1f };
+	settingData_->emmisionRate = 10.0f;
 }
 
 ID3D12Device& Dx12Wrapper::GetDevice()
@@ -191,6 +231,59 @@ void Dx12Wrapper::DrawEfk()
     EffekseerRendererDX12::EndCommandList(efkCmdList_);
 }
 
+void Dx12Wrapper::BeginDrawImGui()
+{
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	ImGui::Begin("Config");
+	ImGui::SetWindowSize(ImVec2(400, 500), ImGuiCond_::ImGuiCond_FirstUseEver);
+
+	rendererManager_->ImGuiDraw();
+
+	DrawImGuiForSetting();
+}
+
+void Dx12Wrapper::DrawImGuiForSetting()
+{
+	ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
+	if (ImGui::TreeNode("Setting"))
+	{
+		bool outline = settingData_->outline != 0;
+		ImGui::Checkbox("Outline", &outline);
+		settingData_->outline = Uint32(outline);
+		if (outline)
+		{
+			PickColorXMFLOAT3("OutlineColor", settingData_->outlineColor);				
+		}
+
+		bool emmision = settingData_->emmision != 0;
+		ImGui::Checkbox("Emmision", &emmision);
+		settingData_->emmision = Uint32(emmision); 
+		if (emmision)
+		{
+			PickColorXMFLOAT3("EmmisionColor", settingData_->emmisionColor);
+			ImGui::SliderFloat("EmmisionPower", &settingData_->emmisionRate, 0.0f, 20.0f);
+		}
+
+		bool dissolve = settingData_->dissolve != 0;
+		ImGui::Checkbox("Dissolve", &dissolve);
+		settingData_->dissolve = Uint32(dissolve);
+
+		ImGui::TreePop();
+	}
+}
+
+void Dx12Wrapper::EndDrawImGui()
+{
+	ImGui::End();
+	ImGui::Render();
+
+	auto& cmdList = cmd_->CommandList();
+	cmdList.SetDescriptorHeaps(1, imguiHeap_.GetAddressOf());
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), &cmdList);
+}
+
 void Dx12Wrapper::CreateSwapChain()
 {
 	auto wsize = Application::Instance().GetWindowSize();
@@ -252,4 +345,12 @@ void Dx12Wrapper::SetViewAndScissor(const UINT width, const UINT height)
 	auto& commandList = cmd_->CommandList();
 	commandList.RSSetViewports(1, &viewport);
 	commandList.RSSetScissorRects(1, &scissorRect);
+}
+
+void Dx12Wrapper::SetSettingData(const UINT rootPramIndex)
+{
+	auto& cmdList = cmd_->CommandList();
+	cmdList.SetDescriptorHeaps(1, settingHeap_.GetAddressOf());
+	cmdList.SetGraphicsRootDescriptorTable(rootPramIndex, 
+		settingHeap_->GetGPUDescriptorHandleForHeapStart());
 }
