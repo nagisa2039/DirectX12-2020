@@ -8,7 +8,7 @@
 #include "System/Application.h"
 #include "System/ShaderLoader.h"
 #include "Utility/dx12Tool.h"
-#include "3D/Camera.h"
+#include "3D/SceneInf.h"
 #include "3D/Mesh.h"
 
 using namespace std;
@@ -131,8 +131,8 @@ bool StaticMeshRenderer::CreatePipelineState()
 	return true;
 }
 
-StaticMeshRenderer::StaticMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<Camera>& camera)
-	: dx12_(dx12), Renderer(camera)
+StaticMeshRenderer::StaticMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<SceneInf>& sceneInf)
+	: dx12_(dx12), Renderer(sceneInf)
 {
 	if(!CreatePipelineState())
 	{
@@ -154,7 +154,7 @@ void StaticMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
 
 	texLoader.SetTextureDescriptorHeap(0);
-	camera_->SetCameraDescriptorHeap(1);
+	sceneInf_->SetCameraDescriptorHeap(1);
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
 
 	dx12_.SetSettingData(8);
@@ -173,7 +173,7 @@ void StaticMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 	cmdList.SetPipelineState(primShadowPL_.Get());
 	cmdList.SetGraphicsRootSignature(primRS_.Get());
 
-	camera_->SetCameraDescriptorHeap(1);
+	sceneInf_->SetCameraDescriptorHeap(1);
 	dx12_.SetSettingData(8);
 
 	for (auto& mesh : meshs)

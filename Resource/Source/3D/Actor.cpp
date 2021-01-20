@@ -51,7 +51,7 @@ void Actor::SetName(const std::string& n)
 	name_ = n;
 }
 
-const Transform& Actor::GetTransform() const
+Transform& Actor::GetTransform()
 {
 	return trans_;
 }

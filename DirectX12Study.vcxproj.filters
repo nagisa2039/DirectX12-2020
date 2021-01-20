@@ -243,6 +243,9 @@
     <ClInclude Include="Resource\Source\Utility\ComvertCplusHLSL.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\Source\3D\SceneInf.h">
+      <Filter>ヘッダー ファイル\3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\System\Command.cpp">
@@ -367,6 +370,9 @@
     </ClCompile>
     <ClCompile Include="Resource\Source\Imgui\imgui_impl_dx12.cpp">
       <Filter>ソース ファイル\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Source\3D\SceneInf.cpp">
+      <Filter>ソース ファイル\3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

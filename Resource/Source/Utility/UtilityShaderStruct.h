@@ -18,8 +18,10 @@ struct SceneStruct
 	matrix invProj;
 	matrix shadow;
 	matrix lightCamera;
+
 	float3 lightVec;
-	float gomi0;
+	float dummy0;
+
 	float3 eye; // Ž‹“_
-	float gomi1;
+	float dummy1;
 };

@@ -5,7 +5,7 @@
 #include "System/TexLoader.h"
 #include "Utility/Constant.h"
 #include "System/Application.h"
-#include "3D/Camera.h"
+#include "3D/SceneInf.h"
 #include "Utility/dx12Tool.h"
 #include "2D/SpriteDrawer.h"
 #include "Material/ModelEndRendering.h"
@@ -21,11 +21,11 @@ namespace
 
 RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 {
-	camera_ = make_shared<CameraObject>(dx12.GetCommand(), dx12.GetDevice());
-
+	sceneInf_ = make_shared<SceneInf>(dx12.GetCommand(), dx12.GetDevice());
+	sceneInf_->Init();
 	meshRenderers_.resize(Uint64(Mesh::Type::max));
-	meshRenderers_[Uint64(Mesh::Type::static_mesh)].renderer	= make_shared<StaticMeshRenderer>(dx12_, camera_->GetCamera());
-	meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)].renderer	= make_shared<SkeletalMeshRenderer>(dx12_, camera_->GetCamera());
+	meshRenderers_[Uint64(Mesh::Type::static_mesh)].renderer	= make_shared<StaticMeshRenderer>(dx12_, sceneInf_);
+	meshRenderers_[Uint64(Mesh::Type::skeletal_mesh)].renderer	= make_shared<SkeletalMeshRenderer>(dx12_, sceneInf_);
 
 	auto wsize = Application::Instance().GetWindowSize();
 	auto& texLoader = dx12_.GetTexLoader();
@@ -52,7 +52,7 @@ RendererManager::~RendererManager()
 
 void RendererManager::Update()
 {
-	camera_->Update();
+	sceneInf_->Update();
 	for (auto& meshRenderer : meshRenderers_)
 	{
 		meshRenderer.renderer->ComputeUpdate(meshRenderer.meshs_);
@@ -143,14 +143,14 @@ void RendererManager::RemoveMesh(Mesh* mesh)
 	std::erase_if(vec, [mesh](Mesh* m) {return m == mesh; });
 }
 
-CameraObject& RendererManager::GetCameraObject()
+SceneInf& RendererManager::GetSceneInf()
 {
-	return *camera_;
+	return *sceneInf_;
 }
 
-void RendererManager::ImGuiDraw()
+void RendererManager::DrawImGui()
 {
-	camera_->DrawImGui(0);
+	sceneInf_->DrawImGui();;
 }
 
 void RendererManager::CreateRenderTargetHeap()

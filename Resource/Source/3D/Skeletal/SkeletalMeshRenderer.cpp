@@ -11,14 +11,14 @@
 #include "Utility/Constant.h"
 #include "Utility/dx12Tool.h"
 #include "System/ShaderLoader.h"
-#include "3D/Camera.h"
+#include "3D/SceneInf.h"
 #include "3D/Mesh.h"
 
 using namespace std;
 using namespace DirectX;
 
-SkeletalMeshRenderer::SkeletalMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<Camera>& camera)
-	: dx12_(dx12), Renderer(camera)
+SkeletalMeshRenderer::SkeletalMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<SceneInf>& sceneInf)
+	: dx12_(dx12), Renderer(sceneInf)
 {
 	Init();
 }
@@ -210,7 +210,7 @@ void SkeletalMeshRenderer::Draw(std::vector<Mesh*>& meshs)
 	commandList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
 
 	// ÉJÉÅÉâ
-	camera_->SetCameraDescriptorHeap(1);
+	sceneInf_->SetCameraDescriptorHeap(1);
 
 	// ê[ìx
 	texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);
@@ -231,7 +231,7 @@ void SkeletalMeshRenderer::DrawShadow(std::vector<Mesh*>& meshs)
 	commandList.SetPipelineState(shadowPL_.Get());
 	commandList.SetGraphicsRootSignature(modelRS_.Get());
 
-	camera_->SetCameraDescriptorHeap(1);
+	sceneInf_->SetCameraDescriptorHeap(1);
 	texLoader.SetTextureDescriptorHeap(0);
 	dx12_.SetSettingData(9);
 

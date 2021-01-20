@@ -18,8 +18,8 @@ class SkeletalMeshRenderer :
 {
 public:
 	/// <param name="dx12">DirectX管理クラス</param>
-	/// <param name="camera">カメラクラス</param>
-	SkeletalMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<Camera>& camera);
+	/// <param name="sceneInf">シーン情報管理クラス</param>
+	SkeletalMeshRenderer(Dx12Wrapper& dx12, std::shared_ptr<SceneInf>& sceneInf);
 	~SkeletalMeshRenderer();
 
 	/// <summary>

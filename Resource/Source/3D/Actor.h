@@ -73,7 +73,7 @@ public:
 	/// <summary>
 	/// トランスフォームの取得
 	/// </summary>
-	const Transform& GetTransform()const;
+	Transform& GetTransform();
 
 	/// <summary>
 	/// トランスフォームの設定

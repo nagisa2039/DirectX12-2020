@@ -14,6 +14,7 @@
 #include "Utility/SettingData.h"
 #include "Utility/Cast.h"
 #include "Utility/ImGuiTool.h"
+#include "3D/SceneInf.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -186,7 +187,7 @@ void Dx12Wrapper::DrawEfk()
 	efkMemoryPool_->NewFrame();
 	EffekseerRendererDX12::BeginCommandList(efkCmdList_, &cmd_->CommandList());
 	efkRenderer_->SetCommandList(efkCmdList_);
-	auto& camera = rendererManager_->GetCameraObject().GetCamera();
+	auto& camera = rendererManager_->GetSceneInf().GetCameraObject()->GetCamera();
 
 	auto XMView = camera->GetViewMatrix();
 	auto XMProj = camera->GetProjMatrix();
@@ -239,7 +240,7 @@ void Dx12Wrapper::BeginDrawImGui()
 	ImGui::Begin("Config");
 	ImGui::SetWindowSize(ImVec2(400, 500), ImGuiCond_::ImGuiCond_FirstUseEver);
 
-	rendererManager_->ImGuiDraw();
+	rendererManager_->DrawImGui();
 
 	DrawImGuiForSetting();
 }

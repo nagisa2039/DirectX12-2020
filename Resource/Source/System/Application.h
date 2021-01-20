@@ -7,6 +7,7 @@ class FPSManager;
 class SceneController;
 class Input;
 class ShaderLoader;
+class Scene;
 
 class Application
 {

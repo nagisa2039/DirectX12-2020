@@ -10,7 +10,7 @@ class Renderer;
 class Dx12Wrapper;
 class ModelEndRendering;
 class Mesh;
-class CameraObject;
+class SceneInf;
 
 /// <summary>
 /// 3Dメッシュの描画管理クラス
@@ -51,15 +51,14 @@ public:
 	void RemoveMesh(Mesh* mesh);
 
 	/// <summary>
-	/// カメラの取得
+	/// シーン情報管理クラスの取得
 	/// </summary>
-	/// <returns></returns>
-	CameraObject& GetCameraObject();
+	SceneInf& GetSceneInf();
 
 	/// <summary>
 	/// ImGuiの描画
 	/// </summary>
-	void ImGuiDraw();
+	void DrawImGui();
 
 private:
 	Dx12Wrapper& dx12_;
@@ -78,7 +77,7 @@ private:
 	std::array<int, static_cast<uint64_t>(RenderTargetType::max)> rendetTargetHandles_;
 
 	std::shared_ptr<ModelEndRendering> modelEndrendering_;
-	std::shared_ptr<CameraObject> camera_;
+	std::shared_ptr<SceneInf> sceneInf_;
 
 	void CreateRenderTargetHeap();
 };

@@ -74,6 +74,7 @@
     <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
     <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshVertex.h" />
     <ClInclude Include="Resource\Source\Utility\SettingData.h" />
+    <ClInclude Include="Resource\Source\3D\SceneInf.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resource\Source\3D\Renderer.cpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="Resource\Source\System\ShaderLoader.cpp" />
     <ClCompile Include="Resource\Source\Material\Material.cpp" />
     <ClCompile Include="Resource\Source\Material\StanderedMaterial.cpp" />
+    <ClCompile Include="Resource\Source\3D\SceneInf.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\Source\Shader\3D\ModelCS.hlsl">
