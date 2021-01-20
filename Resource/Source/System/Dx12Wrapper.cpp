@@ -249,26 +249,30 @@ void Dx12Wrapper::DrawImGuiForSetting()
 	ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
 	if (ImGui::TreeNode("Setting"))
 	{
-		bool outline = settingData_->outline != 0;
-		ImGui::Checkbox("Outline", &outline);
-		settingData_->outline = Uint32(outline);
+		auto checkBoxForUint = [](const char* name, uint& value) 
+		{
+			bool ret = value != 0;
+			ImGui::Checkbox(name, &ret);
+			value = Uint32(ret);
+			return ret;
+		};
+
+		bool outline = checkBoxForUint("Outline", settingData_->outline);
 		if (outline)
 		{
 			PickColorXMFLOAT3("OutlineColor", settingData_->outlineColor);				
 		}
-
-		bool emmision = settingData_->emmision != 0;
-		ImGui::Checkbox("Emmision", &emmision);
-		settingData_->emmision = Uint32(emmision); 
+		
+		bool emmision = checkBoxForUint("Emmision", settingData_->emmision);
 		if (emmision)
 		{
 			PickColorXMFLOAT3("EmmisionColor", settingData_->emmisionColor);
 			ImGui::SliderFloat("EmmisionPower", &settingData_->emmisionRate, 0.0f, 20.0f);
 		}
 
-		bool dissolve = settingData_->dissolve != 0;
-		ImGui::Checkbox("Dissolve", &dissolve);
-		settingData_->dissolve = Uint32(dissolve);
+		checkBoxForUint("Dissolve", settingData_->dissolve);
+
+		checkBoxForUint("Antialiasing", settingData_->antialiasing);
 
 		ImGui::TreePop();
 	}

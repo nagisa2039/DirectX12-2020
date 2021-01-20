@@ -4,6 +4,8 @@
 #include <d3d12.h>
 #include <DirectXMath.h>
 #include "3D/Actor.h"
+#include <functional>
+#include <array>
 
 struct SceneStruct;
 class Command;
@@ -15,6 +17,9 @@ class Camera
 	: public Component
 {
 public:
+	/// <param name="cmd">コマンド管理クラス</param>
+	/// <param name="dev">デバイス</param>
+	/// <param name="owner">所有者</param>
 	Camera(Command& cmd, ID3D12Device& dev, std::weak_ptr<Actor>owner);
 	~Camera();
 
@@ -40,17 +45,6 @@ public:
 	DirectX::XMFLOAT3 GetTargetPos()const;
 
 	/// <summary>
-	/// ターゲット座標の設定
-	/// </summary>
-	/// <param name="tpos">ターゲット座標</param>
-	void SetTargetPos(const DirectX::XMFLOAT3& tpos);
-
-	/// <summary>
-	/// ターゲットへのベクトルを取得する
-	/// </summary>
-	DirectX::XMFLOAT3 GetTargetVec()const;
-
-	/// <summary>
 	/// View行列の取得
 	/// </summary>
 	DirectX::XMMATRIX GetViewMatrix()const;
@@ -66,6 +60,20 @@ public:
 	void DrawImGui()override;
 
 private:
+	// Projection行列の設定
+	enum class ProjectionMode
+	{
+		// 透視投影
+		Perspective,
+		// 正投影
+		Orthographic,
+		Max
+	};
+
+	using ProjectionFunc = std::function<DirectX::XMMATRIX(float, float, float)>;
+	std::array<ProjectionFunc, static_cast<size_t>(ProjectionMode::Max)> projectionFuncTable_;
+	ProjectionMode projectionMode_;
+
 	Command& cmd_;
 	ID3D12Device& dev_;
 
@@ -78,7 +86,7 @@ private:
 	// _cameraCBの内容を変更したいときはこいつを通じて変更してね
 	SceneStruct* mappedScene_;
 
-	DirectX::XMFLOAT3 target_;
+	//DirectX::XMFLOAT3 target_;
 	float fov_;
 
 	// カメラの作成

@@ -8,6 +8,13 @@
 
 using namespace DirectX;
 
+namespace
+{
+	constexpr XMVECTOR FORWERD_VEC	= { 0.0f, 0.0f, 1.0f };
+	constexpr XMVECTOR UP_VEC		= { 0.0f, 1.0f, 0.0f };
+	constexpr XMVECTOR RIGHT_VEC	= { 1.0f, 0.0f, 0.0f };
+}
+
 Actor::Actor()
 {
 	// 座標の定数バッファの作成
@@ -123,10 +130,17 @@ DirectX::XMMATRIX Transform::GetRotateMatrix() const
 	return XMMatrixRotationRollPitchYaw(rotate.x * deg2rad, rotate.y * deg2rad, rotate.z * deg2rad);
 }
 
-XMFLOAT3 Transform::GetForwerd() const
+DirectX::XMVECTOR Transform::GetForwerd() const
 {
-	XMVECTOR forwerdVec = XMVector3Transform({0.0f, 1.0f, 0.0f}, GetRotateMatrix());
-	XMFLOAT3 forwerd;
-	XMStoreFloat3(&forwerd, forwerdVec);
-	return forwerd;
+	return XMVector3Transform(FORWERD_VEC, GetRotateMatrix());
+}
+
+DirectX::XMVECTOR Transform::GetUp() const
+{
+	return XMVector3Transform(UP_VEC, GetRotateMatrix());
+}
+
+DirectX::XMVECTOR Transform::GetRight() const
+{
+	return XMVector3Transform(RIGHT_VEC, GetRotateMatrix());
 }

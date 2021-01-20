@@ -14,7 +14,6 @@ public:
 	Command(ID3D12Device& dev);
 	~Command();
 
-
 	/// <summary>
 	/// CommandList�̎擾
 	/// </summary>

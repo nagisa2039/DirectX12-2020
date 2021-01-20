@@ -1,25 +1,35 @@
 #include "Camera.h"
-#include "Utility/dx12Tool.h"
 #include "System/Application.h"
 #include "System/Command.h"
 #include "Utility/Input.h"
 #include "Utility/UtilityShaderStruct.h"
 #include "Utility/ImGuiTool.h"
+#include "Utility/Cast.h"
+#include "Utility/dx12Tool.h"
 
 using namespace std;
 using namespace DirectX;
 
-namespace
-{
-	constexpr DirectX::XMFLOAT3 UP = { 0.0f, 1.0f, 0.0f };
-}
-
 Camera::Camera(Command& cmd, ID3D12Device& dev, std::weak_ptr<Actor>owner)
 	:cmd_(cmd), dev_(dev), Component(owner)
 {
-	target_ = { 0, 10, 0 };
 	fov_ = 60.0f;
 	mappedScene_ = nullptr;
+
+	projectionMode_ = ProjectionMode::Perspective;
+
+	projectionFuncTable_[Uint64(ProjectionMode::Perspective)]
+		= [](float fov, float w, float h)
+	{
+		return XMMatrixPerspectiveFovLH(
+			XMConvertToRadians(fov), w / h, 0.05f, 1000.0f);
+	};
+	projectionFuncTable_[Uint64(ProjectionMode::Orthographic)]
+		= [](float fov, float w, float h)
+	{
+		float view = 80;
+		return XMMatrixOrthographicLH(view * w / h, view, 0.05f, 1000.0f);
+	};
 	CreateCameraConstantBufferAndView();
 	UpdateCamera();
 }
@@ -48,18 +58,12 @@ void Camera::SetCameraDescriptorHeap(const UINT rootParamIdx)
 
 DirectX::XMFLOAT3 Camera::GetTargetPos() const
 {
-	return target_;
-}
-
-void Camera::SetTargetPos(const DirectX::XMFLOAT3& tpos)
-{
-	target_ = tpos;
-}
-
-DirectX::XMFLOAT3 Camera::GetTargetVec() const
-{
-	auto pos = GetOwner().lock()->GetTransform().pos;
-	return XMFLOAT3(target_.x - pos.x, target_.y - pos.y, target_.z - pos.z);
+	auto& trans = GetOwner().lock()->GetTransform();
+	DirectX::XMFLOAT3 targetVecF3;
+	XMStoreFloat3(&targetVecF3, trans.GetForwerd());
+	return DirectX::XMFLOAT3{	trans.pos.x + targetVecF3.x, 
+								trans.pos.y + targetVecF3.y, 
+								trans.pos.z + targetVecF3.z };
 }
 
 DirectX::XMMATRIX Camera::GetViewMatrix() const
@@ -67,24 +71,23 @@ DirectX::XMMATRIX Camera::GetViewMatrix() const
 	// カメラの更新
 	auto eye = GetOwner().lock()->GetTransform().pos;
 	XMVECTOR eyePos = XMLoadFloat3(&eye);
-	XMVECTOR targetPos = XMLoadFloat3(&target_);
-	XMVECTOR upVec = XMLoadFloat3(&UP);
+	auto targetPosF3 = GetTargetPos();
+	XMVECTOR targetPos = XMLoadFloat3(&targetPosF3);
 
 	// カメラ用
-	return XMMatrixLookAtLH(eyePos, targetPos, upVec);
+	return XMMatrixLookAtLH(eyePos, targetPos, GetOwner().lock()->GetTransform().GetUp());
 }
 
 DirectX::XMMATRIX Camera::GetProjMatrix() const
 {
 	auto wsize = Application::Instance().GetWindowSize();
-	return XMMatrixPerspectiveFovLH(
-		XMConvertToRadians(fov_), static_cast<float>(wsize.w) / static_cast<float>(wsize.h), 0.05f, 1000.0f);
+	return projectionFuncTable_[Uint64(projectionMode_)](fov_, Float(wsize.w), Float(wsize.h));
 }
 
 void Camera::DrawImGui()
 {
-	DragXMFLOAT3("Target", target_, 0.1f, -100.0f, 100.0f);
-	ImGui::DragFloat("FOV", &fov_, 0.1f, 0.1f, 180.0f);
+	ImGui::DragFloat("FOV", &fov_, 0.1f, 1.0f, 180.0f);
+	fov_ = std::clamp(fov_, 1.0f, 180.0f);
 }
 
 bool Camera::CreateCameraConstantBufferAndView()
@@ -105,8 +108,9 @@ void Camera::UpdateCamera()
 {
 	auto eye = GetOwner().lock()->GetTransform().pos;
 	XMVECTOR eyePos = XMLoadFloat3(&eye);
-	XMVECTOR targetPos = XMLoadFloat3(&target_);
-	XMVECTOR upVec = XMLoadFloat3(&UP);
+	auto targetPosF3 = GetTargetPos();
+	XMVECTOR targetPos = XMLoadFloat3(&targetPosF3);
+	XMVECTOR upVec = GetOwner().lock()->GetTransform().GetUp();
 	XMVECTOR lightVec = XMLoadFloat3(&mappedScene_->lightVec);
 
 	auto cameraArmLength = XMVector3Length(XMVectorSubtract(targetPos, eyePos)).m128_f32[0];
@@ -127,7 +131,7 @@ CameraObject::CameraObject(Command& cmd, ID3D12Device& dev)
 	:cmd_(cmd), dev_(dev)
 {
 	auto trans = GetTransform();
-	trans.pos = { 0, 20, -30 };
+	trans.pos = { 0, 15, -30 };
 	SetTransform(trans);
 	camera_ = nullptr;
 	SetName("Camera");
@@ -143,26 +147,33 @@ void CameraObject::Update()
 	{
 		camera_ = make_shared<Camera>(cmd_, dev_, shared_from_this());
 		AddComponent(camera_);
-		camera_->SetTargetPos(XMFLOAT3(0, 10, 0));
 	}
 
 	auto& input = Application::Instance().GetInput();
+	auto transform = GetTransform();
 	float moveSpeed = 1.0f;
-	auto cameraMove = [&input = input](const char keycode, float& target, const float speed)
+	XMVECTOR pos = XMLoadFloat3(&transform.pos);
+	auto cameraMove = [&input = input, &pos = pos, moveSpeed]
+		(const char keycode, const XMVECTOR& dir)
 	{
 		if (input.GetButton(keycode))
 		{
-			target += speed;
+			pos += dir * moveSpeed;
 		}
 	};
 
-	auto transform = GetTransform();
-	cameraMove(DIK_W, transform.pos.y, moveSpeed);
-	cameraMove(DIK_S, transform.pos.y, -moveSpeed);
-	cameraMove(DIK_D, transform.pos.x, moveSpeed);
-	cameraMove(DIK_A, transform.pos.x, -moveSpeed);
-	cameraMove(DIK_E, transform.pos.z, moveSpeed);
-	cameraMove(DIK_Q, transform.pos.z, -moveSpeed);
+	auto forwerd	= transform.GetForwerd();
+	auto up			= transform.GetUp();
+	auto right		= transform.GetRight();
+
+	cameraMove(DIK_W,  up);
+	cameraMove(DIK_S, -up);
+	cameraMove(DIK_D,  right);
+	cameraMove(DIK_A, -right);
+	cameraMove(DIK_E,  forwerd);
+	cameraMove(DIK_Q, -forwerd);
+
+	XMStoreFloat3(&transform.pos, pos);
 	SetTransform(transform);
 
 	Actor::Update();

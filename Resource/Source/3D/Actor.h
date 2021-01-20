@@ -18,9 +18,30 @@ struct Transform
 	// 拡大
 	DirectX::XMFLOAT3 scale		= DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 
+	/// <summary>
+	/// Transform行列の取得
+	/// </summary>
 	DirectX::XMMATRIX GetMatrix()const;
+
+	/// <summary>
+	/// 回転行列の取得
+	/// </summary>
 	DirectX::XMMATRIX GetRotateMatrix()const;
-	DirectX::XMFLOAT3 GetForwerd()const;
+
+	/// <summary>
+	/// 前方向ベクトルの取得
+	/// </summary>
+	DirectX::XMVECTOR GetForwerd()const;
+
+	/// <summary>
+	/// 上方向ベクトルの取得
+	/// </summary>
+	DirectX::XMVECTOR GetUp()const;
+
+	/// <summary>
+	/// 右方向ベクトルの取得
+	/// </summary>
+	DirectX::XMVECTOR GetRight()const;
 };
 
 /// <summary>

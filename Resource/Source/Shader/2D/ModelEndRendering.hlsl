@@ -1,4 +1,7 @@
 #include "2DStanderd.hlsli"
+#define FXAA_PC 1
+#define FXAA_HLSL_5 1
+#include"FXAA.hlsl"
 
 float3 GetBulr(const Texture2D tex, const float dx, const float dy, const float2 uv)
 {
@@ -91,9 +94,34 @@ float4 PS(Output input) : SV_TARGET
 	
 	float bright = saturate(dot(-lightDirNormal, normal.rgb));
 	float3 shrinkColor = GetShrinkColor(shrinkTex, input.uv);
-	float3 color = saturate(baseColor.rgb + shrinkColor * settingData.emmisionRate);
 	
-	float4 ret = float4(color * pixcelInf[input.instanceID].bright, baseColor.a * pixcelInf[input.instanceID].alpha);
+    float4 ret = float4(baseColor.rgb * pixcelInf[input.instanceID].bright, 
+							baseColor.a * pixcelInf[input.instanceID].alpha);
+	
+    if (settingData.antialiasing)
+    {
+        FxaaTex InputFXAATex = { smp, colorTex };
+        ret = float4(FxaaPixelShader(
+			input.uv, // FxaaFloat2 pos,
+			FxaaFloat4(0.0f, 0.0f, 0, 0), // FxaaFloat4 fxaaConsolePosPos,
+			InputFXAATex, // FxaaTex tex,
+			InputFXAATex, // FxaaTex fxaaConsole360TexExpBiasNegOne,
+			InputFXAATex, // FxaaTex fxaaConsole360TexExpBiasNegTwo,
+			float2(1.0, 1.0) / float2(1280, 720), // FxaaFloat2 fxaaQualityRcpFrame,
+			FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f), // FxaaFloat4 fxaaConsoleRcpFrameOpt,
+			FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f), // FxaaFloat4 fxaaConsoleRcpFrameOpt2,
+			FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f), //
+			0.75f, //SUBPIX, // FxaaFloat fxaaQualitySubpix,
+			0.166f, //EDGE_THRESHOLD, // FxaaFloat fxaaQualityEdgeThreshold,
+			0.0833f, //EDGE_THRESHOLD_MIN, // FxaaFloat fxaaQualityEdgeThresholdMin,
+			8.0f, // FxaaFloat fxaaConsoleEdgeSharpness,
+			0.125f, // FxaaFloat fxaaConsoleEdgeThreshold,
+			0.05f, // FxaaFloat fxaaConsoleEdgeThresholdMin,
+			FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f) // FxaaFloat fxaaConsole360ConstDir,
+		).rgb, ret.a);
+    }
+	
+    ret.rgb = saturate(ret.rgb + shrinkColor * settingData.emmisionRate);
 	
     Texture2D<float> depthTex = depthTexVec[0];
 	
@@ -101,6 +129,7 @@ float4 PS(Output input) : SV_TARGET
     outline += step(0.2f, GetLaplacianColor(normalTex, input.uv));
     saturate(outline);
     ret.rgb = lerp(ret.rgb, settingData.outlineColor, outline * settingData.outline);
+	
 	
 	return ret;
 }
