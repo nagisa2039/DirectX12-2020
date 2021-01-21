@@ -56,21 +56,14 @@ int SoundManager::LoadWave(const std::wstring& filePath, bool loop)
 	sd.buffer.Flags = XAUDIO2_END_OF_STREAM;
 	sd.buffer.AudioBytes = waveData.audioBytes;
 
-
-	//result = sd.sourceVoice->SubmitSourceBuffer(&sd.buffer);
-	//H_ASSERT(result);
-	
-
 	int handle = Int32(soundDatas_.size()) - 1;
 	resourceHandleTable_[filePath] = handle;
-	PlayWave(handle);
 	return handle;
 }
 
 bool SoundManager::PlayWave(const int handle)
 {
 	if (!CheckHandleInRange(handle))return false;
-
 
 	auto& soundData = soundDatas_[handle];
 	XAUDIO2_VOICE_STATE state;
@@ -103,4 +96,17 @@ bool SoundManager::StopSound(const int handle)
 	soundDatas_[handle].sourceVoice->Stop();
 	soundDatas_[handle].isPlaying = false;
 	return true;
+}
+
+bool SoundManager::CheckPlaySound(const int handle)
+{
+	auto& soundData = soundDatas_[handle];
+	if (!soundData.isPlaying)
+	{
+		return false;
+	}
+	XAUDIO2_VOICE_STATE state;
+	soundData.sourceVoice->GetState(&state);
+	soundData.isPlaying = state.BuffersQueued > 0;
+	return soundData.isPlaying;
 }

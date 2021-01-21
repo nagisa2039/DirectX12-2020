@@ -3,18 +3,18 @@
 #include <DirectXTex.h>
 #include "Command.h"
 #include "TexLoader.h"
-#include "2D/SpriteDrawer.h"
+#include "FileSystem.h"
 #include "SoundManager.h"
+#include "2D/SpriteDrawer.h"
 #include "3D/Camera.h"
-#include "System/FileSystem.h"
 #include "3D/RendererManager.h"
+#include "3D/SceneInf.h"
 #include "Utility/Tool.h"
 #include "Utility/dx12Tool.h"
 #include "Utility/Input.h"
 #include "Utility/SettingData.h"
 #include "Utility/Cast.h"
 #include "Utility/ImGuiTool.h"
-#include "3D/SceneInf.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -41,6 +41,7 @@ using namespace std;
 
 Dx12Wrapper::Dx12Wrapper(HWND hwnd): hwnd_(hwnd)
 {
+	efkSoundH_ = -1;
 }
 
 Dx12Wrapper::~Dx12Wrapper()
@@ -114,10 +115,8 @@ void Dx12Wrapper::InitEfk()
 	// エフェクトの読込
 	effect_ = Effekseer::Effect::Create(efkManager_, u"Resource/Effect/Laser01.efk");
 	assert(effect_ != nullptr);
-	efkHandle_ = efkManager_->Play(
-		effect_,
-		Effekseer::Vector3D(0, 10, 0));
-	efkManager_->SetRotation(efkHandle_, { 0, 1, 0 }, 180.0f * XM_PI / 180.0f);
+
+	efkSoundH_ = soundManager_->LoadWave(L"Resource/Sound/SE/laser1.wav");
 }
 
 void Dx12Wrapper::InitImGui()
@@ -209,10 +208,13 @@ void Dx12Wrapper::DrawEfk()
 	{
 		if (efkManager_->Exists(efkHandle_))
 		{
+			soundManager_->StopSound(efkSoundH_);
 			efkManager_->StopEffect(efkHandle_);
 		}
 		else
 		{
+			soundManager_->StopSound(efkSoundH_);
+			soundManager_->PlayWave(efkSoundH_);
 			efkHandle_ = efkManager_->Play(
 				effect_,
 				Effekseer::Vector3D(0, 10, 0));

@@ -16,6 +16,12 @@ public:
 	bool CheckHandleInRange(const int handle) const;
 	bool StopSound(const int handle);
 
+	/// <summary>
+	/// 音が再生されているかを確認
+	/// </summary>
+	/// <param name="handle">音ハンドル</param>
+	bool CheckPlaySound(const int handle);
+
 private:
 	ComPtr<IXAudio2> xaudio2_;
 	IXAudio2MasteringVoice* masteringVoice_ = nullptr;

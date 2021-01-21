@@ -140,6 +140,7 @@ private:
 	EffekseerRenderer::CommandList* efkCmdList_ = nullptr;
 	Effekseer::Effect* effect_ = nullptr;
 	Effekseer::Handle efkHandle_ = {};
+	int efkSoundH_;
 
 	ComPtr<ID3D12DescriptorHeap> imguiHeap_;
 

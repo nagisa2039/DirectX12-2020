@@ -15,9 +15,16 @@
 #include "3D/Static/PlaneMesh.h"
 #include "Utility/Cast.h"
 #include "Imgui/imgui.h"
+#include <sstream>
 
 using namespace std;
 using namespace DirectX;
+
+namespace
+{
+	bool rayMarching;
+	bool debugDraw;
+}
 
 PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 {
@@ -28,10 +35,13 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 
 	mosaicH_ = texLoader.MakeScreen(L"mosaic", 1280, 720);
 
+	rayMarching = true;
+	debugDraw = true;
+
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& soundManager = dx12.GetSoundManager();
 
-	//BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/野良猫は宇宙を目指した.wav", true);
+	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/BGM1.wav", true);
 
 	raymarchingMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Raymarching.hlsl");
 	mosaicMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Mosaic.hlsl");
@@ -84,13 +94,6 @@ void PlayScene::Update()
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& input = Application::Instance().GetInput();
 
-
-	if (input.GetButtonDown(DIK_SPACE))
-	{
-		//auto& soundManager = dx12.GetSoundManager();
-		//soundManager.PlayWave(BGMH_);	}
-	}
-
 	for (auto& actor : actors_)
 	{
 		actor->Update();
@@ -118,26 +121,50 @@ void PlayScene::Draw()
 	texLoader.ClsDrawScreen();
 	spriteDrawer.SetDrawBright(255, 255, 255);
 
-	//// レイマーチング
-	//spriteDrawer.SetMaterial(raymarchingMat_);
-	//spriteDrawer.DrawGraph(0, 0, d3dH_);
+	// レイマーチング
+	if (rayMarching)
+	{
+		spriteDrawer.SetMaterial(raymarchingMat_);
+		spriteDrawer.DrawGraph(0, 0, d3dH_);
+	}
 
 	// 3D描画
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
-	float aspect = wsize.w / static_cast<float>(wsize.h);
-	XMINT2 size = XMINT2(Int32(100 * aspect), 100);
-	spriteDrawer.DrawExtendGraph(0, 200, size.x, 200 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
-	spriteDrawer.DrawExtendGraph(0, 300, size.x, 300 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
-	spriteDrawer.DrawExtendGraph(0, 400, size.x, 400 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_NORMAL));
-	spriteDrawer.DrawExtendGraph(0, 500, size.x, 500 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
-	
+	if (debugDraw)
+	{
+		float aspect = wsize.w / static_cast<float>(wsize.h);
+		XMINT2 size = XMINT2(Int32(100 * aspect), 100);
+		spriteDrawer.DrawExtendGraph(0, 200, size.x, 200 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
+		spriteDrawer.DrawExtendGraph(0, 300, size.x, 300 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
+		spriteDrawer.DrawExtendGraph(0, 400, size.x, 400 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_NORMAL));
+		spriteDrawer.DrawExtendGraph(0, 500, size.x, 500 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
+	}
+
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);
 
 	spriteDrawer.End();
 
 	dx12.BeginDrawImGui();
+
+	auto& soundManager = dx12.GetSoundManager();
+	if (soundManager.CheckPlaySound(BGMH_))
+	{
+		if (ImGui::Button("BGM : Stop"))
+		{
+			soundManager.StopSound(BGMH_);
+		}
+	}
+	else
+	{
+		if (ImGui::Button("BGM : Play"))
+		{
+			soundManager.PlayWave(BGMH_);
+		}
+	}
+	ImGui::Checkbox("RayMarching", &rayMarching);
+	ImGui::Checkbox("DebugDraw", &debugDraw);
 
 	ImGui::SetNextTreeNodeOpen(true, ImGuiCond_Once);
 	if (ImGui::TreeNode("Models"))
