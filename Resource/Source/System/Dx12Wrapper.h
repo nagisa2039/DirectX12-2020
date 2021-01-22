@@ -120,6 +120,11 @@ public:
 	/// <param name="rootPramIndex">ルートシグネチャインデックス</param>
 	void SetSettingData(const UINT rootPramIndex);
 
+	/// <summary>
+	/// 設定データの取得
+	/// </summary>
+	const SettingData& GetSettingData()const;
+
 private:
 	HWND hwnd_;
 

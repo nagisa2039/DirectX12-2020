@@ -11,7 +11,8 @@ ModelEndRendering::ModelEndRendering()
 {
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
 	std::wstring screenNames[] = {
-		D3D_CAMERA_MR_COLOR, D3D_CAMERA_MR_NORMAL , D3D_CAMERA_MR_BRIGHT, D3D_CAMERA_SHRINK_SCREEN };
+		SCR_CAMERA_MR_COLOR, SCR_CAMERA_MR_NORMAL , SCR_CAMERA_MR_BRIGHT, 
+		SCR_COLOR_SHRINK, SCR_EMMISION_SHRINK };
 
 	addTexIndexResource_.elements.reserve(Uint64(RendererManager::RenderTargetType::max));
 	for (const auto& name : screenNames)

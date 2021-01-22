@@ -29,6 +29,12 @@ ComPtr<ID3D12PipelineState>& Material::GetPipelineState()
 	return pipelineState_;
 }
 
+const MaterialBase& Material::GetMaterialBase(const size_t index)const
+{
+	assert(index < materialBaseResource_.elements.size());
+	return materialBaseResource_.elements[index];
+}
+
 void Material::SetMaterialBase(const size_t index, const MaterialBase& value)
 {
 	assert(index < materialBaseResource_.elements.size());

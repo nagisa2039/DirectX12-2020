@@ -71,7 +71,8 @@ private:
 	std::vector<MeshRender> meshRenderers_;
 
 	int cameraScreenH_;
-	int shrinkScreenH_;
+	int colorShrinkScreenH_;
+	int emmisionShrinkScreenH_;
 
 	ComPtr<ID3D12DescriptorHeap> renderTargetHeap_;
 	std::array<int, static_cast<uint64_t>(RenderTargetType::max)> rendetTargetHandles_;

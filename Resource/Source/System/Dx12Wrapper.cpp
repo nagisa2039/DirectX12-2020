@@ -149,6 +149,7 @@ void Dx12Wrapper::CreateSettingData()
 	settingData_->outlineColor = {0.0f, 1.0f, 0.0f};
 	settingData_->emmisionColor = { 1.0f, 0.1f, 0.1f };
 	settingData_->emmisionRate = 10.0f;
+	settingData_->instanceNum = 1;
 }
 
 ID3D12Device& Dx12Wrapper::GetDevice()
@@ -242,6 +243,7 @@ void Dx12Wrapper::BeginDrawImGui()
 	ImGui::Begin("Config");
 	ImGui::SetWindowSize(ImVec2(400, 500), ImGuiCond_::ImGuiCond_FirstUseEver);
 
+	ImGui::Text("%.3f", ImGui::GetIO().Framerate);
 	rendererManager_->DrawImGui();
 
 	DrawImGuiForSetting();
@@ -265,17 +267,31 @@ void Dx12Wrapper::DrawImGuiForSetting()
 		{
 			PickColorXMFLOAT3("OutlineColor", settingData_->outlineColor);				
 		}
-		
-		bool emmision = checkBoxForUint("Emmision", settingData_->emmision);
-		if (emmision)
+
+		if (ImGui::CollapsingHeader("Dissolve"))
 		{
-			PickColorXMFLOAT3("EmmisionColor", settingData_->emmisionColor);
-			ImGui::SliderFloat("EmmisionPower", &settingData_->emmisionRate, 0.0f, 20.0f);
+			checkBoxForUint("Enable", settingData_->dissolve);
+			if (settingData_->dissolve)
+			{
+				checkBoxForUint("Emmision", settingData_->emmision);
+				if (settingData_->emmision)
+				{
+					PickColorXMFLOAT3("EmmisionColor", settingData_->emmisionColor);
+					ImGui::SliderFloat("EmmisionPower", &settingData_->emmisionRate, 0.0f, 20.0f);
+				}
+			}
+			else
+			{
+				settingData_->emmision = 0;
+			}
 		}
 
-		checkBoxForUint("Dissolve", settingData_->dissolve);
-
 		checkBoxForUint("Antialiasing", settingData_->antialiasing);
+		checkBoxForUint("Depth of Field", settingData_->depth_of_field);
+
+		int instanceNum = settingData_->instanceNum;
+		ImGui::SliderInt("InstanceNum", &instanceNum, 1, 10);
+		settingData_->instanceNum = instanceNum;
 
 		ImGui::TreePop();
 	}
@@ -360,4 +376,10 @@ void Dx12Wrapper::SetSettingData(const UINT rootPramIndex)
 	cmdList.SetDescriptorHeaps(1, settingHeap_.GetAddressOf());
 	cmdList.SetGraphicsRootDescriptorTable(rootPramIndex, 
 		settingHeap_->GetGPUDescriptorHandleForHeapStart());
+}
+
+const SettingData& Dx12Wrapper::GetSettingData() const
+{
+	assert(settingData_);
+	return *settingData_;
 }

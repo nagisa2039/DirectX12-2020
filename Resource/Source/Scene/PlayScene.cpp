@@ -31,7 +31,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
 
 	auto wsize = Application::Instance().GetWindowSize();
-	d3dH_ = texLoader.GetGraphHandle(D3D_CAMERA_VIEW_SCREEN);
+	d3dH_ = texLoader.GetGraphHandle(SCR_CAMERA_VIEW_SCREEN);
 
 	mosaicH_ = texLoader.MakeScreen(L"mosaic", 1280, 720);
 
@@ -50,7 +50,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto AddPlaneActor = [&]()
 	{
 		auto actor = make_shared<Actor>();
-		auto mesh = make_shared<PlaneMesh>(actor, dx12, XMFLOAT3(0.0f, 0.0f, 0.0f), (1000.0f / 536.0f) * 80.0f, 80.0f, L"image/fiona.png");
+		auto mesh = make_shared<PlaneMesh>(actor, dx12, XMFLOAT3(0.0f, 0.0f, 0.0f), 150.0f, 80.0f, L"Resource/Image/floor.jpg");
 		actor->AddComponent(mesh);
 		actor->SetName("Plane");
 
@@ -134,12 +134,20 @@ void PlayScene::Draw()
 
 	if (debugDraw)
 	{
+		std::list<int> debugDrawHandles;
+		debugDrawHandles.emplace_back(texLoader.GetGraphHandle(SCR_COLOR_SHRINK));
+		debugDrawHandles.emplace_back(texLoader.GetGraphHandle(SCR_EMMISION_SHRINK));
+		debugDrawHandles.emplace_back(texLoader.GetGraphHandle(SCR_CAMERA_MR_COLOR));
+		debugDrawHandles.emplace_back(texLoader.GetGraphHandle(SCR_CAMERA_MR_NORMAL));
+		debugDrawHandles.emplace_back(texLoader.GetGraphHandle(SCR_CAMERA_MR_BRIGHT));
 		float aspect = wsize.w / static_cast<float>(wsize.h);
-		XMINT2 size = XMINT2(Int32(100 * aspect), 100);
-		spriteDrawer.DrawExtendGraph(0, 200, size.x, 200 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_SHRINK_SCREEN));
-		spriteDrawer.DrawExtendGraph(0, 300, size.x, 300 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_COLOR));
-		spriteDrawer.DrawExtendGraph(0, 400, size.x, 400 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_NORMAL));
-		spriteDrawer.DrawExtendGraph(0, 500, size.x, 500 + size.y, texLoader.GetGraphHandle(D3D_CAMERA_MR_BRIGHT));
+		int hight = 100;
+		XMINT2 size = XMINT2(Int32(hight * aspect), hight);
+		for (int i = 0; const auto& handle : debugDrawHandles)
+		{
+			spriteDrawer.DrawExtendGraph(0, hight * i, size.x, hight * i + size.y, handle);
+			i++;
+		}
 	}
 
 	spriteDrawer.SetDrawBlendMode(BlendMode::noblend, 255);

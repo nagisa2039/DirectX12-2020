@@ -30,7 +30,7 @@ RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 	auto wsize = Application::Instance().GetWindowSize();
 	auto& texLoader = dx12_.GetTexLoader();
 
-	wstring screenNames[] = { D3D_CAMERA_MR_COLOR, D3D_CAMERA_MR_NORMAL , D3D_CAMERA_MR_BRIGHT };
+	wstring screenNames[] = { SCR_CAMERA_MR_COLOR, SCR_CAMERA_MR_NORMAL , SCR_CAMERA_MR_BRIGHT };
 
 	for (int i = 0; auto rtH : rendetTargetHandles_)
 	{
@@ -38,8 +38,9 @@ RendererManager::RendererManager(Dx12Wrapper& dx12) :dx12_(dx12)
 		i++;
 	}
 
-	cameraScreenH_ = texLoader.MakeScreen(D3D_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
-	shrinkScreenH_ = texLoader.MakeScreen(D3D_CAMERA_SHRINK_SCREEN, wsize.w / 2, wsize.h);
+	cameraScreenH_ = texLoader.MakeScreen(SCR_CAMERA_VIEW_SCREEN, wsize.w, wsize.h);
+	colorShrinkScreenH_		= texLoader.MakeScreen(SCR_COLOR_SHRINK,		wsize.w / 2, wsize.h);
+	emmisionShrinkScreenH_	= texLoader.MakeScreen(SCR_EMMISION_SHRINK,	wsize.w / 2, wsize.h);
 
 	modelEndrendering_ = make_shared<ModelEndRendering>();
 
@@ -98,23 +99,35 @@ void RendererManager::Draw()
 
 	dx12_.DrawEfk();
 
-	// 縮小バッファへの描画
 	auto& spriteDrawer = dx12_.GetSpriteDrawer();
-	spriteDrawer.SetDrawScreen(shrinkScreenH_);
-	
-	texLoader.ClsDrawScreen(); 
-	int highLumH = rendetTargetHandles_[Uint64(RenderTargetType::bright)];
-	unsigned int w, h;
-	int top,left;
-	top = left = 0;
-	texLoader.GetGraphSize(highLumH, w, h);
-	for (int i = 0; i < SHRINK_CNT; ++i)
+
+	// 縮小バッファへの描画
+	auto drawToShrinkBuffer
+		= [&spriteDrawer = spriteDrawer, &texLoader = texLoader, &rendetTargetHandles = rendetTargetHandles_]
+			(const int shrinkHandle, const RenderTargetType type)
 	{
-		w /= 2;
-		h /= 2;
-		spriteDrawer.DrawExtendGraph(left, top, left + w, top + h, highLumH);
-		top += h;
-	}
+		spriteDrawer.SetDrawScreen(shrinkHandle);
+
+		texLoader.ClsDrawScreen();
+		int highLumH = rendetTargetHandles[Uint64(type)];
+		unsigned int w, h;
+		int top, left;
+		top = left = 0;
+		texLoader.GetGraphSize(highLumH, w, h);
+		for (int i = 0; i < SHRINK_CNT; ++i)
+		{
+			w /= 2;
+			h /= 2;
+			spriteDrawer.DrawExtendGraph(left, top, left + w, top + h, highLumH);
+			top += h;
+		}
+	};
+
+	// color縮小バッファへの描画
+	drawToShrinkBuffer(colorShrinkScreenH_, RenderTargetType::color);
+
+	// emmision縮小バッファへの描画
+	drawToShrinkBuffer(emmisionShrinkScreenH_, RenderTargetType::bright);
 
 	// レンダリング結果の合成
 	spriteDrawer.SetDrawScreen(cameraScreenH_);
@@ -169,7 +182,7 @@ void RendererManager::CreateRenderTargetHeap()
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 	auto& texLoader = dx12_.GetTexLoader();
-	wstring multiRenderingNames[] = {D3D_CAMERA_MR_COLOR, D3D_CAMERA_MR_NORMAL, D3D_CAMERA_MR_BRIGHT};
+	wstring multiRenderingNames[] = {SCR_CAMERA_MR_COLOR, SCR_CAMERA_MR_NORMAL, SCR_CAMERA_MR_BRIGHT};
 
 	auto wsize = Application::Instance().GetWindowSize();
 	auto incSize = dev.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);

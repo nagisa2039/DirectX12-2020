@@ -28,7 +28,13 @@ public:
 	ComPtr<ID3D12PipelineState>& GetPipelineState();
 
 	/// <summary>
-	/// マテリアルの設定
+	/// マテリアルベースの取得
+	/// </summary>
+	/// <param name="index">配列インデックス</param>
+	const MaterialBase& GetMaterialBase(const size_t index)const;
+
+	/// <summary>
+	/// マテリアルベースの設定
 	/// </summary>
 	/// <param name="index">配列インデックス</param>
 	/// <param name="value">設定する値</param>

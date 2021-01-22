@@ -25,12 +25,6 @@ void FPSManager::Wait()
 	deltaTime_ = (tickCount - prevFrameStartTime_) / 1000.0f;
 
 	prevFrameStartTime_ = Uint32(GetTickCount64());
-
-//#ifdef _DEBUG
-//	char buf[256];
-//	sprintf_s(buf, 256, "%f\n", GetFPS());
-//	OutputDebugString(buf);
-//#endif
 }
 
 int FPSManager::FixedFPS()

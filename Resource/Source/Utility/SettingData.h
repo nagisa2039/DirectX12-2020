@@ -25,4 +25,7 @@ struct SettingData
 	float emmisionRate;
 	uint dissolve;
 	uint antialiasing;
+	uint depth_of_field;
+
+	uint instanceNum;
 };

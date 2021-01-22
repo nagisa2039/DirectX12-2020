@@ -8,6 +8,7 @@
 #include "d3dx12.h"
 #include "Utility/Tool.h"
 #include "Utility/dx12Tool.h"
+#include "Utility/SettingData.h"
 #include "SkeletalMeshRenderer.h"
 #include "PMXData.h"
 #include "PMDData.h"
@@ -256,7 +257,6 @@ void SkeletalMesh::Draw()
 	auto& cmd = dx12_.GetCommand();
 	auto& commandList = cmd.CommandList();
 	auto& dev = dx12_.GetDevice();
-	const int instanceNum = 1;
 
 	// マテリアルのセット
 	modelMaterial_->SetEachDescriptorHeap(commandList);
@@ -278,7 +278,7 @@ void SkeletalMesh::Draw()
 
 	// 描画コマンドの生成
 	commandList.DrawIndexedInstanced(
-		Uint32(modelData_.GetIndexData().size()), instanceNum, 0, 0, 0);
+		Uint32(modelData_.GetIndexData().size()), dx12_.GetSettingData().instanceNum, 0, 0, 0);
 
 	vertexBufferUA_.resource.Barrier(cmd, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 }

@@ -19,9 +19,10 @@ VertexOut VS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD
 // âeópç¿ïWïœä∑
 [RootSignature(RS)]
 ShadowVertexOut ShadowVS(float4 pos : POSITION, float4 normal : NORMAL, float2 uv : TEXCOORD,
-	int4 boneno : BONENO, float4 weight : WEIGHT)
+	int4 boneno : BONENO, float4 weight : WEIGHT, uint instanceID : SV_InstanceID)
 {
-	ShadowVertexOut vo;
+    ShadowVertexOut vo;
+    pos.z += 5 * instanceID;
     vo.svpos = mul(scene.lightCamera, pos);
 	vo.uv = uv;
 	
