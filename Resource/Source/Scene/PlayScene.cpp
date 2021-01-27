@@ -41,6 +41,8 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& soundManager = dx12.GetSoundManager();
 
+	skyH_ = texLoader.LoadGraph(L"Resource/Image/sky.png");
+
 	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/BGM1.wav", true);
 
 	raymarchingMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Raymarching.hlsl");
@@ -131,7 +133,7 @@ void PlayScene::Draw()
 	else
 	{
 		spriteDrawer.SetMaterial(skySphereMat_);
-		spriteDrawer.DrawGraph(0, 0, texLoader.LoadGraph(L"Resource/Image/sky.png"));
+		spriteDrawer.DrawGraph(0, 0, skyH_);
 	}
 
 	// 3D•`‰æ

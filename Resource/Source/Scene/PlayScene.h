@@ -29,6 +29,8 @@ private:
 
 	int mosaicH_;
 
+	int skyH_;
+
 	std::vector<std::shared_ptr<Actor>> actors_;
 
 	std::shared_ptr<Material> raymarchingMat_;
