@@ -17,6 +17,9 @@ struct SceneStruct
 	matrix proj;
 	matrix invProj;
 	matrix shadow;
+
+	matrix cameraRotate;
+
 	matrix lightCamera;
 
 	float3 lightVec;

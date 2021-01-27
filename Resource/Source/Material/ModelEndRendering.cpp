@@ -10,12 +10,13 @@ ModelEndRendering::ModelEndRendering()
 	: Material(L"Resource/Source/Shader/2D/ModelEndRendering.hlsl")
 {
 	auto& texLoader = Application::Instance().GetDx12().GetTexLoader();
-	std::wstring screenNames[] = {
+	std::wstring addTexNames[] = {
 		SCR_CAMERA_MR_COLOR, SCR_CAMERA_MR_NORMAL , SCR_CAMERA_MR_BRIGHT, 
-		SCR_COLOR_SHRINK, SCR_EMMISION_SHRINK };
+		SCR_COLOR_SHRINK, SCR_EMMISION_SHRINK
+	};
 
-	addTexIndexResource_.elements.reserve(Uint64(RendererManager::RenderTargetType::max));
-	for (const auto& name : screenNames)
+	addTexIndexResource_.elements.reserve(_countof(addTexNames));
+	for (const auto& name : addTexNames)
 	{
 		addTexIndexResource_.elements.emplace_back(texLoader.GetGraphHandle(name));
 	}

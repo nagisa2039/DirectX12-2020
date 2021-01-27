@@ -8,6 +8,8 @@
 #include "Utility/Cast.h"
 #include "System/ShaderLoader.h"
 #include "Material/StanderedMaterial.h"
+#include "3D/RendererManager.h"
+#include "3D/SceneInf.h"
 
 using namespace DirectX;
 using namespace std;
@@ -249,6 +251,8 @@ void SpriteDrawer::End()
 		// テクスチャ配列のセット
 		cmdList.SetDescriptorHeaps(1, texHeap.GetAddressOf());
 		cmdList.SetGraphicsRootDescriptorTable(0, texHeap->GetGPUDescriptorHandleForHeapStart());
+
+		dx12_.GetRendererManager().GetSceneInf().SetCameraDescriptorHeap(1);
 
 		// 深度テクスチャのセット
 		texLoader.SetDepthTexDescriptorHeap(2, TexLoader::DepthType::camera);

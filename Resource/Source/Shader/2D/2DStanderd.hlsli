@@ -62,6 +62,7 @@ struct PixcelInf
 
 Texture2D tex[512] : register(t0, space0);
 // ƒJƒƒ‰
+ConstantBuffer<SceneStruct> scene : register(b0, space0);
 Texture2D<float> depthTexVec[2]      : register(t0, space1);
 StructuredBuffer<Utility> utility : register(t2, space1);
 

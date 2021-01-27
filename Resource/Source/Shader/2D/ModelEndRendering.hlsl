@@ -84,7 +84,9 @@ float4 PS(Output input) : SV_TARGET
 	Texture2D normalTex = tex[addTexIndex[1]];
     Texture2D brightTex = tex[addTexIndex[2]];
     Texture2D colorShrinkTex	= tex[addTexIndex[3]];
-	Texture2D emmisionShrinkTex = tex[addTexIndex[4]];
+    Texture2D emmisionShrinkTex = tex[addTexIndex[4]];
+	
+    Texture2D skyTex = tex[addTexIndex[5]];
 	
 	Texture2D baseTex = tex[pixcelInf[input.instanceID].texIndex];
 	
@@ -99,6 +101,7 @@ float4 PS(Output input) : SV_TARGET
 	
     Texture2D<float> depthTex = depthTexVec[0];
 	
+	//AA
     if (settingData.antialiasing)
     {
         FxaaTex InputFXAATex = { smp, colorTex };
@@ -122,14 +125,15 @@ float4 PS(Output input) : SV_TARGET
 		).rgb, ret.a);
     }
 	
+	// îÌé äEê[ìx
     if (settingData.depth_of_field)
     {
         const int shrinkCnt = 4;
         float depthDiff = abs(depthTex.Sample(smp, float2(0.5f, 0.5f))-depthTex.Sample(smp, input.uv));
-        depthDiff = saturate(pow(depthDiff, saturate(1 - depthDiff * 3000)));
-        float depthThreshold = 0.3f;
-        depthDiff = lerp(0.0f, (depthDiff - depthThreshold) / (1.0f - depthThreshold), depthThreshold < depthDiff);
-        ret = lerp(ret, GetShrinkColor(colorShrinkTex, input.uv), depthDiff);
+        depthDiff = saturate(depthDiff*1000.0f);
+        float t = 0.1f;
+        float rate = lerp(0.0f, (depthDiff - t) / (1.0f - t), step(t, depthDiff));
+        ret.rgb = lerp(ret.rgb, GetShrinkColor(colorShrinkTex, input.uv).rgb, rate);
     }
 	
     float3 emmisionShrinkColor = GetShrinkColor(emmisionShrinkTex, input.uv);

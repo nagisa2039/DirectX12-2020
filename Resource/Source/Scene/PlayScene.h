@@ -32,5 +32,6 @@ private:
 	std::vector<std::shared_ptr<Actor>> actors_;
 
 	std::shared_ptr<Material> raymarchingMat_;
+	std::shared_ptr<Material> skySphereMat_;
 	std::shared_ptr<Material> mosaicMat_;
 };

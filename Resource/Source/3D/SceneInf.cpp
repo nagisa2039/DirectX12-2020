@@ -47,6 +47,7 @@ void SceneInf::Update()
 	mappedScene_->eye = camera->GetOwner().lock()->GetTransform().pos;
 	mappedScene_->invProj = XMMatrixInverse(nullptr, mappedScene_->proj);
 	mappedScene_->lightCamera = light->GetViewMatrix() * light->GetProjMatrix();
+	mappedScene_->cameraRotate = cameraObj_->GetTransform().GetRotateMatrix();
 	XMStoreFloat3(&mappedScene_->lightVec, lightObj_->GetTransform().GetForwerd());
 }
 
