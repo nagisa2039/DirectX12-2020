@@ -4,12 +4,12 @@
 
 using Microsoft::WRL::ComPtr;
 
+/// <summary>
+/// Command系管理クラス
+/// </summary>
 class Command
 {
 public:
-	/// <summary>
-	/// コマンド管理クラス
-	/// </summary>
 	/// <param name="dev">デバイスの参照</param>
 	Command(ID3D12Device& dev);
 	~Command();

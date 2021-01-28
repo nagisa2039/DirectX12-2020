@@ -1,3 +1,5 @@
+// HLSL DirectX12 ‹¤’Ê‰»î•ñ
+
 #ifdef __cplusplus
 #pragma once
 #include <DirectXMath.h>

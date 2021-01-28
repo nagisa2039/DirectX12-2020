@@ -41,7 +41,7 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& soundManager = dx12.GetSoundManager();
 
-	skyH_ = texLoader.LoadGraph(L"Resource/Image/sky.png");
+	skyH_ = texLoader.GetGraphHandle(L"Resource/Image/sky.png");
 
 	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/BGM1.wav", true);
 

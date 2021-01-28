@@ -9,14 +9,23 @@
 
 class Material;
 
+/// <summary>
+/// ボーン無しモデル
+/// </summary>
 class StaticMesh :
 	public Mesh
 {
 public:
+	/// <summary>
+	/// 頂点
+	/// </summary>
 	struct PrimVertex
 	{
+		// 座標
 		DirectX::XMFLOAT3 pos;
+		// 法線
 		DirectX::XMFLOAT3 normal;
+		// UV
 		DirectX::XMFLOAT2 uv;
 
 		PrimVertex(): 
@@ -33,12 +42,21 @@ public:
 			uv(DirectX::XMFLOAT2(0.0f, 0.0f)) {};
 	};
 
-	// (dx12の管理クラス, 座標, テクスチャファイルパス)
+	/// <param name="owner">所有Actor</param>
+	/// <param name="dx12">dx12の管理クラス</param>
+	/// <param name="pos">座標</param>
+	/// <param name="texPath"テクスチャファイルパス></param>
 	StaticMesh(std::weak_ptr<Actor>owner, Dx12Wrapper& dx12, const DirectX::XMFLOAT3& pos, std::wstring texPath = L"");
 	~StaticMesh();
-	// 更新
+
+	/// <summary>
+	/// 更新
+	/// </summary>
 	void Update()override;
-	// 描画
+
+	/// <summary>
+	/// 描画
+	/// </summary>
 	void Draw()override;
 
 protected:

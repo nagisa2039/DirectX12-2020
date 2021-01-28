@@ -26,12 +26,12 @@ class FileSystem;
 
 struct SettingData;
 
+/// <summary>
+/// DirectX管理クラス
+/// </summary>
 class Dx12Wrapper
 {
 public:
-	/// <summary>
-	/// DirectX管理クラス
-	/// </summary>
 	/// <param name="hwnd">ウィンドウハンドル</param>
 	Dx12Wrapper(HWND hwnd);
 	~Dx12Wrapper();

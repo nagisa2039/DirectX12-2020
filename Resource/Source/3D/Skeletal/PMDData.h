@@ -1,10 +1,14 @@
 #pragma once
 #include "SkeletalMeshData.h"
+
+/// <summary>
+/// PMDデータ
+/// </summary>
 class PMDData :
 	public SkeletalMeshData
 {
 public:
-	// (モデルファイルパス)
+	// <param name="modelPath">(モデルファイルパス)</param>
 	PMDData(std::wstring modelPath);
 	~PMDData();
 

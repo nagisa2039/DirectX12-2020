@@ -4,24 +4,36 @@
 
 class Scene;
 
+/// <summary>
+/// シーン管理クラス
+/// </summary>
 class SceneController
 {
 public:
 	SceneController();
 	~SceneController();
 
-	// シーンの更新
+	/// <summary>
+	/// シーンの更新
+	/// </summary>
 	void SceneUpdate();
 
-	// シーンを変更
-	// @param scene	遷移するシーンのunique_ptr
+	/// <summary>
+	/// シーンを変更
+	/// </summary>
+	/// <param name="scene">遷移するシーンのunique_ptr</param>
 	void ChangeScene(std::shared_ptr<Scene> scene);
 
-	// シーンのスタック
-	// @param scene	スタックするシーンのunique_ptr
+	/// <summary>
+	/// シーンのスタック
+	/// </summary>
+	/// <param name="scene">スタックするシーンのunique_ptr</param>
 	void PushScene(std::shared_ptr<Scene> scene);
 
-	// シーンのポップ
+	/// <summary>
+	/// シーンのポップ
+	/// 現在再生中のシーンを削除し1つ戻る
+	/// </summary>
 	void PopScene(void);
 
 	/// <summary>

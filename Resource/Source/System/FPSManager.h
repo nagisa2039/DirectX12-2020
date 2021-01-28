@@ -1,6 +1,9 @@
 #pragma once
 class Application;
 
+/// <summary>
+/// FPS管理クラス
+/// </summary>
 class FPSManager
 {
 	friend Application;
@@ -25,9 +28,6 @@ public:
 	float GetDeltaTime();
 
 private:
-	/// <summary>
-	/// FPS管理クラス
-	/// </summary>
 	/// <param name="fps">固定したいフレーム数
 	/// 負の値なら無制限</param>
 	FPSManager(const int fps);

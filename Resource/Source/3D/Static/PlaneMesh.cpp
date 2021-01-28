@@ -29,7 +29,7 @@ PlaneMesh::PlaneMesh(std::weak_ptr<Actor>owner,
 
 	std::vector<MaterialBase> mbvec;
 	auto& texLoader = dx12_.GetTexLoader();
-	auto texH = texLoader.LoadGraph(texPath);
+	auto texH = texLoader.GetGraphHandle(texPath);
 	if (texH == FAILED)
 	{
 		texH = texLoader.GetDummyTextureHandles().whiteTexH;

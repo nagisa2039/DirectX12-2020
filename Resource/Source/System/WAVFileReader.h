@@ -1,18 +1,3 @@
-//--------------------------------------------------------------------------------------
-// File: WAVFileReader.h
-//
-// Functions for loading WAV audio files
-//
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
-// Copyright (c) Microsoft Corporation. All rights reserved.
-//
-// http://go.microsoft.com/fwlink/?LinkId=248929
-//-------------------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -37,6 +22,9 @@
 #define _Use_decl_annotations_
 #endif
 
+/// <summary>
+/// WaveÉtÉ@ÉCÉãì«çû
+/// </summary>
 namespace DirectX
 {
     HRESULT LoadWAVAudioInMemory( _In_reads_bytes_(wavDataSize) const uint8_t* wavData,

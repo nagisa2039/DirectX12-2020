@@ -18,8 +18,6 @@ public:
 	enum class PeripheralType
 	{
 		keybord,
-		//gamepad,
-		//mouse,
 		max
 	};
 

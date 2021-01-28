@@ -7,14 +7,25 @@ class RendererManager;
 class Material;
 class Actor;
 
+/// <summary>
+/// 再生シーン
+/// </summary>
 class PlayScene :
 	public Scene
 {
 public:
+	/// <param name="ctrl">シーン管理クラス</param>
 	PlayScene(SceneController& ctrl);
 	~PlayScene();
 
+	/// <summary>
+	/// 更新
+	/// </summary>
 	void Update()override;
+
+	/// <summary>
+	/// 描画
+	/// </summary>
 	void Draw()override;
 
 private:

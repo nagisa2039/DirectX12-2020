@@ -72,6 +72,11 @@ DirectX::XMMATRIX Camera::GetProjMatrix() const
 	return projectionFuncTable_[Uint64(projectionMode_)](fov_, Float(wsize.w), Float(wsize.h));
 }
 
+float Camera::GetFOV() const
+{
+	return fov_;
+}
+
 void Camera::DrawImGui()
 {
 	ImGui::DragFloat("FOV", &fov_, 0.1f, 1.0f, 180.0f);

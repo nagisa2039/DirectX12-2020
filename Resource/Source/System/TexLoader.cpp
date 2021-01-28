@@ -104,20 +104,16 @@ const DummyTextures & TexLoader::GetDummyTextureHandles()const
 	return dummyTextures_;
 }
 
-TextureResorce& TexLoader::GetTextureResouse(const int handle)
+const TextureResorce& TexLoader::GetTextureResouse(const int handle)const
 {
-	if (handle < 0 || handle >= texResources_.size())
-	{
-		assert(false);
-	}
-
+	assert(ExistTextureResource(handle));
 	return texResources_[handle];
 }
 
 bool TexLoader::GetTextureResouse(const std::wstring& texPath, TextureResorce& texRes)
 {
 	// リソーステールにあったらそれを返す
-	int handle = GetGraphHandle(texPath);
+	int handle = FindGraphHandle(texPath);
 	if (handle != FAILED)
 	{
 		texRes = GetTextureResouse(handle);
@@ -131,7 +127,7 @@ bool TexLoader::GetTextureResouse(const std::wstring& texPath, TextureResorce& t
 	return true;
 }
 
-int TexLoader::GetGraphHandle(const std::wstring& texPath)const
+int TexLoader::FindGraphHandle(const std::wstring& texPath)const
 {
 	if (resourceHandleTable_.contains(texPath))
 	{
@@ -140,9 +136,14 @@ int TexLoader::GetGraphHandle(const std::wstring& texPath)const
 	return FAILED;
 }
 
+bool TexLoader::ExistTextureResource(const int handle) const
+{
+	return (handle >= 0 && handle < texResources_.size());
+}
+
 int TexLoader::MakeScreen(const std::wstring& resourceName, const UINT width, const UINT height, const std::vector<uint8_t>& colorData)
 {
-	int handle = GetGraphHandle(resourceName);
+	int handle = FindGraphHandle(resourceName);
 	if (handle != FAILED)
 	{
 		return handle;
@@ -396,9 +397,9 @@ bool TexLoader::LoadPictureFromFile(const std::wstring& texPath, TextureResorce&
 	return true;
 }
 
-int TexLoader::LoadGraph(const std::wstring& path)
+int TexLoader::GetGraphHandle(const std::wstring& path)
 {
-	int handle = GetGraphHandle(path);
+	int handle = FindGraphHandle(path);
 	if (handle != FAILED)
 	{
 		return handle;
@@ -543,8 +544,14 @@ void TexLoader::ScreenFlip(IDXGISwapChain4& swapChain)
 	}
 
 	// レンダーターゲットをプレゼント用にバリアを張る
-	auto& texRes = GetTextureResouse(renderTergetHandleList_.front());
+	int handle = renderTergetHandleList_.front();
+	if (!ExistTextureResource(handle))
+	{
+		return;
+	}
+	auto& texRes = texResources_[handle];
 	assert(texRes.resource.state == D3D12_RESOURCE_STATE_RENDER_TARGET);
+
 	texRes.resource.Barrier(cmd_, D3D12_RESOURCE_STATE_PRESENT);
 
 	cmd_.Execute();
@@ -572,7 +579,7 @@ std::list<int> TexLoader::GetCurrentRendetTargeAll() const
 
 bool TexLoader::GetGraphSize(const int graphH, unsigned int& width, unsigned int& height)const
 {
-	if (graphH < 0 || graphH >= texResources_.size())
+	if (!ExistTextureResource(graphH))
 	{
 		assert(false);
 		return false;

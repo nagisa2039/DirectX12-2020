@@ -4,10 +4,13 @@
 #include <DirectXMath.h>
 #include "SkeletalMeshVertex.h"
 
+/// <summary>
+/// ボーン有モデルデータ
+/// </summary>
 class SkeletalMeshData
 {
 public :
-
+	// マテリアル
 	struct Material
 	{
 		DirectX::XMFLOAT4 diffuse;	// ディフューズ色
@@ -17,6 +20,7 @@ public :
 		uint32_t indeicesNum;	// インデックス数
 	};
 
+	// マテリアルごとのテクスチャパス
 	struct MultiTexturePath
 	{
 		std::wstring texPath;	// 通常テクスチャパス
@@ -26,6 +30,7 @@ public :
 		std::wstring toonPath;	// toonテクスチャパス
 	};
 
+	// ボーン情報
 	struct Bone
 	{
 		std::wstring name;
@@ -37,15 +42,34 @@ public :
 	SkeletalMeshData();
 	~SkeletalMeshData();
 
-	// 頂点情報の取得
+	/// <summary>
+	/// 頂点情報の取得
+	/// </summary>
+	/// <returns></returns>
 	const std::vector<SkeletalMeshVertex>& GetVertexData();
-	// インデックス情報の取得
+
+	/// <summary>
+	/// インデックス情報の取得
+	/// </summary>
+	/// <returns></returns>
 	const std::vector<uint32_t>& GetIndexData();
-	// テクスチャパス情報の取得
+
+	/// <summary>
+	/// テクスチャパス情報の取得
+	/// </summary>
+	/// <returns></returns>
 	const std::vector<MultiTexturePath>& GetTexturePaths();
-	// マテリアル情報の取得
+
+	/// <summary>
+	/// マテリアル情報の取得
+	/// </summary>
+	/// <returns></returns>
 	const std::vector<Material>& GetMaterialData();
-	// ボーン情報の取得
+
+	/// <summary>
+	/// ボーン情報の取得
+	/// </summary>
+	/// <returns></returns>
 	const std::vector<Bone>& GetBoneData();
 
 protected:

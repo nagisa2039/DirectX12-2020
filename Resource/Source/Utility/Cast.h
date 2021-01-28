@@ -1,6 +1,7 @@
 #pragma once
-
 #include <stdint.h>
+
+// static_castÈ—ª—p’è‹`
 
 #define Uint8(X)	static_cast<uint8_t> (X)
 #define Uint16(X)	static_cast<uint16_t>(X)

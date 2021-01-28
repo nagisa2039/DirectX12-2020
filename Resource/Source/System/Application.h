@@ -12,6 +12,7 @@ class Scene;
 class Application
 {
 public:
+	// サイズ
 	struct Size
 	{
 		unsigned int w, h;
@@ -19,6 +20,9 @@ public:
 		Size(unsigned int w, unsigned int h) :w(w), h(h) {};
 	};
 
+	/// <summary>
+	/// シングルトンインスタンスの取得
+	/// </summary>
 	static Application& Instance()
 	{
 		static Application instance;

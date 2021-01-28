@@ -4,7 +4,14 @@
 
 namespace
 {
-	// DrawFloat3の描画(ラベル名, XMFLOAT3の操作対象, 速度, 最小値, 最大値)
+	/// <summary>
+	/// DrawFloat3の描画
+	/// </summary>
+	/// <param name="label">ラベル名</param>
+	/// <param name="inVec">XMFLOAT3の操作対象</param>
+	/// <param name="speed">速度</param>
+	/// <param name="min">最小値</param>
+	/// <param name="max">最大値</param>
 	void DragXMFLOAT3(const char* label, DirectX::XMFLOAT3& inVec, float speed = 1.0f, float min = 0.0f, float max = 1.0f)
 	{
 		float f[3] = { inVec.x, inVec.y, inVec.z };
@@ -12,7 +19,13 @@ namespace
 		inVec = DirectX::XMFLOAT3(f[0], f[1], f[2]);
 	}
 
-	// SliderFloat3の描画(ラベル名, XMFLOAT3の操作対象, 最小値, 最大値)
+	/// <summary>
+	/// SliderFloat3の描画
+	/// </summary>
+	/// <param name="label">ラベル名</param>
+	/// <param name="inVec">XMFLOAT3の操作対象</param>
+	/// <param name="min">最小値</param>
+	/// <param name="max">最大値</param>
 	void SliderXMFLOAT3(const char* label, DirectX::XMFLOAT3& inVec, float min = 0.0f, float max = 1.0f)
 	{
 		float f[3] = { inVec.x, inVec.y, inVec.z };
@@ -20,7 +33,11 @@ namespace
 		inVec = DirectX::XMFLOAT3(f[0], f[1], f[2]);
 	}
 
-	// ColorPicker4の描画(ラベル名, XMFLOAT4の操作対象)
+	/// <summary>
+	/// ColorPicker4の描画
+	/// </summary>
+	/// <param name="label">ラベル名</param>
+	/// <param name="inVec">XMFLOAT4の操作対象</param>
 	void PickColorXMFLOAT4(const char* label, DirectX::XMFLOAT4& inVec)
 	{
 		ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);
@@ -34,7 +51,11 @@ namespace
 		}
 	}
 
-	// ColorPicker3の描画(ラベル名, XMFLOAT3の操作対象)
+	/// <summary>
+	/// ColorPicker3の描画
+	/// </summary>
+	/// <param name="label">ラベル名</param>
+	/// <param name="inVec">XMFLOAT3の操作対象</param>
 	void PickColorXMFLOAT3(const char* label, DirectX::XMFLOAT3& inVec)
 	{
 		ImGui::SetNextTreeNodeOpen(false, ImGuiCond_Once);

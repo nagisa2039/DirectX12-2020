@@ -14,18 +14,29 @@ using uint4 = DirectX::XMUINT4;
 using matrix = DirectX::XMMATRIX;
 #endif
 
+/// <summary>
+/// 描画設定
+/// </summary>
 struct SettingData
 {
+	// アウトライン
 	uint outline;
+	// アウトライン色
 	float3 outlineColor;
 
+	// エミッション
 	uint emmision;
+	// エミッション色
 	float3 emmisionColor;
 
+	// エミッションの強さ
 	float emmisionRate;
+	// ディゾルブ
 	uint dissolve;
+	// アンチエイリアシング
 	uint antialiasing;
+	// 被写界深度
 	uint depth_of_field;
-
+	// インスタンス数
 	uint instanceNum;
 };

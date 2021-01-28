@@ -428,7 +428,7 @@ bool SkeletalMesh::CreateMaterial()
 	{
 		if (path != L"")
 		{
-			int handle = texLoader.LoadGraph(path);
+			int handle = texLoader.GetGraphHandle(path);
 			if (handle == FAILED)
 			{
 				return failedIdx;
@@ -450,7 +450,7 @@ bool SkeletalMesh::CreateMaterial()
 		addTexVec[Uint64(j) + 2]			 = GetTexture(texPaths[matIdx].subPath,  dummyTexHandles.whiteTexH);
 		addTexVec[Uint64(j) + 3]			 = GetTexture(texPaths[matIdx].toonPath, dummyTexHandles.whiteTexH);
 	}
-	addTexVec[Uint64(stride) * materials.size()] = texLoader.LoadGraph(L"Resource/Image/noise.png");
+	addTexVec[Uint64(stride) * materials.size()] = texLoader.GetGraphHandle(L"Resource/Image/noise.png");
 
 	modelMaterial_ = make_unique<ModelMaterial>(meterialBaseVec, addTexVec, constFloatVec);
 

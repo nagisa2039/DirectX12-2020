@@ -2,11 +2,14 @@
 #include "SkeletalMeshData.h"
 #include <string>
 
+/// <summary>
+/// PMXデータ
+/// </summary>
 class PMXData :
 	public SkeletalMeshData
 {
 public:
-	// (モデルファイルパス)
+	// <param name="modelPath">(モデルファイルパス)</param>
 	PMXData(std::wstring modelPath);
 	~PMXData();
 

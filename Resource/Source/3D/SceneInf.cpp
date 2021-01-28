@@ -63,6 +63,7 @@ void SceneInf::SetCameraDescriptorHeap(const unsigned int rootParamIdx)
 void SceneInf::DrawImGui()
 {
 	cameraObj_->DrawImGui(0);
+	mappedScene_->fov = cameraObj_->GetCamera()->GetFOV();
 	lightObj_->DrawImGui(1);
 }
 

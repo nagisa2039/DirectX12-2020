@@ -43,6 +43,11 @@ public:
 	DirectX::XMMATRIX GetProjMatrix()const;
 
 	/// <summary>
+	/// FOV‚ÌŽæ“¾
+	/// </summary>
+	float GetFOV()const;
+
+	/// <summary>
 	/// ImGui‚Ì•`‰æ
 	/// </summary>
 	void DrawImGui()override;

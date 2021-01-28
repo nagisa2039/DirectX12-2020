@@ -163,7 +163,7 @@ SceneInf& RendererManager::GetSceneInf()
 
 void RendererManager::DrawImGui()
 {
-	sceneInf_->DrawImGui();;
+	sceneInf_->DrawImGui();
 }
 
 void RendererManager::CreateRenderTargetHeap()

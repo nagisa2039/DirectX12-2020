@@ -39,6 +39,7 @@ namespace
 		cmdList->ResourceBarrier(1, &barrier);
 	}
 
+	/// </summary>
 	/// <summary>
 	/// バッファの作成
 	/// </summary>
@@ -46,6 +47,7 @@ namespace
 	/// <param name="pBuffer">格納するバッファ</param>
 	/// <param name="heapType">ヒープの種類を指定</param>
 	/// <param name="resourceSize">リソースのサイズ</param>
+	/// <param name="state">リソースの状態</param>
 	/// <param name="ajustAligment">resourceSizeのアライメントを揃えるか</param>
 	void CreateBuffer(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12Resource>& pBuffer, 
 		const D3D12_HEAP_TYPE heapType, const UINT64& resourceSize, 
@@ -94,12 +96,12 @@ namespace
 		}
 	}
 
-
 	/// <summary>
 	/// DescriptorHeapの作成
 	/// </summary>
 	/// <param name="dev">I3D12Deviceのポインタ</param>
 	/// <param name="pHeap">格納するヒープのポインタ</param>
+	/// <param name="heapType">ヒープの種類</param>
 	/// <param name="numDescriptors">デスクリプタ数</param>
 	void CreateDescriptorHeap(ID3D12Device* dev, Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& pHeap, 
 		D3D12_DESCRIPTOR_HEAP_TYPE heapType = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, UINT numDescriptors = 1)
@@ -151,6 +153,7 @@ namespace
 	/// </summary>
 	/// <typeparam name="T">Structの型</typeparam>
 	/// <param name="dev">I3D12Deviceのポインタ</param>
+	/// <param name="mapped">マップ先</param>
 	/// <param name="buff">格納するバッファ</param>
 	/// <param name="heap">格納するヒープ</param>
 	/// <param name="elementSize">要素サイズ</param>
@@ -175,6 +178,7 @@ namespace
 	/// </summary>
 	/// <typeparam name="T">Structの型</typeparam>
 	/// <param name="dev">I3D12Deviceのポインタ</param>
+	/// <param name="mapped">マップ先</param>
 	/// <param name="buff">格納するバッファ</param>
 	/// <param name="heap">格納するヒープ</param>
 	/// <param name="elementSize">要素サイズ</param>
@@ -200,9 +204,12 @@ namespace
 	/// </summary>
 	/// <typeparam name="T">Structの型</typeparam>
 	/// <param name="dev">I3D12Deviceのポインタ</param>
+	/// <param name="cmd">コマンド管理クラス</param>
 	/// <param name="buff">格納するバッファ</param>
 	/// <param name="heap">格納するヒープ</param>
 	/// <param name="elements">送る構造体配列</param>
+	/// <param name="mapped">マップ先</param>
+	/// <param name="unmap">アンマップするか</param>
 	template<class T>
 	void CreateStructuredBuffer(ID3D12Device* dev, Command& cmd, Microsoft::WRL::ComPtr<ID3D12Resource>& buff, 
 		D3D12_CPU_DESCRIPTOR_HANDLE& handle, const std::vector<T>& elements, T*& mapped, const bool unmap)

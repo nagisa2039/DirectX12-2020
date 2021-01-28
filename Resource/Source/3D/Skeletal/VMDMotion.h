@@ -5,9 +5,15 @@
 #include <windows.h>
 #include <DirectXMath.h>
 
+/// <summary>
+/// VMDモーションデータ
+/// </summary>
 class VMDMotion
 {
 public:
+	/// <summary>
+	/// キーフレーム
+	/// </summary>
 	struct KeyFrame
 	{
 		unsigned int frameNo;			// キーフレーム番号
@@ -21,15 +27,23 @@ public:
 			: frameNo(fno), location(l), quaternion(q), point1(p1), point2(p2){};
 	};
 
-	// (モーションファイルパス)
+	/// <param name="filePath">モーションファイルパス</param>
 	VMDMotion(std::wstring filePath);
 	~VMDMotion();
 
-	// キーフレーム数の取得
+	/// <summary>
+	/// キーフレーム数の取得
+	/// </summary>
 	unsigned int GetKeyFrameNum();
-	// 最後のキーのフレーム数取得
+
+	/// <summary>
+	/// 最後のキーのフレーム数取得
+	/// </summary>
 	unsigned int GetLastFrame();
-	// アニメーション情報の取得
+
+	/// <summary>
+	/// アニメーション情報の取得
+	/// </summary>
 	std::map<std::string, std::vector<KeyFrame>> GetAnimation();
 
 private:
