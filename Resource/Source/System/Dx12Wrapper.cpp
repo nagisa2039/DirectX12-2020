@@ -95,7 +95,8 @@ bool Dx12Wrapper::Init()
 void Dx12Wrapper::InitEfk()
 {
 	auto format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	efkRenderer_ = EffekseerRendererDX12::Create(dev_.Get(), &cmd_->CommandQueue(), 2, &format, 1, DXGI_FORMAT_UNKNOWN, false, 8000);
+	efkRenderer_ = EffekseerRendererDX12::Create(dev_.Get(), &cmd_->CommandQueue(), 
+		2, &format, 1, DXGI_FORMAT_D32_FLOAT, false, 8000);
 	efkManager_ = Effekseer::Manager::Create(8000);
 	// 描画用インスタンスから描画機能を設定
 	efkManager_->SetSpriteRenderer(efkRenderer_->CreateSpriteRenderer());
