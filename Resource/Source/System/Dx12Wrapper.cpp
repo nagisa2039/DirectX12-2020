@@ -12,7 +12,7 @@
 #include "Utility/Tool.h"
 #include "Utility/dx12Tool.h"
 #include "Utility/Input.h"
-#include "Utility/SettingData.h"
+#include "Shader/Struct/SettingData.h"
 #include "Utility/Cast.h"
 #include "Utility/ImGuiTool.h"
 

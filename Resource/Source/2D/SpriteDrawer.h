@@ -7,7 +7,7 @@
 #include "Utility/DirectXStruct.h"
 #include <DirectXTex.h>
 #include <unordered_map>
-#include "Utility/UtilityShaderStruct.h"
+#include "Shader/Struct/UtilityShaderStruct.h"
 
 class Dx12Wrapper;
 class Material;

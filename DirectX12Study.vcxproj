@@ -31,7 +31,7 @@
     <ClInclude Include="Resource\Source\3D\Component.h" />
     <ClInclude Include="Resource\Source\3D\Mesh.h" />
     <ClInclude Include="Resource\Source\3D\Actor.h" />
-    <ClInclude Include="Resource\Source\Material\MaterialBase.h" />
+    <ClInclude Include="Resource\Source\Shader\Struct\MaterialBase.h" />
     <ClInclude Include="Resource\Source\Material\ModelMaterial.h" />
     <ClInclude Include="Resource\Source\Material\ModelEndRendering.h" />
     <ClInclude Include="Resource\Source\3D\Camera.h" />
@@ -69,11 +69,11 @@
     <ClInclude Include="Resource\Source\Utility\TextureStruct.h" />
     <ClInclude Include="Resource\Source\System\SoundManager.h" />
     <ClInclude Include="Resource\Source\System\ShaderLoader.h" />
-    <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h" />
+    <ClInclude Include="Resource\Source\Shader\Struct\UtilityShaderStruct.h" />
     <ClInclude Include="Resource\Source\Material\Material.h" />
     <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
     <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshVertex.h" />
-    <ClInclude Include="Resource\Source\Utility\SettingData.h" />
+    <ClInclude Include="Resource\Source\Shader\Struct\SettingData.h" />
     <ClInclude Include="Resource\Source\3D\SceneInf.h" />
   </ItemGroup>
   <ItemGroup>

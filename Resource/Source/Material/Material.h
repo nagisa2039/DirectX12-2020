@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "Utility/DirectXStruct.h"
-#include "MaterialBase.h"
+#include "Shader/Struct/MaterialBase.h"
 
 /// <summary>
 /// マテリアルクラス(現状2Dペラ用)

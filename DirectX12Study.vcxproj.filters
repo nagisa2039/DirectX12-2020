@@ -147,9 +147,6 @@
     <ClInclude Include="Resource\Source\2D\SpriteDrawer.h">
       <Filter>ヘッダー ファイル\2D</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Utility\UtilityShaderStruct.h">
-      <Filter>ヘッダー ファイル\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\Material\Material.h">
       <Filter>ヘッダー ファイル\Material</Filter>
     </ClInclude>
@@ -160,9 +157,6 @@
       <Filter>ヘッダー ファイル\Material</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\Material\ModelMaterial.h">
-      <Filter>ヘッダー ファイル\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\Source\Material\MaterialBase.h">
       <Filter>ヘッダー ファイル\Material</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\3D\Actor.h">
@@ -237,14 +231,20 @@
     <ClInclude Include="Resource\Source\Utility\ImGuiTool.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Utility\SettingData.h">
-      <Filter>ヘッダー ファイル\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\Utility\ComvertCplusHLSL.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\3D\SceneInf.h">
       <Filter>ヘッダー ファイル\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Shader\Struct\UtilityShaderStruct.h">
+      <Filter>ヘッダー ファイル\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Shader\Struct\SettingData.h">
+      <Filter>ヘッダー ファイル\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Shader\Struct\MaterialBase.h">
+      <Filter>ヘッダー ファイル\Material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

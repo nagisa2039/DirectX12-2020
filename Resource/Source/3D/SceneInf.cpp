@@ -1,7 +1,7 @@
 #include "SceneInf.h"
 #include "System/Command.h"
 #include "Utility/dx12Tool.h"
-#include "Utility/UtilityShaderStruct.h"
+#include "Shader/Struct/UtilityShaderStruct.h"
 #include "Camera.h"
 
 using namespace std;

@@ -3,7 +3,7 @@
 #include "System/Command.h"
 #include <DirectXMath.h>
 #include "Utility/Input.h"
-#include "Utility/UtilityShaderStruct.h"
+#include "Shader/Struct/UtilityShaderStruct.h"
 #include "Utility/ImGuiTool.h"
 #include "Utility/Cast.h"
 #include <algorithm>

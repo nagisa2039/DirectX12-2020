@@ -8,7 +8,7 @@
 #include "d3dx12.h"
 #include "Utility/Tool.h"
 #include "Utility/dx12Tool.h"
-#include "Utility/SettingData.h"
+#include "Shader/Struct/SettingData.h"
 #include "SkeletalMeshRenderer.h"
 #include "PMXData.h"
 #include "PMDData.h"

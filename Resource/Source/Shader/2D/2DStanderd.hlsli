@@ -1,6 +1,6 @@
-#include "../../Utility/UtilityShaderStruct.h"
-#include "../../Material/MaterialBase.h"
-#include "../../Utility/SettingData.h"
+#include "../Struct/UtilityShaderStruct.h"
+#include "../Struct/MaterialBase.h"
+#include "../Struct/SettingData.h"
 
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\
                           "DescriptorTable(SRV(t0,numDescriptors = unbounded,   space = 0, flags = DESCRIPTORS_VOLATILE)),"\
