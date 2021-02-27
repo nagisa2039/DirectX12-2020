@@ -1,4 +1,4 @@
-#include "../../3D/Skeletal/SkeletalMeshVertex.h"
+#include "../Struct/SkeletalMeshVertex.h"
 
 // ルートシグネチャの宣言
 #define RS "RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"\

@@ -98,6 +98,15 @@ namespace
 		return folderPath;
 	}
 
+	std::string GetFilePath(const std::string& modelPath)
+	{
+		int pathIndex1 = static_cast<int>(modelPath.rfind('/'));
+		int pathIndex2 = static_cast<int>(modelPath.rfind('\\'));
+		auto pathIndex = max(pathIndex1, pathIndex2);
+		auto filePath = modelPath.substr(Uint64(pathIndex) + 1, modelPath.length());
+		return filePath;
+	}
+
 	template<class T>
 	T Saturate(const T value, const T min = 0.0f, const T max = 1.0f)
 	{

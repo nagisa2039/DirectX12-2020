@@ -43,7 +43,7 @@
     <ClInclude Include="Resource\Source\System\WAVFileReader.h" />
     <ClInclude Include="Resource\Source\Utility\ComPtr.h" />
     <ClInclude Include="Resource\Source\Utility\Cast.h" />
-    <ClInclude Include="Resource\Source\Utility\ComvertCplusHLSL.h" />
+    <ClInclude Include="Resource\Source\Shader\Struct\ComvertCplusHLSL.h" />
     <ClInclude Include="Resource\Source\Utility\DirectXStruct.h" />
     <ClInclude Include="Resource\Source\Utility\Constant.h" />
     <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMesh.h" />
@@ -72,7 +72,7 @@
     <ClInclude Include="Resource\Source\Shader\Struct\UtilityShaderStruct.h" />
     <ClInclude Include="Resource\Source\Material\Material.h" />
     <ClInclude Include="Resource\Source\Material\StanderedMaterial.h" />
-    <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshVertex.h" />
+    <ClInclude Include="Resource\Source\Shader\Struct\SkeletalMeshVertex.h" />
     <ClInclude Include="Resource\Source\Shader\Struct\SettingData.h" />
     <ClInclude Include="Resource\Source\3D\SceneInf.h" />
   </ItemGroup>

@@ -76,6 +76,9 @@
     <Filter Include="ヘッダー ファイル\Imgui">
       <UniqueIdentifier>{8b0f0204-129b-49d9-8e48-396e618eb484}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Shader\Struct">
+      <UniqueIdentifier>{912ce7f3-2f6f-4a04-a70c-bbf2e8ee04b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource\Source\Utility\Tool.h">
@@ -201,9 +204,6 @@
     <ClInclude Include="Resource\Source\3D\Static\StaticMesh.h">
       <Filter>ヘッダー ファイル\3D\Static</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\3D\Skeletal\SkeletalMeshVertex.h">
-      <Filter>ヘッダー ファイル\3D\Skeletal</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\Imgui\imconfig.h">
       <Filter>ヘッダー ファイル\Imgui</Filter>
     </ClInclude>
@@ -231,20 +231,23 @@
     <ClInclude Include="Resource\Source\Utility\ImGuiTool.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Utility\ComvertCplusHLSL.h">
-      <Filter>ヘッダー ファイル\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\Source\3D\SceneInf.h">
       <Filter>ヘッダー ファイル\3D</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\Source\Shader\Struct\UtilityShaderStruct.h">
-      <Filter>ヘッダー ファイル\Utility</Filter>
+    <ClInclude Include="Resource\Source\Shader\Struct\ComvertCplusHLSL.h">
+      <Filter>ソース ファイル\Shader\Struct</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\Shader\Struct\SettingData.h">
-      <Filter>ヘッダー ファイル\Utility</Filter>
+      <Filter>ソース ファイル\Shader\Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Shader\Struct\UtilityShaderStruct.h">
+      <Filter>ソース ファイル\Shader\Struct</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Source\Shader\Struct\MaterialBase.h">
-      <Filter>ヘッダー ファイル\Material</Filter>
+      <Filter>ソース ファイル\Shader\Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Source\Shader\Struct\SkeletalMeshVertex.h">
+      <Filter>ソース ファイル\Shader\Struct</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

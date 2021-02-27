@@ -38,8 +38,6 @@ private:
 	int se1_;
 	int se2_;
 
-	int mosaicH_;
-
 	int skyH_;
 
 	std::vector<std::shared_ptr<Actor>> actors_;

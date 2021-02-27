@@ -60,8 +60,10 @@ PixelOut PS(VertexOut input, uint primitiveID : SV_PrimitiveID)
 	
 	float3 posFromLight = input.posFromLight.xyz / input.posFromLight.w;
 	float2 shadowUV = (posFromLight.xy + float2(1, -1)) * float2(0.5f, -0.5f);
-	float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z);
-	float shadowWeight = 1.0f - 0.3f * step(shadowZ + 0.0005f, posFromLight.z);
+	
+    float shadowZ = lightDepthTex.SampleCmpLevelZero(shadowSmp, shadowUV, posFromLight.z);
+    float shadowWeight = 1.0f - 0.3f * step(shadowZ + 0.0005f, posFromLight.z);
+	
 
 	float4 noiseColor = noiseTex.Sample(smp, input.uv);
 	float noiseValue = dot(noiseColor.rgb, float3(0.33f, 0.34f, 0.33));

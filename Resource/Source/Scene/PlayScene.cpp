@@ -33,21 +33,18 @@ PlayScene::PlayScene(SceneController & ctrl):Scene(ctrl)
 	auto wsize = Application::Instance().GetWindowSize();
 	d3dH_ = texLoader.GetGraphHandle(SCR_CAMERA_VIEW_SCREEN);
 
-	mosaicH_ = texLoader.MakeScreen(L"mosaic", 1280, 720);
-
-	rayMarching = true;
+	rayMarching = false;
 	debugDraw = true;
 
 	auto& dx12 = Application::Instance().GetDx12();
 	auto& soundManager = dx12.GetSoundManager();
 
-	skyH_ = texLoader.GetGraphHandle(L"Resource/Image/sky.png");
+	skyH_ = texLoader.GetGraphHandle(L"Resource/Image/sky.jpg");
 
 	BGMH_ = soundManager.LoadWave(L"Resource/Sound/BGM/BGM1.wav", true);
 
 	raymarchingMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Raymarching.hlsl");
 	skySphereMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/SkySphere.hlsl");
-	mosaicMat_ = make_shared<StanderedMaterial>(L"Resource/Source/Shader/2D/Mosaic.hlsl");
 
 	actors_.reserve(10);
 	auto AddPlaneActor = [&]()
@@ -113,12 +110,6 @@ void PlayScene::Draw()
 	auto wsize = Application::Instance().GetWindowSize();
 
 	dx12.GetRendererManager().Draw();
-
-	// mosaicâÊëúê∂ê¨
-	spriteDrawer.SetDrawScreen(mosaicH_);
-	texLoader.ClsDrawScreen();
-	spriteDrawer.SetMaterial(mosaicMat_);
-	spriteDrawer.DrawGraph(0, 0, d3dH_);
 
 	spriteDrawer.SetDrawScreen(dx12.GetBackScreenHandle());
 	texLoader.ClsDrawScreen();

@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <DirectXMath.h>
-#include "SkeletalMeshVertex.h"
+#include "Shader/Struct/SkeletalMeshVertex.h"
 
 /// <summary>
 /// ボーン有モデルデータ
