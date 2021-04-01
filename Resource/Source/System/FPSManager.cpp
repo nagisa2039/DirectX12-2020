@@ -3,7 +3,21 @@
 #include "Utility/Constant.h"
 #include "Utility/Cast.h"
 
-FPSManager::FPSManager(const int fps): fixedFPS_(fps)
+namespace
+{
+	// ƒ~ƒŠ•b”‚Å‹N“®ŠÔ‚ğæ“¾
+	unsigned int GetTickCountHQ()
+	{
+		LARGE_INTEGER frequency;
+		QueryPerformanceFrequency(&frequency);
+		double unit = 1000.0 / frequency.QuadPart;
+		LARGE_INTEGER cnt;
+		QueryPerformanceCounter(&cnt);
+		return cnt.QuadPart * unit;
+	}
+}
+
+FPSManager::FPSManager(const unsigned int fps): fixedFPS_(fps)
 {
 	startTime_ = 0;
 	prevFrameStartTime_ = Uint32(GetTickCount64());
@@ -12,32 +26,33 @@ FPSManager::FPSManager(const int fps): fixedFPS_(fps)
 
 void FPSManager::Wait()
 {
-	auto tickCount = GetTickCount64();
-	int time = Int32(tickCount - prevFrameStartTime_);
+	if (fixedFPS_ <= 0)return;
+
 	int targetTime = 1000 / fixedFPS_;
 
-	if (time < targetTime)
+	int time = 0;
+	do
 	{
-		Sleep(targetTime - time);
-	}
+		time = Int32(GetTickCountHQ() - prevFrameStartTime_);
+	} while (time < targetTime);
 
-	tickCount = GetTickCount64();
+	auto tickCount = GetTickCountHQ();
 	deltaTime_ = (tickCount - prevFrameStartTime_) / 1000.0f;
 
-	prevFrameStartTime_ = Uint32(GetTickCount64());
+	prevFrameStartTime_ = Uint32(tickCount);
 }
 
-int FPSManager::FixedFPS()
+const unsigned int FPSManager::FixedFPS()const
 {
 	return fixedFPS_;
 }
 
-float FPSManager::GetFPS()
+const float FPSManager::GetFPS()const
 {
 	return 1.0f / deltaTime_;
 }
 
-float FPSManager::GetDeltaTime()
+const float FPSManager::GetDeltaTime()const
 {
 	return deltaTime_;
 }

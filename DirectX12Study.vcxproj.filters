@@ -414,14 +414,14 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resource\Source\Shader\2D\2DStanderd.hlsli">
-      <Filter>ソース ファイル\Shader\2D</Filter>
-    </None>
     <None Include="Resource\Source\Shader\3D\Model.hlsli">
       <Filter>ソース ファイル\Shader\3D</Filter>
     </None>
     <None Include="Resource\Source\Shader\3D\Primitive.hlsli">
       <Filter>ソース ファイル\Shader\3D</Filter>
+    </None>
+    <None Include="Resource\Source\Shader\2D\2DStanderd.hlsli">
+      <Filter>ソース ファイル\Shader\2D</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -67,7 +67,7 @@ ShaderLoader& Application::GetShaderLoader()
 	return *shaderLoader_;
 }
 
-FPSManager& Application::GetFPSManager()
+const FPSManager& Application::GetFPSManager()
 {
 	return *fpsManager_;
 }

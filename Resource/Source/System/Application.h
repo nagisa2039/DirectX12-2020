@@ -59,7 +59,7 @@ public:
 	/// <summary>
 	/// フレーム管理クラスの取得
 	/// </summary>
-	FPSManager& GetFPSManager();
+	const FPSManager& GetFPSManager();
 
 	// アプリケーションを初期化する
 

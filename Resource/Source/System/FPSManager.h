@@ -11,31 +11,30 @@ class FPSManager
 public:
 	~FPSManager() = default;
 
-
 	/// <summary>
 	/// 固定したフレーム数を取得
 	/// </summary>
-	int FixedFPS();
+	const unsigned int FixedFPS()const;
 
 	/// <summary>
 	/// 現在のフレーム数の取得
 	/// </summary>
-	float GetFPS();
+	const float GetFPS()const;
 
 	/// <summary>
 	/// 1フレーム内の経過時間の取得
 	/// </summary>
-	float GetDeltaTime();
+	const float GetDeltaTime()const;
 
 private:
 	/// <param name="fps">固定したいフレーム数
-	/// 負の値なら無制限</param>
-	FPSManager(const int fps);
+	/// 0なら無制限</param>
+	FPSManager(const unsigned int fps = 60);
 
 	FPSManager(const FPSManager&) = delete;
 	FPSManager& operator=(const FPSManager&) = delete;
 
-	const int fixedFPS_;
+	const unsigned int fixedFPS_;
 
 	/// <summary>
 	/// 開始ミリ秒

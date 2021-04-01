@@ -19,7 +19,6 @@
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"DirectXTex.lib")
-#pragma comment(lib,"DirectXTK12.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
 #ifdef _DEBUG
@@ -243,10 +242,9 @@ void Dx12Wrapper::BeginDrawImGui()
 	ImGui::NewFrame();
 	ImGui::Begin("Config");
 	ImGui::SetWindowSize(ImVec2(400, 500), ImGuiCond_::ImGuiCond_FirstUseEver);
-
-	ImGui::Text("%.3f", ImGui::GetIO().Framerate);
 	rendererManager_->DrawImGui();
 
+	ImGui::Text("%.3f", ImGui::GetIO().Framerate);
 	DrawImGuiForSetting();
 }
 
